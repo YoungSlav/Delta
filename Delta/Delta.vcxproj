@@ -19,12 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Private\DeltaActor.cpp" />
+    <ClCompile Include="Source\Private\DeltaComponent.cpp" />
+    <ClCompile Include="Source\Private\DeltaEngine.cpp" />
     <ClCompile Include="Source\Private\DeltaLog.cpp" />
+    <ClCompile Include="Source\Private\DeltaMath.cpp" />
+    <ClCompile Include="Source\Private\DeltaObject.cpp" />
+    <ClCompile Include="Source\Private\DeltaTransform.cpp" />
+    <ClCompile Include="Source\Private\IDeltaRenderable.cpp" />
+    <ClCompile Include="Source\Private\IDeltaTransformable.cpp" />
     <ClCompile Include="Source\Private\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Public\DeltaActor.h" />
+    <ClInclude Include="Source\Public\DeltaComponent.h" />
+    <ClInclude Include="Source\Public\DeltaEngine.h" />
+    <ClInclude Include="Source\Public\DeltaMath.h" />
+    <ClInclude Include="Source\Public\DeltaObject.h" />
+    <ClInclude Include="Source\Public\DeltaTransform.h" />
     <ClInclude Include="Source\Public\DeltaTypes.h" />
     <ClInclude Include="Source\Public\DeltaLog.h" />
+    <ClInclude Include="Source\Public\IDeltaRenderable.h" />
+    <ClInclude Include="Source\Public\IDeltaTransformable.h" />
+    <ClInclude Include="Source\Public\SharedFromThis.h" />
     <ClInclude Include="Source\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
