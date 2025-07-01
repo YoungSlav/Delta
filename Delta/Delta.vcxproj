@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Private\Log.cpp" />
+    <ClCompile Include="Source\Private\DeltaLog.cpp" />
     <ClCompile Include="Source\Private\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Public\DeltaTypes.h" />
-    <ClInclude Include="Source\Public\Log.h" />
+    <ClInclude Include="Source\Public\DeltaLog.h" />
     <ClInclude Include="Source\stdafx.h" />
   </ItemGroup>
   <ItemGroup>

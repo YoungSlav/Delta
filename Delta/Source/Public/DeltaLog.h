@@ -11,7 +11,7 @@
 #include <string>
 #include <stdexcept>
 
-#define LOG(Type, ...) Log::LogMessage(Type, __VA_ARGS__)
+#define LOG(Type, ...) DeltaLog::LogMessage(Type, __VA_ARGS__)
 
 enum ELog
 {
@@ -22,7 +22,7 @@ enum ELog
 	Fatal
 };
 
-class Log
+class DeltaLog
 {
 public:
 
@@ -32,7 +32,7 @@ public:
 	template<typename... Args>
 	static void LogMessage(ELog Type, const std::string& format_str, Args&&... args)
 	{
-		auto tuple_args = std::make_tuple(Log::to_string(std::forward<Args>(args))...);
+		auto tuple_args = std::make_tuple(DeltaLog::to_string(std::forward<Args>(args))...);
 		auto format_args = std::apply(
 			[&](auto&... args) { return std::make_format_args(args...); },
 			tuple_args

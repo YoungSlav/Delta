@@ -153,11 +153,15 @@ private:
 			drawFrame();
 		}
 
+		LOG(Log, "Application close requested");
+
 		vkDeviceWaitIdle(device);
 	}
 
 	void cleanup()
 	{
+		LOG(Log, "Vulkan cleanup initiated");
+
 		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 		vkDestroyFence(device, inFlightFence, nullptr);
@@ -1003,7 +1007,24 @@ private:
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
-		LOG(Warning, "Vulkan validation layer: {}", pCallbackData->pMessage);
+		ELog logType;
+		switch (messageSeverity)
+		{
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+				logType = ELog::Log;
+
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+				logType = ELog::Warning;
+
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+				logType = ELog::Error;
+
+			default:
+				logType = ELog::Log;
+		}
+
+		LOG(logType, "Vulkan validation layer: {}", pCallbackData->pMessage);
 
 		return VK_FALSE;
 	}
@@ -1013,7 +1034,7 @@ int main()
 {
 	HelloTriangleApplication app;
 
-	Log::Init("DeltaApp.log");
+	DeltaLog::Init("DeltaApp.log");
 
 	LOG(Log, "Starting Delta application");
 
@@ -1026,6 +1047,8 @@ int main()
 		LOG(Fatal, e.what());
 		return EXIT_FAILURE;
 	}
+
+	LOG(Log, "Application exit");
 
 	return EXIT_SUCCESS;
 }

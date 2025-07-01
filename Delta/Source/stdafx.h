@@ -20,7 +20,7 @@
 #include <execution>
 #include <cmath>
 // utilities
-#include "Log.h"
+#include "DeltaLog.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 // third party
