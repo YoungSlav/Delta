@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Log.h"
+#include "DeltaLog.h"
 #include <iostream>
 #include <windows.h>
 
@@ -10,11 +10,11 @@
 #include <mutex>
 
 static std::mutex LogMutex;
-std::ofstream Log::LogFile;
-std::string Log::LogFileName;
-std::string Log::LogFolder = "..\\Logs";
+std::ofstream DeltaLog::LogFile;
+std::string DeltaLog::LogFileName;
+std::string DeltaLog::LogFolder = "..\\Logs";
 
-void Log::Init(const std::string& logFilename)
+void DeltaLog::Init(const std::string& logFilename)
 {
 	LogFileName = logFilename;
 
@@ -36,7 +36,7 @@ void Log::Init(const std::string& logFilename)
 	}
 }
 
-void Log::RenameOldLogFile(const std::string& oldFilePath)
+void DeltaLog::RenameOldLogFile(const std::string& oldFilePath)
 {
 	namespace fs = std::filesystem;
 
@@ -68,12 +68,12 @@ void Log::RenameOldLogFile(const std::string& oldFilePath)
 	fs::rename(oldFilePath, newPath);
 }
 
-void Log::Print( const std::string& Message, ELog Type )
+void DeltaLog::Print( const std::string& Message, ELog Type )
 {
-	Log::Print(Message.c_str(), Type);
+	DeltaLog::Print(Message.c_str(), Type);
 }
 
-void Log::Print(const char* const Message, ELog Type)
+void DeltaLog::Print(const char* const Message, ELog Type)
 {
 
 	auto now = std::chrono::system_clock::now();
@@ -142,5 +142,7 @@ void Log::Print(const char* const Message, ELog Type)
 		const int prefixWidth = 22;
 		std::string prefix = prefix_ss.str();
 		LogFile << std::left << std::setw(prefixWidth) << prefix << " " << Message << std::endl;
+
+		LogFile.flush();
 	}
 }

@@ -18,7 +18,7 @@
     <ClCompile Include="Source\Private\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\Log.cpp">
+    <ClCompile Include="Source\Private\DeltaLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="Source\Public\DeltaTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\Log.h">
+    <ClInclude Include="Source\Public\DeltaLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
