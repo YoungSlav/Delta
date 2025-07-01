@@ -122,7 +122,7 @@ void DeltaLog::Print(const char* const Message, ELog Type)
 		typeStr = "Error";
 		break;
 	case ELog::Fatal:
-		SetConsoleTextAttribute( hstdout, FOREGROUND_RED );
+		SetConsoleTextAttribute( hstdout, BACKGROUND_RED | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
 		snprintf(debugMessage, sizeof(debugMessage), "Fatal: %s\n", Message);
 		std::cout <<"Fatal: ";
 		typeStr = "Fatal";
