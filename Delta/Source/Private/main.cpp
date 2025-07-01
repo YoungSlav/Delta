@@ -14,6 +14,7 @@
 #include <set>
 
 #include "stdafx.h"
+unsigned int DelegateHandle::CURRENT_ID = 0;
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
