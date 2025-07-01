@@ -4,45 +4,49 @@
 
 #define FLT_EPS FLT_EPSILON
 
-class DeltaMath
+namespace Delta
 {
-public:
-	static glm::quat DirectionToQuaternion(const glm::vec3& Direction);
-	static glm::vec3 QuaternionToDirection(const glm::quat& Quaternion);
-
-
-	static glm::vec3 NormalizeEuler(const glm::vec3& angles);
-	static glm::vec3 QuatToEuler(const glm::quat& QuatRotation);
-	static glm::quat EulerToQuat(const glm::vec3& EulerRotation);
-
-	template<typename T>
-	static T Rand(T Min, T Max)
+	class Math
 	{
-		double r = (double)(rand()) / (double)(RAND_MAX);
-
-		return Min + (T)((Max - Min)*r);
-	}
-	static glm::vec3 RandVector(float MaxDimension);
-
-	static bool IsNearlyZero(float Number);
-	static bool IsNearlyZero(double Number);
-	static bool IsNearlyZero(const glm::vec2& vector);
-	static bool IsNearlyZero(const glm::vec3& vector);
-
-	static bool IsNearlyEqual(const float& A, const float& B);
-	static bool IsNearlyEqual(const double& A, const double& B);
-	static bool IsNearlyEqual(const glm::vec3& A, const glm::vec3& B);
-	static bool IsNearlyEqual(const glm::quat& A, const glm::quat& B);
-	static bool IsNearlyEqual(const glm::mat4& A, const glm::mat4& B);
-	static bool IsNearlyEqual(const class DeltaTransform& A, const DeltaTransform& B);
+	public:
+		static glm::quat DirectionToQuaternion(const glm::vec3& Direction);
+		static glm::vec3 QuaternionToDirection(const glm::quat& Quaternion);
 
 
+		static glm::vec3 NormalizeEuler(const glm::vec3& angles);
+		static glm::vec3 QuatToEuler(const glm::quat& QuatRotation);
+		static glm::quat EulerToQuat(const glm::vec3& EulerRotation);
 
-	static float MaxComponent(const glm::vec3& Vector);
+		template<typename T>
+		static T Rand(T Min, T Max)
+		{
+			double r = (double)(rand()) / (double)(RAND_MAX);
 
-	static void GetFrustumCornersWorldSpace(const glm::mat4& frustrum, std::vector<glm::vec4>& OutFrustumCorners);
+			return Min + (T)((Max - Min)*r);
+		}
+		static glm::vec3 RandVector(float MaxDimension);
 
-	static const glm::vec3 upV;
-	static const glm::vec3 forwardV;
-	static const glm::vec3 rightV;
-};
+		static bool IsNearlyZero(float Number);
+		static bool IsNearlyZero(double Number);
+		static bool IsNearlyZero(const glm::vec2& vector);
+		static bool IsNearlyZero(const glm::vec3& vector);
+
+		static bool IsNearlyEqual(const float& A, const float& B);
+		static bool IsNearlyEqual(const double& A, const double& B);
+		static bool IsNearlyEqual(const glm::vec3& A, const glm::vec3& B);
+		static bool IsNearlyEqual(const glm::quat& A, const glm::quat& B);
+		static bool IsNearlyEqual(const glm::mat4& A, const glm::mat4& B);
+		static bool IsNearlyEqual(const class Transform& A, const Transform& B);
+
+
+
+		static float MaxComponent(const glm::vec3& Vector);
+
+		static void GetFrustumCornersWorldSpace(const glm::mat4& frustrum, std::vector<glm::vec4>& OutFrustumCorners);
+
+		static const glm::vec3 upV;
+		static const glm::vec3 forwardV;
+		static const glm::vec3 rightV;
+	};
+
+}

@@ -21,28 +21,28 @@
     <ClCompile Include="Source\Private\DeltaLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\DeltaObject.cpp">
+    <ClCompile Include="Source\Private\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\DeltaMath.cpp">
+    <ClCompile Include="Source\Private\Math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\DeltaTransform.cpp">
+    <ClCompile Include="Source\Private\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\DeltaComponent.cpp">
+    <ClCompile Include="Source\Private\ActorComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\DeltaActor.cpp">
+    <ClCompile Include="Source\Private\Actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\IDeltaRenderable.cpp">
+    <ClCompile Include="Source\Private\IRenderable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\DeltaEngine.cpp">
+    <ClCompile Include="Source\Private\Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\IDeltaTransformable.cpp">
+    <ClCompile Include="Source\Private\ITransformable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,31 +56,31 @@
     <ClInclude Include="Source\Public\DeltaLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\DeltaEngine.h">
+    <ClInclude Include="Source\Public\Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Public\SharedFromThis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\DeltaObject.h">
+    <ClInclude Include="Source\Public\Object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\DeltaActor.h">
+    <ClInclude Include="Source\Public\Actor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Public\DeltaMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\DeltaTransform.h">
+    <ClInclude Include="Source\Public\Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\IDeltaTransformable.h">
+    <ClInclude Include="Source\Public\ITransformable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\DeltaComponent.h">
+    <ClInclude Include="Source\Public\ActorComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\IDeltaRenderable.h">
+    <ClInclude Include="Source\Public\IRenderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

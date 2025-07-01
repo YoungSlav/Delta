@@ -1,11 +1,13 @@
-#include "DeltaObject.h"
-#include "DeltaEngine.h"
+#include "Object.h"
+#include "Engine.h"
+
+using namespace Delta;
 
 #if TEST_MEMORY_LEAKS
 int32 ObjectsSpawned = 0;
 #endif
 
-DeltaObject::~DeltaObject()
+Object::~Object()
 {
 #if TEST_MEMORY_LEAKS
 	ObjectsSpawned--;
@@ -13,24 +15,24 @@ DeltaObject::~DeltaObject()
 #endif
 }
 
-bool DeltaObject::InitializeNewObject(std::shared_ptr<DeltaObject> newObject)
+bool Object::InitializeNewObject(std::shared_ptr<Object> newObject)
 {
 	if ( !newObject->Initialize() )
 		return false;
 
 	AddChildObject(newObject);
-	Engine->RegisterObject(newObject);
+	EnginePtr->RegisterObject(newObject);
 
 	return true;
 }
 
-DeltaHandle DeltaObject::NewHandle() const
+DeltaHandle Object::NewHandle() const
 {
-	return Engine->GenerateNewHandle();
+	return EnginePtr->GenerateNewHandle();
 }
 
 
-bool DeltaObject::Initialize()
+bool Object::Initialize()
 {
 
 #if	TEST_MEMORY_LEAKS
@@ -41,17 +43,17 @@ bool DeltaObject::Initialize()
 	return Initialize_Internal();
 }
 
-void DeltaObject::AddChildObject(std::shared_ptr<DeltaObject> _OwnedObject)
+void Object::AddChildObject(std::shared_ptr<Object> _OwnedObject)
 {	
-	_OwnedObject->OnObjectDestroyDelegate.AddSP(Self<DeltaObject>(), &DeltaObject::RemoveChildObject);
+	_OwnedObject->OnObjectDestroyDelegate.AddSP(Self<Object>(), &Object::RemoveChildObject);
 
 	OwnedObjects.push_back(_OwnedObject);
 	OnChildObjectAdded(_OwnedObject);
 }
 
-void DeltaObject::RemoveChildObject(std::shared_ptr<DeltaObject> obj)
+void Object::RemoveChildObject(std::shared_ptr<Object> obj)
 {
-	OwnedObjects.remove_if([&](const std::weak_ptr<DeltaObject>& weakObj)
+	OwnedObjects.remove_if([&](const std::weak_ptr<Object>& weakObj)
 	{
 		if (auto shared = weakObj.lock())
 			return shared.get() == obj.get();
@@ -60,9 +62,9 @@ void DeltaObject::RemoveChildObject(std::shared_ptr<DeltaObject> obj)
 	OnChildObjectRemoved(obj);
 }
 
-void DeltaObject::Destroy()
+void Object::Destroy()
 {
-	OnObjectDestroyDelegate.Broadcast(Self<DeltaObject>());
+	OnObjectDestroyDelegate.Broadcast(Self<Object>());
 
 	for( auto it : OwnedObjects )
 	{
@@ -72,10 +74,10 @@ void DeltaObject::Destroy()
 	}
 	OwnedObjects.clear();
 
-	if ( Engine )
+	if ( EnginePtr )
 	{
 		OnDestroy();
-		Engine->DestroyObject(Self<DeltaObject>());
-		Engine.reset();
+		EnginePtr->DestroyObject(Self<Object>());
+		EnginePtr.reset();
 	}
 }

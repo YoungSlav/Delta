@@ -139,9 +139,9 @@ private:
 		createSwapChain();
 		createImageViews();
 		createRenderPass();
-		createGraphicsPipeline();
 		createFramebuffers();
 		createCommandPool();
+		createGraphicsPipeline();
 		createCommandBuffer();
 		createSyncObjects();
 	}

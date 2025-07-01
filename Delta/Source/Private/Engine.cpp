@@ -1,10 +1,12 @@
-#include "DeltaEngine.h"
-#include "IDeltaRenderable.h"
+#include "Engine.h"
+#include "IRenderable.h"
+
+using namespace Delta;
 
 namespace GlobalEngine
 {
-	std::weak_ptr<DeltaEngine> _Engine;
-	std::shared_ptr<DeltaEngine> Engine()
+	std::weak_ptr<Engine> _Engine;
+	std::shared_ptr<Engine> Engine()
 	{
 		if( _Engine.expired() )
 			return nullptr;
@@ -13,16 +15,16 @@ namespace GlobalEngine
 };
 
 
-std::shared_ptr<DeltaEngine> DeltaEngine::GetEngine()
+std::shared_ptr<Engine> Engine::GetEngine()
 {
 	return GlobalEngine::Engine();
 }
 
-bool DeltaEngine::Initialize_Internal()
+bool Engine::Initialize_Internal()
 {
-	GlobalEngine::_Engine = Self<DeltaEngine>();
+	GlobalEngine::_Engine = Self<Engine>();
 	
-	Engine = Self<DeltaEngine>();
+	EnginePtr = Self<Engine>();
 
 	LastUsedHandle = GetHandle();
 
@@ -32,7 +34,7 @@ bool DeltaEngine::Initialize_Internal()
 }
 
 
-void DeltaEngine::GameLoop()
+void Engine::GameLoop()
 {
 	//while( !bRequestExit && !glfwWindowShouldClose(Viewport->Window) )
 	//{
@@ -51,7 +53,7 @@ void DeltaEngine::GameLoop()
 	//glfwTerminate();
 }
 
-void DeltaEngine::FireFreshBeginPlays()
+void Engine::FireFreshBeginPlays()
 {
 	for ( auto it : FreshObjects )
 	{
@@ -60,7 +62,7 @@ void DeltaEngine::FireFreshBeginPlays()
 	FreshObjects.clear();
 }
 
-void DeltaEngine::StopGame()
+void Engine::StopGame()
 {
 	while( Objects.size() > 0 )
 	{
@@ -70,14 +72,14 @@ void DeltaEngine::StopGame()
 	//glfwSetWindowShouldClose(Viewport->Window, true);
 }
 
-void DeltaEngine::Tick(float DeltaTime)
+void Engine::Tick(float DeltaTime)
 {
 	for ( auto it : TickableObjects )
 		it->Update(DeltaTime);
 }
 
 
-void DeltaEngine::RegisterObject(std::shared_ptr<DeltaObject> newObject)
+void Engine::RegisterObject(std::shared_ptr<Object> newObject)
 {
 	Objects.push_back(newObject);
 	
@@ -85,13 +87,13 @@ void DeltaEngine::RegisterObject(std::shared_ptr<DeltaObject> newObject)
 
 	HandleToObject.insert({newObject->GetHandle(), newObject});
 	
-	if ( std::shared_ptr<IDeltaTickable> asTickable = std::dynamic_pointer_cast<IDeltaTickable>(newObject) )
+	if ( std::shared_ptr<ITickable> asTickable = std::dynamic_pointer_cast<ITickable>(newObject) )
 	{
 		TickableObjects.push_back(asTickable);
 	}
 }
 
-std::shared_ptr<DeltaObject> DeltaEngine::FindObjectByHandle(const DeltaHandle& Handle)
+std::shared_ptr<Object> Engine::FindObjectByHandle(const DeltaHandle& Handle)
 {
 	auto it = HandleToObject.find(Handle);
 	if ( it != HandleToObject.end() )
@@ -99,22 +101,22 @@ std::shared_ptr<DeltaObject> DeltaEngine::FindObjectByHandle(const DeltaHandle& 
 	return nullptr;
 }
 
-void DeltaEngine::DestroyObject(std::shared_ptr<DeltaObject> Object)
+void Engine::DestroyObject(std::shared_ptr<Object> Object)
 {
 	HandleToObject.erase(Object->GetHandle());
 
-	if ( std::shared_ptr<DeltaActor> asActor = std::dynamic_pointer_cast<DeltaActor>(Object) )
+	if ( std::shared_ptr<Actor> asActor = std::dynamic_pointer_cast<Actor>(Object) )
 	{
 		Actors.erase(std::remove(Actors.begin(), Actors.end(), asActor), Actors.end());
 	}
 
-	if ( std::shared_ptr<IDeltaTickable> asTiackble = std::dynamic_pointer_cast<IDeltaTickable>(Object) )
+	if ( std::shared_ptr<ITickable> asTiackble = std::dynamic_pointer_cast<ITickable>(Object) )
 		TickableObjects.erase(std::remove(TickableObjects.begin(), TickableObjects.end(), asTiackble), TickableObjects.end());
 
 	Objects.erase(std::remove(Objects.begin(), Objects.end(), Object), Objects.end());
 }
 
-void DeltaEngine::OnDestroy()
+void Engine::OnDestroy()
 {
-	DeltaObject::OnDestroy();
+	Object::OnDestroy();
 }
