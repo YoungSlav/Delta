@@ -8,21 +8,21 @@
 
 namespace Delta
 {
-	class ActorComponent : public Object, public ITransformable
+class ActorComponent : public Object, public ITransformable
+{
+
+public:
+	template <typename... Args>
+	ActorComponent(Args&&... args) :
+		Object(std::forward<Args>(args)...),
+		ITransformable()
 	{
-
-	public:
-		template <typename... Args>
-		ActorComponent(Args&&... args) :
-			Object(std::forward<Args>(args)...),
-			ITransformable()
-		{
-			SetParent(GetOwningActor());
-		}
+		SetParent(GetOwningActor());
+	}
 
 
-		std::shared_ptr<class Actor> GetOwningActor() const;
-	protected:
-		virtual bool Initialize_Internal() override;
-	};
+	std::shared_ptr<class Actor> GetOwningActor() const;
+protected:
+	virtual bool Initialize_Internal() override;
+};
 }

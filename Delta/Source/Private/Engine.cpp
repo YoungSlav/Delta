@@ -1,5 +1,8 @@
 #include "Engine.h"
 #include "IRenderable.h"
+#include "Window.h"
+#include "Input.h"
+#include "Renderer.h"
 
 using namespace Delta;
 
@@ -28,7 +31,10 @@ bool Engine::Initialize_Internal()
 
 	LastUsedHandle = GetHandle();
 
-	
+	WindowPtr = NewObject<Window>("Window");
+	RendererPtr = NewObject<Renderer>("Renderer");
+	InputPtr = NewObject<Input>("Input");
+
 
 	return true;
 }
@@ -36,21 +42,31 @@ bool Engine::Initialize_Internal()
 
 void Engine::GameLoop()
 {
-	//while( !bRequestExit && !glfwWindowShouldClose(Viewport->Window) )
-	//{
-	//	float newTime = (float)glfwGetTime();
-	//	float DeltaTime = newTime - GameTime;
-	//	GameTime = newTime;
-	//	
-	//	FireFreshBeginPlays();
-	//
-	//	Tick(DeltaTime);
-	//	
-	//
-	//	while ((glfwGetTime()  - newTime) < (1.0 / FPSLimit)) { }
-	//}
-	//
-	//glfwTerminate();
+	while( !bRequestExit && !glfwWindowShouldClose(WindowPtr->GetWindow()) )
+	{
+		float newTime = (float)glfwGetTime();
+		float DeltaTime = newTime - GameTime;
+		GameTime = newTime;
+		
+		FireFreshBeginPlays();
+	
+		Tick(DeltaTime);
+		
+		//if ( GetCamera() )
+		//	GetCamera()->UpdateCamera();
+		//
+
+		RendererPtr->DrawFrame(DeltaTime);
+		
+		glfwPollEvents();
+
+		if ( InputPtr )
+			InputPtr->ProcessInput(DeltaTime);
+	
+		while ((glfwGetTime()  - newTime) < (1.0 / FPSLimit)) { }
+	}
+	
+	Cleanup();
 }
 
 void Engine::FireFreshBeginPlays()
@@ -116,7 +132,9 @@ void Engine::DestroyObject(std::shared_ptr<Object> Object)
 	Objects.erase(std::remove(Objects.begin(), Objects.end(), Object), Objects.end());
 }
 
-void Engine::OnDestroy()
+void Engine::Cleanup()
 {
-	Object::OnDestroy();
+	InputPtr->Destroy();
+	RendererPtr->Destroy();
+	WindowPtr->Destroy();
 }

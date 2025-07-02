@@ -23,25 +23,33 @@
     <ClCompile Include="Source\Private\ActorComponent.cpp" />
     <ClCompile Include="Source\Private\Engine.cpp" />
     <ClCompile Include="Source\Private\DeltaLog.cpp" />
+    <ClCompile Include="Source\Private\Input.cpp" />
+    <ClCompile Include="Source\Private\Material.cpp" />
     <ClCompile Include="Source\Private\Math.cpp" />
     <ClCompile Include="Source\Private\Object.cpp" />
+    <ClCompile Include="Source\Private\Renderer.cpp" />
     <ClCompile Include="Source\Private\Transform.cpp" />
     <ClCompile Include="Source\Private\IRenderable.cpp" />
     <ClCompile Include="Source\Private\ITransformable.cpp" />
     <ClCompile Include="Source\Private\main.cpp" />
+    <ClCompile Include="Source\Private\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Public\Actor.h" />
     <ClInclude Include="Source\Public\ActorComponent.h" />
     <ClInclude Include="Source\Public\Engine.h" />
     <ClInclude Include="Source\Public\DeltaMath.h" />
+    <ClInclude Include="Source\Public\Input.h" />
+    <ClInclude Include="Source\Public\Material.h" />
     <ClInclude Include="Source\Public\Object.h" />
+    <ClInclude Include="Source\Public\Renderer.h" />
     <ClInclude Include="Source\Public\Transform.h" />
     <ClInclude Include="Source\Public\DeltaTypes.h" />
     <ClInclude Include="Source\Public\DeltaLog.h" />
     <ClInclude Include="Source\Public\IRenderable.h" />
     <ClInclude Include="Source\Public\ITransformable.h" />
     <ClInclude Include="Source\Public\SharedFromThis.h" />
+    <ClInclude Include="Source\Public\Window.h" />
     <ClInclude Include="Source\stdafx.h" />
   </ItemGroup>
   <ItemGroup>

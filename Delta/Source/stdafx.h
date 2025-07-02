@@ -19,6 +19,7 @@
 #include <any>
 #include <execution>
 #include <cmath>
+#include <optional>
 // utilities
 #include "DeltaLog.h"
 
@@ -38,3 +39,5 @@
 
 
 #include "DeltaTypes.h"
+
+#define GLFW_INCLUDE_VULKAN
