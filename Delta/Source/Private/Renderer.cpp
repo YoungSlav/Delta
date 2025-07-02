@@ -33,22 +33,61 @@ bool Renderer::Initialize_Internal()
 {
 	Object::Initialize_Internal();
 
+	LOG(Log, "Creating vulkan renderer instance...");
+
+	LOG(Log, "Create vulkan instance");
 	CreateInstance();
+	LOG(Log, "Setup debug messenger");
 	SetupDebugMessenger();
+	LOG(Log, "Create surface");
 	CreateSurface();
+	LOG(Log, "Pick physical device");
 	PickPhysicalDevice();
+	LOG(Log, "Create logical device");
 	CreateLogicalDevice();
+	LOG(Log, "Create swap chain");
 	CreateSwapChain();
+	LOG(Log, "Create image views");
 	CreateImageViews();
+	LOG(Log, "Create render pass");
 	CreateRenderPass();
+	LOG(Log, "Create framebuffers");
 	CreateFramebuffers();
+	LOG(Log, "Create comman pool");
 	CreateCommandPool();
+	LOG(Log, "Create comman buffer");
 	CreateCommandBuffer();
+	LOG(Log, "Create sync objects");
 	CreateSyncObjects();
 
-	
+	EnginePtr->GetWindow()->OnResizeDelegate.AddSP(Self<Renderer>(), &Renderer::OnWindowResize);
+
+	LOG(Log, "Vulkan renderer instance created.");
 
 	return true;
+}
+
+void Renderer::OnWindowResize(const glm::ivec2& NewSize)
+{
+	vkDeviceWaitIdle(Device);
+
+	for (auto framebuffer : SwapChainFramebuffers)
+	{
+		vkDestroyFramebuffer(Device, framebuffer, nullptr);
+	}
+
+	for (auto imageView : SwapChainImageViews)
+	{
+		vkDestroyImageView(Device, imageView, nullptr);
+	}
+
+	vkDestroySwapchainKHR(Device, SwapChain, nullptr);
+
+
+
+	CreateSwapChain();
+	CreateImageViews();
+	CreateFramebuffers();
 }
 
 void Renderer::DrawFrame(float DeltaTime)
@@ -736,7 +775,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::DebugCallback(VkDebugUtilsMessageSeveri
 			logType = ELog::Log;
 	}
 
-	LOG(logType, "Vulkan validation layer: {}", pCallbackData->pMessage);
+	LOG(logType, pCallbackData->pMessage);
 
 	return VK_FALSE;
 }

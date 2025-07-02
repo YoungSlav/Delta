@@ -31,6 +31,8 @@ bool Engine::Initialize_Internal()
 
 	LastUsedHandle = GetHandle();
 
+	LOG(Log, "Delta engine instance created!");
+
 	WindowPtr = NewObject<Window>("Window");
 	RendererPtr = NewObject<Renderer>("Renderer");
 	InputPtr = NewObject<Input>("Input");
