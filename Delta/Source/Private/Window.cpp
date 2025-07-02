@@ -13,7 +13,7 @@ bool Window::Initialize_Internal()
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 	glfwWindow = glfwCreateWindow(ViewportSize.x, ViewportSize.y, "Delta app", nullptr, nullptr);
 	if ( !glfwWindow )
@@ -39,6 +39,8 @@ bool Window::Initialize_Internal()
 
 void Window::SetMouseEnabled(bool bNewMouseEnabled) const
 {
+	LOG(Log, "Mouse enabled {}", bNewMouseEnabled);
+
 	if (bNewMouseEnabled)
 		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	else
@@ -52,8 +54,6 @@ void Window::Framebuffer_size_callback(struct GLFWwindow* window, int32 width, i
 
 void Window::Resize(const glm::ivec2& InViewportSize)
 {
-	LOG(Log, "Window resize: {}", InViewportSize);
-
 	OnResizeDelegate.Broadcast(ViewportSize);
 }
 

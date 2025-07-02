@@ -67,6 +67,8 @@ private:
 	void CreateCommandBuffer();
 	void CreateSyncObjects();
 
+	void OnWindowResize(const glm::ivec2& NewSize);
+
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);

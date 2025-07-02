@@ -10,6 +10,8 @@ bool Input::Initialize_Internal()
 {
 	Object::Initialize_Internal();
 
+	LOG(Log, "Creating input handler");
+
 	EnginePtr->GetWindow()->OnInputKeyDelegate.AddSP(Self<Input>(), &Input::OnInputKey);
 	EnginePtr->GetWindow()->OnMouseMoveDelegate.AddSP(Self<Input>(), &Input::OnMouseMove);
 	EnginePtr->GetWindow()->OnMouseScrollDelegate.AddSP(Self<Input>(), &Input::OnMouseScroll);
@@ -54,11 +56,15 @@ void Input::SetMouseEnabled(bool bNewMouseEnabled) const
 
 void Input::SubscribeKey(const KeySubscription& NewSubscription)
 {
+	LOG(Log, "Input subscribe key {}", NewSubscription.Key);
 	KeysSubscribers.push_back(NewSubscription);
 }
 
 void Input::UnSubscribeAll(std::shared_ptr<Object> Owner)
 {
+
+	LOG(Log, "Input unsubscribe all");
+
 	for (auto it = KeysSubscribers.begin(); it != KeysSubscribers.end();) 
 	{
 		if ( it->Callback.IsBoundTo(Owner.get()) )
@@ -72,6 +78,8 @@ void Input::UnSubscribeAll(std::shared_ptr<Object> Owner)
 }
 void Input::UnSubscribeKey(int32 Key, std::shared_ptr<Object> Owner)
 {
+	LOG(Log, "Input unsubscribe key {} for {}", Key, Owner->GetName());
+
 	for (auto it = KeysSubscribers.begin(); it != KeysSubscribers.end();) 
 	{
 		if ( Key == it->Key && it->Callback.IsBoundTo(Owner.get()) ) 
