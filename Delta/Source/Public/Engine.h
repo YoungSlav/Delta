@@ -33,6 +33,7 @@ public:
 	std::shared_ptr<class Window> GetWindow() const { return WindowPtr; }
 	std::shared_ptr<class Input> GetInput() const { return InputPtr; }
 	std::shared_ptr<class Renderer> GetRenderer() const { return RendererPtr; }
+	std::shared_ptr<class AssetManager> GetAssetManager() const { return AssetManagerPtr; }
 
 	template<typename Class>
 	int32 GetAllObjects(std::list<std::shared_ptr<Class>>& OutList) const
@@ -89,6 +90,7 @@ private:
 	std::shared_ptr<class Window> WindowPtr;
 	std::shared_ptr<class Input> InputPtr;
 	std::shared_ptr<class Renderer> RendererPtr;
+	std::shared_ptr<class AssetManager> AssetManagerPtr;
 
 	// freshly created objects awaiting BeginPlay call
 	std::list< std::shared_ptr<Object> > FreshObjects;
