@@ -168,7 +168,6 @@ void Renderer::RecordCommandBuffer(VkCommandBuffer CommandBuffer, uint32_t image
 
 	vkCmdBeginRenderPass(CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, TempMaterialPtr->GetGraphicsPipeline());
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -180,11 +179,11 @@ void Renderer::RecordCommandBuffer(VkCommandBuffer CommandBuffer, uint32_t image
 	vkCmdSetViewport(CommandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor{};
-	scissor.offset =
-	{ 0, 0 };
+	scissor.offset = { 0, 0 };
 	scissor.extent = SwapChainExtent;
 	vkCmdSetScissor(CommandBuffer, 0, 1, &scissor);
 
+	vkCmdBindPipeline(CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, TempMaterialPtr->GetGraphicsPipeline());
 	vkCmdDraw(CommandBuffer, 3, 1, 0, 0);
 
 	vkCmdEndRenderPass(CommandBuffer);
@@ -783,6 +782,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::DebugCallback(VkDebugUtilsMessageSeveri
 void Renderer::Cleanup()
 {
 	LOG(Log, "Vulkan cleanup initiated");
+	vkDeviceWaitIdle(Device);
 
 	vkDestroySemaphore(Device, RenderFinishedSemaphore, nullptr);
 	vkDestroySemaphore(Device, ImageAvailableSemaphore, nullptr);

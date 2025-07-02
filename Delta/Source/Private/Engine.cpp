@@ -3,6 +3,7 @@
 #include "Window.h"
 #include "Input.h"
 #include "Renderer.h"
+#include "AssetManager.h"
 
 using namespace Delta;
 
@@ -36,6 +37,7 @@ bool Engine::Initialize_Internal()
 	WindowPtr = NewObject<Window>("Window");
 	RendererPtr = NewObject<Renderer>("Renderer");
 	InputPtr = NewObject<Input>("Input");
+	AssetManagerPtr = NewObject<AssetManager>("AssetManager");
 
 
 	return true;
@@ -67,6 +69,8 @@ void Engine::GameLoop()
 	
 		while ((glfwGetTime()  - newTime) < (1.0 / FPSLimit)) { }
 	}
+
+	LOG(Log, "Exit main loop");
 	
 	Cleanup();
 }
