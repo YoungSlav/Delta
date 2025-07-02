@@ -10,93 +10,101 @@
 namespace Delta
 {
 
-	class Engine : public Object
-	{
-	public:
+class Engine : public Object
+{
+public:
 
-		Engine(const std::string& _Name) :
-			Object(0, _Name, nullptr, nullptr)
-		{}
+	Engine(const std::string& _Name) :
+		Object(0, _Name, nullptr, nullptr)
+	{}
 
-		void GameLoop();
-		void StopGame();
+	void GameLoop();
+	void StopGame();
 		
-		void RegisterObject(std::shared_ptr<Object> Object);
-		std::shared_ptr<Object> FindObjectByHandle(const DeltaHandle& Handle);
-		DeltaHandle GenerateNewHandle() { return ++LastUsedHandle; }
-		void DestroyObject(std::shared_ptr<Object> Object);
+	void RegisterObject(std::shared_ptr<Object> Object);
+	std::shared_ptr<Object> FindObjectByHandle(const DeltaHandle& Handle);
+	DeltaHandle GenerateNewHandle() { return ++LastUsedHandle; }
+	void DestroyObject(std::shared_ptr<Object> Object);
 
-		void LimitFPS(uint32 MaxFPS) { FPSLimit = MaxFPS > 0 ? static_cast<float>(MaxFPS) : 100000.0f; }
+	void LimitFPS(uint32 MaxFPS) { FPSLimit = MaxFPS > 0 ? static_cast<float>(MaxFPS) : 100000.0f; }
 
-		static std::shared_ptr<Engine> GetEngine();
+	static std::shared_ptr<Engine> GetEngine();
 
-		template<typename Class>
-		int32 GetAllObjects(std::list<std::shared_ptr<Class>>& OutList) const
+	std::shared_ptr<class Window> GetWindow() const { return WindowPtr; }
+	std::shared_ptr<class Input> GetInput() const { return InputPtr; }
+	std::shared_ptr<class Renderer> GetRenderer() const { return RendererPtr; }
+
+	template<typename Class>
+	int32 GetAllObjects(std::list<std::shared_ptr<Class>>& OutList) const
+	{
+		int32 count = 0;
+		OutList.clear();
+		for ( auto it : Objects )
 		{
-			int32 count = 0;
-			OutList.clear();
-			for ( auto it : Objects )
+			if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
 			{
-				if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
+				OutList.push_back(asDesired);
+				++count;
+			}
+		}
+
+		return count;
+	}
+
+	template<typename Class>
+	int32 ActorsInRadius(const glm::vec3& AtLocation, float Radius, std::list<std::shared_ptr<Class>>& OutList) const
+	{
+		int32 count = 0;
+		float Radius2 = Radius * Radius;
+		OutList.clear();
+		for ( auto it : Actors )
+		{
+			if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
+			{
+				if ( glm::distance2(asDesired->GetLocation() - AtLocation) <= Radius2 )
 				{
 					OutList.push_back(asDesired);
 					++count;
 				}
 			}
-
-			return count;
 		}
 
-		template<typename Class>
-		int32 ActorsInRadius(const glm::vec3& AtLocation, float Radius, std::list<std::shared_ptr<Class>>& OutList) const
-		{
-			int32 count = 0;
-			float Radius2 = Radius * Radius;
-			OutList.clear();
-			for ( auto it : Actors )
-			{
-				if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
-				{
-					if ( glm::distance2(asDesired->GetLocation() - AtLocation) <= Radius2 )
-					{
-						OutList.push_back(asDesired);
-						++count;
-					}
-				}
-			}
+		return count;
+	}
 
-			return count;
-		}
+	inline bool IsShutingDown() const { return bRequestExit; }
+	void ShutDown() { bRequestExit = true; }
 
-		inline bool IsShutingDown() const { return bRequestExit; }
-		void ShutDown() { bRequestExit = true; }
+protected:
+	bool Initialize_Internal() override;
+	void Cleanup();
 
-	protected:
-		bool Initialize_Internal() override;
-		virtual void OnDestroy() override;
+private:
+	void FireFreshBeginPlays();
 
-	private:
-		void FireFreshBeginPlays();
-
-		void Tick(float DeltaTime);
+	void Tick(float DeltaTime);
 	
-	private:
+private:
 
-		// freshly created objects awaiting BeginPlay call
-		std::list< std::shared_ptr<Object> > FreshObjects;
+	std::shared_ptr<class Window> WindowPtr;
+	std::shared_ptr<class Input> InputPtr;
+	std::shared_ptr<class Renderer> RendererPtr;
 
-		// object managing
-		std::list< std::shared_ptr<Object> > Objects;
-		std::list< std::shared_ptr<class Actor> > Actors;
-		std::map<DeltaHandle, std::shared_ptr<Object>> HandleToObject;
-		std::list< std::shared_ptr<ITickable> > TickableObjects;
+	// freshly created objects awaiting BeginPlay call
+	std::list< std::shared_ptr<Object> > FreshObjects;
 
-		DeltaHandle LastUsedHandle = 0;
+	// object managing
+	std::list< std::shared_ptr<Object> > Objects;
+	std::list< std::shared_ptr<class Actor> > Actors;
+	std::map<DeltaHandle, std::shared_ptr<Object>> HandleToObject;
+	std::list< std::shared_ptr<ITickable> > TickableObjects;
 
-		float GameTime = 0.0f;
-		bool bRequestExit = false;
+	DeltaHandle LastUsedHandle = 0;
 
-		float FPSLimit = 100000.0f;
-	};
+	float GameTime = 0.0f;
+	bool bRequestExit = false;
+
+	float FPSLimit = 100000.0f;
+};
 
 }
