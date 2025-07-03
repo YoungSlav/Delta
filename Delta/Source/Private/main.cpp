@@ -5,7 +5,7 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 
 #include "Engine.h"
 #include "Material.h"
-#include "Renderer.h"
+#include "VulkanCore.h"
 #include "AssetManager.h"
 #include "StaticMesh.h"
 
@@ -25,7 +25,7 @@ int main()
 
 		auto TestMesh = Engine->GetAssetManager()->FindOrLoad<Delta::StaticMesh>("TestMesh", "primitives\\triangle.fbx");
 
-		Engine->GetRenderer()->TempMaterialPtr = TempMaterialPtr;
+		Engine->GetVulkanCore()->TempMaterialPtr = TempMaterialPtr;
 
 		Engine->GameLoop();
 	}

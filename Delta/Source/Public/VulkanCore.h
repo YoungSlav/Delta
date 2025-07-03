@@ -12,16 +12,17 @@ namespace Delta
 
 
 
-class Renderer final : public Object
+class VulkanCore final : public Object
 {
 	struct QueueFamilyIndices
 	{
 		std::optional<uint32_t> graphicsFamily;
+		std::optional<uint32_t> transferFamily;
 		std::optional<uint32_t> presentFamily;
 
 		bool isComplete()
 		{
-			return graphicsFamily.has_value() && presentFamily.has_value();
+			return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
 		}
 	};
 
@@ -33,7 +34,7 @@ class Renderer final : public Object
 	};
 public:
 	template <typename... Args>
-	Renderer(Args&&... args) :
+	VulkanCore(Args&&... args) :
 		Object(std::forward<Args>(args)...)
 	{}
 
@@ -42,6 +43,9 @@ public:
 	VkRenderPass GetRenderPass() { return RenderPass; }
 	VkDevice GetDevice() { return Device; }
 
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
 	std::shared_ptr<class Material> TempMaterialPtr;
 
 protected:
@@ -49,6 +53,8 @@ protected:
 	virtual void OnDestroy() override;
 
 private:
+
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
@@ -62,8 +68,9 @@ private:
 	void CreateImageViews();
 	void CreateRenderPass();
 	void CreateFramebuffers();
-	void CreateCommandPool();
-	void CreateCommandBuffer();
+	void CreateRenderCommandPool();
+	void CreateTransferCommandPool();
+	void CreateRenderCommandBuffer();
 	void CreateSyncObjects();
 
 	void OnWindowResize(const glm::ivec2& NewSize);
@@ -101,6 +108,7 @@ private:
 
 	VkQueue GraphicsQueue;
 	VkQueue PresentQueue;
+	VkQueue TransferQueue;
 
 	VkSwapchainKHR SwapChain;
 	std::vector<VkImage> SwapChainImages;
@@ -111,8 +119,10 @@ private:
 
 	VkRenderPass RenderPass;
 
-	VkCommandPool CommandPool;
-	VkCommandBuffer CommandBuffer;
+	VkCommandPool RenderCommandPool;
+	VkCommandBuffer RenderCommandBuffer;
+
+	VkCommandPool TransferCommandPool;
 
 	VkSemaphore ImageAvailableSemaphore;
 	VkSemaphore RenderFinishedSemaphore;

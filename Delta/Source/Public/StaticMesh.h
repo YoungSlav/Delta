@@ -25,10 +25,18 @@ protected:
 private:
 	void ProcessNode(aiNode* node, const aiScene* scene);
 
+	void CreateVertexBuffer();
+	void CreateIndexBuffer();
+
 private:
 
 	const std::string MeshPath;
 	MeshData Data;
+
+	VkBuffer VertexBuffer;
+	VkDeviceMemory VertexBufferMemory;
+	VkBuffer IndexBuffer;
+	VkDeviceMemory IndexBufferMemory;
 };
 
 }

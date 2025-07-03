@@ -3,6 +3,7 @@
 #include "StaticMesh.h"
 #include "Engine.h"
 #include "AssetManager.h"
+#include "VulkanCore.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -23,16 +24,66 @@ EAssetLoadingState StaticMesh::Load_Internal()
 		return EAssetLoadingState::Invalid;
 	}
 
-	// process ASSIMP's root node recursively
 	ProcessNode(scene->mRootNode, scene);
+
+	CreateVertexBuffer();
+	CreateIndexBuffer();
 
 	LOG(Log, "Loaded mesh '{}', verticies: {}, indicies: {}", GetName(), Data.Vertices.size(), Data.Indices.size());
 	
 	return EAssetLoadingState::Loaded;
 }
 
+void StaticMesh::CreateVertexBuffer()
+{
+	VkDeviceSize bufferSize = sizeof(Vertex) * Data.Vertices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, Data.Vertices.data(), (size_t) bufferSize);
+	vkUnmapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory);
+
+	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
+
+	EnginePtr->GetVulkanCore()->CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
+
+	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, nullptr);
+}
+
+void StaticMesh::CreateIndexBuffer()
+{
+	VkDeviceSize bufferSize = sizeof(Data.Indices[0]) * Data.Indices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+		memcpy(data, Data.Indices.data(), (size_t) bufferSize);
+	vkUnmapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory);
+
+
+	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, IndexBuffer, IndexBufferMemory);
+
+	EnginePtr->GetVulkanCore()->CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
+
+	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, nullptr);
+}
+
 void StaticMesh::Cleanup_Internal()
 {
+	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), VertexBuffer, nullptr);
+	vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), VertexBufferMemory, nullptr);
+
+	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), IndexBuffer, nullptr);
+	vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), IndexBufferMemory, nullptr);
 }
 
 void StaticMesh::ProcessNode(struct aiNode* node, const struct aiScene* scene)

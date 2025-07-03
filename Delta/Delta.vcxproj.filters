@@ -51,7 +51,7 @@
     <ClCompile Include="Source\Private\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\Renderer.cpp">
+    <ClCompile Include="Source\Private\VulkanCore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Private\Material.cpp">
@@ -110,7 +110,7 @@
     <ClInclude Include="Source\Public\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\Renderer.h">
+    <ClInclude Include="Source\Public\VulkanCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Public\Material.h">
