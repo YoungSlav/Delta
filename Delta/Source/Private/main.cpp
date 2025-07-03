@@ -8,6 +8,7 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 #include "VulkanCore.h"
 #include "AssetManager.h"
 #include "StaticMesh.h"
+#include "Player.h"
 
 
 int main()
@@ -20,6 +21,9 @@ int main()
 		std::shared_ptr<Delta::Engine> Engine(new Delta::Engine("Delta Engine"));
 	
 		Engine->Initialize();
+
+		Engine->NewObject<Delta::Player>("FirstPersonPlayer");
+
 
 		auto TempMaterialPtr = Engine->GetAssetManager()->FindOrLoad<Delta::Material>("TestMaterial", "Shaders\\triangle");
 
