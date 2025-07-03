@@ -1,10 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
-#include "Object.h"
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "Asset.h"
 
 
 namespace Delta
@@ -12,20 +9,21 @@ namespace Delta
 
 
 
-class Material : public Object
+class Material : public Asset
 {
 public:
 	template <typename... Args>
-	Material(Args&&... args) :
-		Object(std::forward<Args>(args)...)
+	Material(const std::string& _ShaderName, Args&&... args) :
+		Asset(std::forward<Args>(args)...),
+		ShaderName(_ShaderName)
 	{}
 
 	VkPipeline GetGraphicsPipeline() const { return GraphicsPipeline; }
 
 protected:
 
-	virtual bool Initialize_Internal() override;
-	virtual void OnDestroy() override;
+	virtual EAssetLoadingState Load_Internal() override;
+	virtual void Cleanup_Internal() override;
 
 	void CreateGraphicsPipeline();
 	VkShaderModule CreateShaderModule(const std::vector<char>& code);
@@ -34,6 +32,8 @@ protected:
 private:
 	VkPipelineLayout PipelineLayout;
 	VkPipeline GraphicsPipeline;
+
+	const std::string ShaderName = "";
 };
 
 }

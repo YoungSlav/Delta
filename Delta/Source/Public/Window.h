@@ -3,16 +3,13 @@
 
 #include "Object.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
 
 namespace Delta
 {
 
 
 
-class Window : public Object
+class Window final : public Object
 {
 	typedef MulticastDelegate<const glm::ivec2&> OnResizeSignature;
 

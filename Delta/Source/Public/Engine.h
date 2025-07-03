@@ -10,7 +10,7 @@
 namespace Delta
 {
 
-class Engine : public Object
+class Engine final : public Object
 {
 public:
 
@@ -78,7 +78,6 @@ public:
 
 protected:
 	bool Initialize_Internal() override;
-	void Cleanup();
 
 private:
 	void FireFreshBeginPlays();
