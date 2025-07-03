@@ -85,16 +85,6 @@ void Engine::FireFreshBeginPlays()
 	FreshObjects.clear();
 }
 
-void Engine::StopGame()
-{
-	while( Objects.size() > 0 )
-	{
-		DestroyObject(*Objects.cbegin());
-	}
-
-	//glfwSetWindowShouldClose(Viewport->Window, true);
-}
-
 void Engine::Tick(float DeltaTime)
 {
 	for ( auto it : TickableObjects )

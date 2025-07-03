@@ -19,7 +19,6 @@ public:
 	{}
 
 	void GameLoop();
-	void StopGame();
 		
 	void RegisterObject(std::shared_ptr<Object> Object);
 	std::shared_ptr<Object> FindObjectByHandle(const DeltaHandle& Handle);
