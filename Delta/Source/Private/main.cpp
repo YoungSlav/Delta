@@ -1,10 +1,13 @@
 
 #include "stdafx.h"
+unsigned int DelegateHandle::CURRENT_ID = 0;
+
+
 #include "Engine.h"
 #include "Material.h"
 #include "Renderer.h"
 #include "AssetManager.h"
-unsigned int DelegateHandle::CURRENT_ID = 0;
+#include "StaticMesh.h"
 
 
 int main()
@@ -19,6 +22,8 @@ int main()
 		Engine->Initialize();
 
 		auto TempMaterialPtr = Engine->GetAssetManager()->FindOrLoad<Delta::Material>("TestMaterial", "Shaders\\triangle");
+
+		auto TestMesh = Engine->GetAssetManager()->FindOrLoad<Delta::StaticMesh>("TestMesh", "primitives\\triangle.fbx");
 
 		Engine->GetRenderer()->TempMaterialPtr = TempMaterialPtr;
 

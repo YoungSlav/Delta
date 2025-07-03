@@ -25,7 +25,7 @@ void Material::CreateGraphicsPipeline()
 	const std::string vertShaderFile = EnginePtr->GetAssetManager()->FindAsset(ShaderName + ".vert.spv");
 	const std::string fragShaderFile = EnginePtr->GetAssetManager()->FindAsset(ShaderName + ".frag.spv");
 
-	LOG(Log, "Creating pipeline for material {}", GetName());
+	LOG(Log, "Creating pipeline for material '{}'", GetName());
 	
 	auto vertShaderCode = ReadFile(vertShaderFile);
 	auto fragShaderCode = ReadFile(fragShaderFile);

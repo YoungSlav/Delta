@@ -38,12 +38,12 @@ public:
 	{
 		static_assert(std::is_base_of_v<Asset, ClassName>);
 
-		LOG(Log, "Loading asset: {}", Name);
+		LOG(Log, "Loading asset: '{}'", Name);
 		
 		auto it = LoadedAssets.find(Name);
 		if ( it != LoadedAssets.end() )
 		{
-			LOG(Log, "    Found existing asset for {}", Name);
+			LOG(Log, "    Found existing asset for '{}'", Name);
 			return std::dynamic_pointer_cast<ClassName>(it->second);
 		}
 
@@ -57,7 +57,7 @@ public:
 			}
 			else
 			{
-				LOG(Log, "    Failed to load asset {}", Name);
+				LOG(Log, "    Failed to load asset '{}'", Name);
 				asset->Destroy();
 			}
 		}
@@ -69,7 +69,6 @@ public:
 
 protected:
 	virtual bool Initialize_Internal() override;
-	virtual void OnDestroy() override;
 
 private:
 	

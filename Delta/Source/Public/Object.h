@@ -62,7 +62,7 @@ public:
 		if ( !EnginePtr )
 			return nullptr;
 
-		LOG(Log, "Create object: {}", _Name);
+		LOG(Log, "Create object: '{}'", _Name);
 		LOG_INDENT
 		
 		DeltaHandle newHandle = NewHandle();
@@ -75,11 +75,11 @@ public:
 
 		if ( !InitializeNewObject(newObject) )
 		{
-			LOG(Error, "Failed to construct object: {}", _Name);
+			LOG(Error, "Failed to construct object: '{}'", _Name);
 			return nullptr;
 		}
 
-		LOG(Log, "Object {} initialized", _Name);
+		LOG(Log, "Object '{}' initialized", _Name);
 		return std::dynamic_pointer_cast<Class>(newObject);
 	}
 

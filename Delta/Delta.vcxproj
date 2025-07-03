@@ -30,6 +30,7 @@
     <ClCompile Include="Source\Private\Math.cpp" />
     <ClCompile Include="Source\Private\Object.cpp" />
     <ClCompile Include="Source\Private\Renderer.cpp" />
+    <ClCompile Include="Source\Private\StaticMesh.cpp" />
     <ClCompile Include="Source\Private\Transform.cpp" />
     <ClCompile Include="Source\Private\IRenderable.cpp" />
     <ClCompile Include="Source\Private\ITransformable.cpp" />
@@ -47,12 +48,14 @@
     <ClInclude Include="Source\Public\Material.h" />
     <ClInclude Include="Source\Public\Object.h" />
     <ClInclude Include="Source\Public\Renderer.h" />
+    <ClInclude Include="Source\Public\StaticMesh.h" />
     <ClInclude Include="Source\Public\Transform.h" />
     <ClInclude Include="Source\Public\DeltaTypes.h" />
     <ClInclude Include="Source\Public\DeltaLog.h" />
     <ClInclude Include="Source\Public\IRenderable.h" />
     <ClInclude Include="Source\Public\ITransformable.h" />
     <ClInclude Include="Source\Public\SharedFromThis.h" />
+    <ClInclude Include="Source\Public\MeshData.h" />
     <ClInclude Include="Source\Public\Window.h" />
     <ClInclude Include="Source\stdafx.h" />
   </ItemGroup>
@@ -158,6 +161,9 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mtd.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)ThirdParty\Lib\$(Configuration)\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -177,6 +183,9 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mt.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)ThirdParty\Lib\$(Configuration)\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -192,6 +201,9 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mtd.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)ThirdParty\Lib\$(Configuration)\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -211,6 +223,9 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mt.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)ThirdParty\Lib\$(Configuration)\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
