@@ -20,6 +20,7 @@
 #include <execution>
 #include <cmath>
 #include <optional>
+#include <array>
 // utilities
 #include "DeltaLog.h"
 

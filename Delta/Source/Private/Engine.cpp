@@ -2,7 +2,7 @@
 #include "IRenderable.h"
 #include "Window.h"
 #include "Input.h"
-#include "Renderer.h"
+#include "VulkanCore.h"
 #include "AssetManager.h"
 
 using namespace Delta;
@@ -36,7 +36,7 @@ bool Engine::Initialize_Internal()
 
 	AssetManagerPtr = NewObject<AssetManager>("AssetManager");
 	WindowPtr = NewObject<Window>("Window");
-	RendererPtr = NewObject<Renderer>("Renderer");
+	VulkanCorePtr = NewObject<VulkanCore>("Renderer");
 	InputPtr = NewObject<Input>("Input");
 
 
@@ -61,7 +61,7 @@ void Engine::GameLoop()
 		//	GetCamera()->UpdateCamera();
 		//
 
-		RendererPtr->DrawFrame(DeltaTime);
+		VulkanCorePtr->DrawFrame(DeltaTime);
 		
 		glfwPollEvents();
 
@@ -72,7 +72,7 @@ void Engine::GameLoop()
 	}
 
 	LOG(Log, "Exit main loop");
-	vkDeviceWaitIdle(RendererPtr->GetDevice());
+	vkDeviceWaitIdle(VulkanCorePtr->GetDevice());
 	this->Destroy();
 }
 

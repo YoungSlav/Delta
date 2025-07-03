@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "Material.h"
 #include "Engine.h"
-#include "Renderer.h"
+#include "VulkanCore.h"
 #include "AssetManager.h"
+#include "MeshData.h"
 #include <fstream>
 
 using namespace Delta;
@@ -16,8 +17,8 @@ EAssetLoadingState Material::Load_Internal()
 
 void Material::Cleanup_Internal()
 {
-	vkDestroyPipeline(EnginePtr->GetRenderer()->GetDevice(), GraphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(EnginePtr->GetRenderer()->GetDevice(), PipelineLayout, nullptr);
+	vkDestroyPipeline(EnginePtr->GetVulkanCore()->GetDevice(), GraphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(EnginePtr->GetVulkanCore()->GetDevice(), PipelineLayout, nullptr);
 }
 
 void Material::CreateGraphicsPipeline()
@@ -48,10 +49,15 @@ void Material::CreateGraphicsPipeline()
 	VkPipelineShaderStageCreateInfo shaderStages[] =
 	{ vertShaderStageInfo, fragShaderStageInfo };
 
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+	auto bindingDescription = Vertex::GetBindingDescription();
+	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -108,7 +114,7 @@ void Material::CreateGraphicsPipeline()
 	pipelineLayoutInfo.setLayoutCount = 0;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	if (vkCreatePipelineLayout(EnginePtr->GetRenderer()->GetDevice(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
+	if (vkCreatePipelineLayout(EnginePtr->GetVulkanCore()->GetDevice(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
@@ -125,17 +131,17 @@ void Material::CreateGraphicsPipeline()
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = PipelineLayout;
-	pipelineInfo.renderPass = EnginePtr->GetRenderer()->GetRenderPass();
+	pipelineInfo.renderPass = EnginePtr->GetVulkanCore()->GetRenderPass();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(EnginePtr->GetRenderer()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &GraphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(EnginePtr->GetVulkanCore()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &GraphicsPipeline) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(EnginePtr->GetRenderer()->GetDevice(), fragShaderModule, nullptr);
-	vkDestroyShaderModule(EnginePtr->GetRenderer()->GetDevice(), vertShaderModule, nullptr);
+	vkDestroyShaderModule(EnginePtr->GetVulkanCore()->GetDevice(), fragShaderModule, nullptr);
+	vkDestroyShaderModule(EnginePtr->GetVulkanCore()->GetDevice(), vertShaderModule, nullptr);
 }
 
 VkShaderModule Material::CreateShaderModule(const std::vector<char>& code)
@@ -146,7 +152,7 @@ VkShaderModule Material::CreateShaderModule(const std::vector<char>& code)
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	VkShaderModule shaderModule;
-	if (vkCreateShaderModule(EnginePtr->GetRenderer()->GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(EnginePtr->GetVulkanCore()->GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create shader module!");
 	}
