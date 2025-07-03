@@ -64,7 +64,7 @@ void Object::RemoveChildObject(std::shared_ptr<Object> obj)
 
 void Object::Destroy()
 {
-	LOG(Log, "Destroy object: {}", GetName());
+	LOG(Log, "Destroy object: '{}'", GetName());
 	LOG_INDENT
 
 	OnObjectDestroyDelegate.Broadcast(Self<Object>());
@@ -85,5 +85,5 @@ void Object::Destroy()
 		EnginePtr.reset();
 	}
 
-	LOG(Log, "Object {} destroyed", GetName());
+	LOG(Log, "'{}' destroyed", GetName());
 }

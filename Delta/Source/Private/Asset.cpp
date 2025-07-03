@@ -18,7 +18,7 @@ EAssetLoadingState Asset::Load()
 
 void Asset::Cleanup()
 {
-	LOG(Log, "Cleanup asset {}", GetName());
+	LOG(Log, "Cleanup asset '{}'", GetName());
 	Cleanup_Internal();
 	State = EAssetLoadingState::Invalid;
 }
