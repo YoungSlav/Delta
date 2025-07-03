@@ -64,9 +64,13 @@ void Object::RemoveChildObject(std::shared_ptr<Object> obj)
 
 void Object::Destroy()
 {
+	LOG(Log, "Destroy object: {}", GetName());
+	LOG_INDENT
+
 	OnObjectDestroyDelegate.Broadcast(Self<Object>());
 
-	for( auto it : OwnedObjects )
+	std::list<std::weak_ptr<Object>> OwnedObjectsTmp = OwnedObjects;
+	for( auto it : OwnedObjectsTmp )
 	{
 		if ( it.expired() )
 			continue;
@@ -80,4 +84,6 @@ void Object::Destroy()
 		EnginePtr->DestroyObject(Self<Object>());
 		EnginePtr.reset();
 	}
+
+	LOG(Log, "Object {} destroyed", GetName());
 }

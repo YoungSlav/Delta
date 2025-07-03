@@ -10,18 +10,15 @@ void Asset::OnDestroy()
 	Object::OnDestroy();
 }
 
-bool Asset::Load()
+EAssetLoadingState Asset::Load()
 {
-	bLoaded = Load_Internal();
-	return bLoaded;
-}
-
-bool Asset::Load_Internal()
-{
-	return true;
+	State = Load_Internal();
+	return State;
 }
 
 void Asset::Cleanup()
 {
-	bLoaded = false;
+	LOG(Log, "Cleanup asset {}", GetName());
+	Cleanup_Internal();
+	State = EAssetLoadingState::Invalid;
 }

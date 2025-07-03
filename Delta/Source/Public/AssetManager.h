@@ -37,23 +37,27 @@ public:
 	std::shared_ptr<ClassName> FindOrLoad(const std::string& Name, Args&&... args)
 	{
 		static_assert(std::is_base_of_v<Asset, ClassName>);
+
+		LOG(Log, "Loading asset: {}", Name);
 		
 		auto it = LoadedAssets.find(Name);
 		if ( it != LoadedAssets.end() )
 		{
+			LOG(Log, "    Found existing asset for {}", Name);
 			return std::dynamic_pointer_cast<ClassName>(it->second);
 		}
 
-		if ( std::shared_ptr<ClassName> asset = NewObject<ClassName>(Name) )
+		if ( std::shared_ptr<ClassName> asset = NewObject<ClassName>(Name, std::forward<Args>(args)...) )
 		{
 			LoadedAssets.insert({Name, asset});
-			bool AssetLoaded = asset->Load(std::forward<Args>(args)...);
+			bool AssetLoaded = asset->Load();
 			if ( AssetLoaded )
 			{
 				return asset;
 			}
 			else
 			{
+				LOG(Log, "    Failed to load asset {}", Name);
 				asset->Destroy();
 			}
 		}
@@ -61,12 +65,14 @@ public:
 		return nullptr;
 	}
 
+	std::string FindAsset(const std::string& AssetName);
+
 protected:
 	virtual bool Initialize_Internal() override;
+	virtual void OnDestroy() override;
 
 private:
 	
-	std::string FindAsset(const std::string& AssetName);
 	static bool IfFileExist(const std::string& FileName);
 	static std::string GetRootFolder();
 	static std::string GetExecutableName();

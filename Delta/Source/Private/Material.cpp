@@ -2,30 +2,33 @@
 #include "Material.h"
 #include "Engine.h"
 #include "Renderer.h"
-
+#include "AssetManager.h"
 #include <fstream>
 
 using namespace Delta;
 
-bool Material::Initialize_Internal()
+
+EAssetLoadingState Material::Load_Internal()
 {
-	Object::Initialize_Internal();
 	CreateGraphicsPipeline();
-	
-	return true;
+	return EAssetLoadingState::Loaded;
 }
 
-void Material::OnDestroy()
+void Material::Cleanup_Internal()
 {
 	vkDestroyPipeline(EnginePtr->GetRenderer()->GetDevice(), GraphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(EnginePtr->GetRenderer()->GetDevice(), PipelineLayout, nullptr);
-	Object::OnDestroy();
 }
 
 void Material::CreateGraphicsPipeline()
 {
-	auto vertShaderCode = ReadFile("..\\Resources\\Shaders\\triangle.vert.spv");
-	auto fragShaderCode = ReadFile("..\\Resources\\Shaders\\triangle.frag.spv");
+	const std::string vertShaderFile = EnginePtr->GetAssetManager()->FindAsset(ShaderName + ".vert.spv");
+	const std::string fragShaderFile = EnginePtr->GetAssetManager()->FindAsset(ShaderName + ".frag.spv");
+
+	LOG(Log, "Creating pipeline for material {}", GetName());
+	
+	auto vertShaderCode = ReadFile(vertShaderFile);
+	auto fragShaderCode = ReadFile(fragShaderFile);
 
 	VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 	VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -92,8 +95,8 @@ void Material::CreateGraphicsPipeline()
 
 	std::vector<VkDynamicState> dynamicStates =
 	{
-				VK_DYNAMIC_STATE_VIEWPORT,
-				VK_DYNAMIC_STATE_SCISSOR
+		VK_DYNAMIC_STATE_VIEWPORT,
+		VK_DYNAMIC_STATE_SCISSOR
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;

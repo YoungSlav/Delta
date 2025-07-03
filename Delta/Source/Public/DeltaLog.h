@@ -12,6 +12,7 @@
 #include <stdexcept>
 
 #define LOG(Type, ...) DeltaLog::LogMessage(Type, __VA_ARGS__)
+#define LOG_INDENT DeltaLogIndentScope indent;
 
 enum ELog
 {
@@ -22,8 +23,11 @@ enum ELog
 	Fatal
 };
 
+
+
 class DeltaLog
 {
+	friend class DeltaLogIndentScope;
 public:
 
 	static void Init(const std::string& logFilename = "Delta.log");
@@ -46,6 +50,9 @@ public:
 		return to_string_internal<T>(val);
 	}
 private:
+
+	static void IncreaseIndent();
+	static void DecreaseIndent();
 
 	static void Print(const std::string& Message, ELog Type = ELog::Log);
 	static void Print(const char* const Message, ELog Type = ELog::Log);
@@ -132,6 +139,21 @@ private:
 	static std::ofstream LogFile;
 	static std::string LogFileName;
 	static std::string LogFolder;
+	static int LogIndent;
+	static constexpr int IndentSize = 4;
 
 	static void RenameOldLogFile(const std::string& oldFileName);
+};
+
+class DeltaLogIndentScope
+{
+public:
+	DeltaLogIndentScope()
+	{
+		DeltaLog::IncreaseIndent();
+	}
+	~DeltaLogIndentScope()
+	{
+		DeltaLog::DecreaseIndent();
+	}
 };

@@ -3,8 +3,7 @@
 
 #include "Object.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+
 
 
 namespace Delta
@@ -13,7 +12,7 @@ namespace Delta
 
 
 
-class Renderer : public Object
+class Renderer final : public Object
 {
 	struct QueueFamilyIndices
 	{

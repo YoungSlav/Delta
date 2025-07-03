@@ -13,6 +13,17 @@ static std::mutex LogMutex;
 std::ofstream DeltaLog::LogFile;
 std::string DeltaLog::LogFileName;
 std::string DeltaLog::LogFolder = "..\\Logs";
+int DeltaLog::LogIndent = 0;
+
+void DeltaLog::IncreaseIndent()
+{
+	LogIndent++;
+}
+void DeltaLog::DecreaseIndent()
+{
+	LogIndent--;
+	LogIndent = LogIndent < 0 ? 0 : LogIndent;
+}
 
 void DeltaLog::Init(const std::string& logFilename)
 {
@@ -75,6 +86,7 @@ void DeltaLog::Print( const std::string& Message, ELog Type )
 
 void DeltaLog::Print(const char* const Message, ELog Type)
 {
+	std::string indent(LogIndent * IndentSize, ' ');
 
 	auto now = std::chrono::system_clock::now();
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);
@@ -101,35 +113,35 @@ void DeltaLog::Print(const char* const Message, ELog Type)
 	{
 	case ELog::Success:
 		SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN );
-		snprintf(debugMessage, sizeof(debugMessage), "Log: %s\n", Message);
+		snprintf(debugMessage, sizeof(debugMessage), "Log: %s%s\n", indent.c_str(),Message);
 		typeStr = "Success";
 		break;
 	case ELog::Log:
 		SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE);
-		snprintf(debugMessage, sizeof(debugMessage), "Log: %s\n", Message);
+		snprintf(debugMessage, sizeof(debugMessage), "Log: %s%s\n", indent.c_str(),Message);
 		typeStr = "Log";
 		break;
 	case ELog::Warning:
 		SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED );
-		snprintf(debugMessage, sizeof(debugMessage), "Warning: %s\n", Message);
+		snprintf(debugMessage, sizeof(debugMessage), "Warning: %s%s\n", indent.c_str(),Message);
 		std::cout <<"Warning: ";
 		typeStr = "Warning";
 		break;
 	case ELog::Error:
 		SetConsoleTextAttribute( hstdout, FOREGROUND_RED );
-		snprintf(debugMessage, sizeof(debugMessage), "Error: %s\n", Message);
+		snprintf(debugMessage, sizeof(debugMessage), "Error: %s%s\n", indent.c_str(),Message);
 		std::cout <<"Error: ";
 		typeStr = "Error";
 		break;
 	case ELog::Fatal:
 		SetConsoleTextAttribute( hstdout, BACKGROUND_RED | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
-		snprintf(debugMessage, sizeof(debugMessage), "Fatal: %s\n", Message);
+		snprintf(debugMessage, sizeof(debugMessage), "Fatal: %s%s\n", indent.c_str(),Message);
 		std::cout <<"Fatal: ";
 		typeStr = "Fatal";
 		break;
 	}
 
-	std::cout<< Message <<std::endl;
+	std::cout << indent << Message << std::endl;
 	OutputDebugString(debugMessage);
 	
 	SetConsoleTextAttribute( hstdout, csbi.wAttributes );
@@ -139,7 +151,7 @@ void DeltaLog::Print(const char* const Message, ELog Type)
 		std::stringstream prefix_ss;
 		prefix_ss << std::put_time(&local_tm, "%H:%M:%S") << "." << std::setfill('0') << std::setw(3) << now_ms.count();
 		prefix_ss << " " << typeStr << ":";
-		const int prefixWidth = 22;
+		const int prefixWidth = 22 + (LogIndent * IndentSize);
 		std::string prefix = prefix_ss.str();
 		LogFile << std::left << std::setw(prefixWidth) << prefix << " " << Message << std::endl;
 

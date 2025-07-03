@@ -34,10 +34,10 @@ bool Engine::Initialize_Internal()
 
 	LOG(Log, "Delta engine instance created!");
 
+	AssetManagerPtr = NewObject<AssetManager>("AssetManager");
 	WindowPtr = NewObject<Window>("Window");
 	RendererPtr = NewObject<Renderer>("Renderer");
 	InputPtr = NewObject<Input>("Input");
-	AssetManagerPtr = NewObject<AssetManager>("AssetManager");
 
 
 	return true;
@@ -46,6 +46,7 @@ bool Engine::Initialize_Internal()
 
 void Engine::GameLoop()
 {
+	LOG(Log, "MAIN LOOP STARTED");
 	while( !bRequestExit && !glfwWindowShouldClose(WindowPtr->GetWindow()) )
 	{
 		float newTime = (float)glfwGetTime();
@@ -71,8 +72,8 @@ void Engine::GameLoop()
 	}
 
 	LOG(Log, "Exit main loop");
-	
-	Cleanup();
+	vkDeviceWaitIdle(RendererPtr->GetDevice());
+	this->Destroy();
 }
 
 void Engine::FireFreshBeginPlays()
@@ -136,11 +137,4 @@ void Engine::DestroyObject(std::shared_ptr<Object> Object)
 		TickableObjects.erase(std::remove(TickableObjects.begin(), TickableObjects.end(), asTiackble), TickableObjects.end());
 
 	Objects.erase(std::remove(Objects.begin(), Objects.end(), Object), Objects.end());
-}
-
-void Engine::Cleanup()
-{
-	InputPtr->Destroy();
-	RendererPtr->Destroy();
-	WindowPtr->Destroy();
 }

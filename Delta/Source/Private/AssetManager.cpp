@@ -13,10 +13,18 @@ bool AssetManager::Initialize_Internal()
 
 	LOG(Log, "Loading asset manager");
 	LOG(Log, "Found resource folders: " );
+	LOG_INDENT
 	for ( auto folder : ResourcesFolders )
-		LOG(Log, "        {}", folder );
+		LOG(Log, "{}", folder );
 
 	return true;
+}
+
+void AssetManager::OnDestroy()
+{
+	LOG(Log, "Asset manager destroyed");
+
+	Object::OnDestroy();
 }
 
 bool AssetManager::IfFileExist(const std::string& FileName)

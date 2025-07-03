@@ -6,6 +6,12 @@
 namespace Delta
 {
 
+enum EAssetLoadingState : int32
+{
+	Invalid,
+	AsyncLoading,
+	Loaded
+};
 
 class Asset : public Object
 {
@@ -15,19 +21,22 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	bool Load();
+	EAssetLoadingState Load();
+	void Cleanup();
+
+	EAssetLoadingState GetLoadingState() const { return State; }
+	inline bool IsReady() const { return State == EAssetLoadingState::Loaded; }
 
 protected:
 	virtual void OnDestroy() override;
-	virtual bool Load_Internal();
-
-	virtual void Cleanup();
+	virtual EAssetLoadingState Load_Internal() = 0;
+	virtual void Cleanup_Internal() = 0;
 
 private:
 	
 private:
 
-	bool bLoaded = false;
+	EAssetLoadingState State = EAssetLoadingState::Invalid;
 };
 
 }

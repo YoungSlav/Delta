@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "Material.h"
 #include "Renderer.h"
+#include "AssetManager.h"
 unsigned int DelegateHandle::CURRENT_ID = 0;
 
 
@@ -17,7 +18,8 @@ int main()
 	
 		Engine->Initialize();
 
-		auto TempMaterialPtr = Engine->NewObject<Delta::Material>("TestMaterial");
+		auto TempMaterialPtr = Engine->GetAssetManager()->FindOrLoad<Delta::Material>("TestMaterial", "Shaders\\triangle");
+
 		Engine->GetRenderer()->TempMaterialPtr = TempMaterialPtr;
 
 		Engine->GameLoop();

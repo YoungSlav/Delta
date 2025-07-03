@@ -61,6 +61,9 @@ public:
 		
 		if ( !EnginePtr )
 			return nullptr;
+
+		LOG(Log, "Create object: {}", _Name);
+		LOG_INDENT
 		
 		DeltaHandle newHandle = NewHandle();
 		std::shared_ptr<Object> newObject = std::shared_ptr<Object>(new Class(std::forward<Args>(args)... ,
@@ -72,10 +75,11 @@ public:
 
 		if ( !InitializeNewObject(newObject) )
 		{
-			assert(false);
+			LOG(Error, "Failed to construct object: {}", _Name);
 			return nullptr;
 		}
 
+		LOG(Log, "Object {} initialized", _Name);
 		return std::dynamic_pointer_cast<Class>(newObject);
 	}
 

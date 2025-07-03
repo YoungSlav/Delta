@@ -35,7 +35,7 @@ struct KeySubscription
 	}
 };
 
-class Input : public Object
+class Input final : public Object
 {
 	struct KeyEvent
 	{
