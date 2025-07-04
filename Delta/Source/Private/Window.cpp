@@ -4,9 +4,9 @@
 
 using namespace Delta;
 
-bool Window::Initialize_Internal()
+bool Window::initialize_Internal()
 {
-	Object::Initialize_Internal();
+	Object::initialize_Internal();
 
 	LOG(Log, "Creating glfw window");
 
@@ -15,7 +15,7 @@ bool Window::Initialize_Internal()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	glfwWindow = glfwCreateWindow(ViewportSize.x, ViewportSize.y, "Delta app", nullptr, nullptr);
+	glfwWindow = glfwCreateWindow(viewportSize.x, viewportSize.y, "Delta app", nullptr, nullptr);
 	if ( !glfwWindow )
 	{
 		glfwTerminate();
@@ -27,17 +27,17 @@ bool Window::Initialize_Internal()
 
 	glfwFocusWindow(glfwWindow);
 
-    glfwSetFramebufferSizeCallback(glfwWindow, Window::Framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(glfwWindow, Window::windowSizeCallback);
 
-	glfwSetMouseButtonCallback(glfwWindow, Window::SCallbackMouseButton);
-	glfwSetCursorPosCallback(glfwWindow, Window::SCallbackMousePosition);
-	glfwSetScrollCallback(glfwWindow, Window::SCallbackMouseScroll);
-	glfwSetKeyCallback(glfwWindow, Window::SCallbackKeyboard);
+	glfwSetMouseButtonCallback(glfwWindow, Window::windowMouseButtonCallback);
+	glfwSetCursorPosCallback(glfwWindow, Window::windowMousePositionCallback);
+	glfwSetScrollCallback(glfwWindow, Window::windowMouseScrollCallback);
+	glfwSetKeyCallback(glfwWindow, Window::windowKeyboardCallback);
 
 	return true;
 }
 
-void Window::SetMouseEnabled(bool bNewMouseEnabled) const
+void Window::setMouseEnabled(bool bNewMouseEnabled) const
 {
 	LOG(Log, "Mouse enabled {}", bNewMouseEnabled);
 
@@ -47,40 +47,40 @@ void Window::SetMouseEnabled(bool bNewMouseEnabled) const
 		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-void Window::Framebuffer_size_callback(struct GLFWwindow* window, int32 width, int32 height)
+void Window::windowSizeCallback(struct GLFWwindow* window, int32 width, int32 height)
 {
-	Engine::GetEngine()->GetWindow()->Resize(glm::ivec2(width, height));
+	Engine::getEngine()->getWindow()->resize(glm::ivec2(width, height));
 }
 
-void Window::Resize(const glm::ivec2& InViewportSize)
+void Window::resize(const glm::ivec2& InViewportSize)
 {
-	OnResizeDelegate.Broadcast(ViewportSize);
+	OnResizeDelegate.Broadcast(viewportSize);
 }
 
 
-void Window::SCallbackMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
+void Window::windowMouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	Engine::GetEngine()->GetWindow()->OnMouseScrollDelegate.Broadcast(glm::vec2(xoffset, yoffset));
+	Engine::getEngine()->getWindow()->OnMouseScrollDelegate.Broadcast(glm::vec2(xoffset, yoffset));
 }
 
-void Window::SCallbackMousePosition(GLFWwindow* window, double xpos, double ypos)
+void Window::windowMousePositionCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	Engine::GetEngine()->GetWindow()->OnMouseMoveDelegate.Broadcast(glm::vec2(xpos, ypos));
+	Engine::getEngine()->getWindow()->OnMouseMoveDelegate.Broadcast(glm::vec2(xpos, ypos));
 }
 
-void Window::SCallbackMouseButton(GLFWwindow* window, int32 key, int32 action, int32 mods)
+void Window::windowMouseButtonCallback(GLFWwindow* window, int32 key, int32 action, int32 mods)
 {
-	Engine::GetEngine()->GetWindow()->OnInputKeyDelegate.Broadcast(key, action);
+	Engine::getEngine()->getWindow()->OnInputKeyDelegate.Broadcast(key, action);
 }
 
-void Window::SCallbackKeyboard(GLFWwindow* window, int32 key, int32 scancode, int32 action, int32 mods)
+void Window::windowKeyboardCallback(GLFWwindow* window, int32 key, int32 scancode, int32 action, int32 mods)
 {
-	Engine::GetEngine()->GetWindow()->OnInputKeyDelegate.Broadcast(key, action);
+	Engine::getEngine()->getWindow()->OnInputKeyDelegate.Broadcast(key, action);
 }
 
-void Window::OnDestroy()
+void Window::onDestroy()
 {
-	Object::OnDestroy();
+	Object::onDestroy();
 
 	LOG(Log, "Terminating glfw window");
 

@@ -18,28 +18,28 @@ public:
 		Object(0, _Name, nullptr, nullptr)
 	{}
 
-	void GameLoop();
+	void gameLoop();
 		
-	void RegisterObject(std::shared_ptr<Object> Object);
-	std::shared_ptr<Object> FindObjectByHandle(const DeltaHandle& Handle);
-	DeltaHandle GenerateNewHandle() { return ++LastUsedHandle; }
-	void DestroyObject(std::shared_ptr<Object> Object);
+	void registerObject(std::shared_ptr<Object> Object);
+	std::shared_ptr<Object> findObjectByHandle(const DeltaHandle& Handle);
+	DeltaHandle generateNewHandle() { return ++lastUsedHandle; }
+	void destroyObject(std::shared_ptr<Object> Object);
 
-	void LimitFPS(uint32 MaxFPS) { FPSLimit = MaxFPS > 0 ? static_cast<float>(MaxFPS) : 100000.0f; }
+	void limitFPS(uint32 MaxFPS) { fpsLimit = MaxFPS > 0 ? static_cast<float>(MaxFPS) : 100000.0f; }
 
-	static std::shared_ptr<Engine> GetEngine();
+	static std::shared_ptr<Engine> getEngine();
 
-	std::shared_ptr<class Window> GetWindow() const { return WindowPtr; }
-	std::shared_ptr<class Input> GetInput() const { return InputPtr; }
-	std::shared_ptr<class VulkanCore> GetVulkanCore() const { return VulkanCorePtr; }
-	std::shared_ptr<class AssetManager> GetAssetManager() const { return AssetManagerPtr; }
+	std::shared_ptr<class Window> getWindow() const { return window; }
+	std::shared_ptr<class Input> getInput() const { return input; }
+	std::shared_ptr<class VulkanCore> getVulkanCore() const { return vulkanCore; }
+	std::shared_ptr<class AssetManager> getAssetManager() const { return assetManager; }
 
 	template<typename Class>
-	int32 GetAllObjects(std::list<std::shared_ptr<Class>>& OutList) const
+	int32 getAllObjects(std::list<std::shared_ptr<Class>>& OutList) const
 	{
 		int32 count = 0;
 		OutList.clear();
-		for ( auto it : Objects )
+		for ( auto it : objects )
 		{
 			if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
 			{
@@ -52,12 +52,12 @@ public:
 	}
 
 	template<typename Class>
-	int32 ActorsInRadius(const glm::vec3& AtLocation, float Radius, std::list<std::shared_ptr<Class>>& OutList) const
+	int32 getActorsInRadius(const glm::vec3& AtLocation, float Radius, std::list<std::shared_ptr<Class>>& OutList) const
 	{
 		int32 count = 0;
 		float Radius2 = Radius * Radius;
 		OutList.clear();
-		for ( auto it : Actors )
+		for ( auto it : actors )
 		{
 			if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
 			{
@@ -72,39 +72,39 @@ public:
 		return count;
 	}
 
-	inline bool IsShutingDown() const { return bRequestExit; }
-	void ShutDown() { bRequestExit = true; }
+	inline bool isShutingDown() const { return bRequestExit; }
+	void ihutDown() { bRequestExit = true; }
 
 protected:
-	bool Initialize_Internal() override;
+	bool initialize_Internal() override;
 
 private:
-	void FireFreshBeginPlays();
+	void fireFreshBeginPlays();
 
-	void Tick(float DeltaTime);
+	void tick(float DeltaTime);
 	
 private:
 
-	std::shared_ptr<class Window> WindowPtr;
-	std::shared_ptr<class Input> InputPtr;
-	std::shared_ptr<class VulkanCore> VulkanCorePtr;
-	std::shared_ptr<class AssetManager> AssetManagerPtr;
+	std::shared_ptr<class Window> window;
+	std::shared_ptr<class Input> input;
+	std::shared_ptr<class VulkanCore> vulkanCore;
+	std::shared_ptr<class AssetManager> assetManager;
 
 	// freshly created objects awaiting BeginPlay call
-	std::list< std::shared_ptr<Object> > FreshObjects;
+	std::list< std::shared_ptr<Object> > freshObjects;
 
 	// object managing
-	std::list< std::shared_ptr<Object> > Objects;
-	std::list< std::shared_ptr<class Actor> > Actors;
-	std::map<DeltaHandle, std::shared_ptr<Object>> HandleToObject;
-	std::list< std::shared_ptr<ITickable> > TickableObjects;
+	std::list< std::shared_ptr<Object> > objects;
+	std::list< std::shared_ptr<class Actor> > actors;
+	std::map<DeltaHandle, std::shared_ptr<Object>> handleToObject;
+	std::list< std::shared_ptr<ITickable> > tickableObjects;
 
-	DeltaHandle LastUsedHandle = 0;
+	DeltaHandle lastUsedHandle = 0;
 
-	float GameTime = 0.0f;
+	float gameTime = 0.0f;
 	bool bRequestExit = false;
 
-	float FPSLimit = 100000.0f;
+	float fpsLimit = 100000.0f;
 };
 
 }

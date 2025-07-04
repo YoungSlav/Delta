@@ -13,25 +13,25 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 
 int main()
 {
-	DeltaLog::Init("DeltaApp.log");
+	DeltaLog::init("DeltaApp.log");
 	LOG(Log, "Starting Delta application");
 
 	try
 	{
 		std::shared_ptr<Delta::Engine> Engine(new Delta::Engine("Delta Engine"));
 	
-		Engine->Initialize();
+		Engine->initialize();
 
-		Engine->NewObject<Delta::Player>("FirstPersonPlayer");
+		Engine->spawn<Delta::Player>("FirstPersonPlayer");
 
 
-		auto TempMaterialPtr = Engine->GetAssetManager()->FindOrLoad<Delta::Material>("TestMaterial", "Shaders\\triangle");
+		auto TempMaterialPtr = Engine->getAssetManager()->findOrLoad<Delta::Material>("TestMaterial", "Shaders\\triangle");
 
-		auto TestMesh = Engine->GetAssetManager()->FindOrLoad<Delta::StaticMesh>("TestMesh", "primitives\\triangle.fbx");
+		auto TestMesh = Engine->getAssetManager()->findOrLoad<Delta::StaticMesh>("TestMesh", "primitives\\triangle.fbx");
 
-		Engine->GetVulkanCore()->TempMaterialPtr = TempMaterialPtr;
+		Engine->getVulkanCore()->tempMaterialPtr = TempMaterialPtr;
 
-		Engine->GameLoop();
+		Engine->gameLoop();
 	}
 	catch (const std::exception& e)
 	{

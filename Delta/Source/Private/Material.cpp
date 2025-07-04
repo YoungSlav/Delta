@@ -9,30 +9,30 @@
 using namespace Delta;
 
 
-EAssetLoadingState Material::Load_Internal()
+EAssetLoadingState Material::load_Internal()
 {
-	CreateGraphicsPipeline();
-	return EAssetLoadingState::Loaded;
+	createGraphicsPipeline();
+	return EAssetLoadingState::LOADED;
 }
 
-void Material::Cleanup_Internal()
+void Material::cleanup_Internal()
 {
-	vkDestroyPipeline(EnginePtr->GetVulkanCore()->GetDevice(), GraphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(EnginePtr->GetVulkanCore()->GetDevice(), PipelineLayout, nullptr);
+	vkDestroyPipeline(engine->getVulkanCore()->getDevice(), graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(engine->getVulkanCore()->getDevice(), pipelineLayout, nullptr);
 }
 
-void Material::CreateGraphicsPipeline()
+void Material::createGraphicsPipeline()
 {
-	const std::string vertShaderFile = EnginePtr->GetAssetManager()->FindAsset(ShaderName + ".vert.spv");
-	const std::string fragShaderFile = EnginePtr->GetAssetManager()->FindAsset(ShaderName + ".frag.spv");
+	const std::string vertShaderFile = engine->getAssetManager()->findAsset(shaderName + ".vert.spv");
+	const std::string fragShaderFile = engine->getAssetManager()->findAsset(shaderName + ".frag.spv");
 
-	LOG(Log, "Creating pipeline for material '{}'", GetName());
+	LOG(Log, "Creating pipeline for material '{}'", getName());
 	
-	auto vertShaderCode = ReadFile(vertShaderFile);
-	auto fragShaderCode = ReadFile(fragShaderFile);
+	auto vertShaderCode = readFile(vertShaderFile);
+	auto fragShaderCode = readFile(fragShaderFile);
 
-	VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-	VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+	VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
+	VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -51,8 +51,8 @@ void Material::CreateGraphicsPipeline()
 
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-	auto bindingDescription = Vertex::GetBindingDescription();
-	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+	auto bindingDescription = Vertex::getBindingDescription();
+	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -114,7 +114,7 @@ void Material::CreateGraphicsPipeline()
 	pipelineLayoutInfo.setLayoutCount = 0;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	if (vkCreatePipelineLayout(EnginePtr->GetVulkanCore()->GetDevice(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
+	if (vkCreatePipelineLayout(engine->getVulkanCore()->getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
@@ -130,21 +130,21 @@ void Material::CreateGraphicsPipeline()
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = PipelineLayout;
-	pipelineInfo.renderPass = EnginePtr->GetVulkanCore()->GetRenderPass();
+	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.renderPass = engine->getVulkanCore()->getRenderPass();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(EnginePtr->GetVulkanCore()->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &GraphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(engine->getVulkanCore()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(EnginePtr->GetVulkanCore()->GetDevice(), fragShaderModule, nullptr);
-	vkDestroyShaderModule(EnginePtr->GetVulkanCore()->GetDevice(), vertShaderModule, nullptr);
+	vkDestroyShaderModule(engine->getVulkanCore()->getDevice(), fragShaderModule, nullptr);
+	vkDestroyShaderModule(engine->getVulkanCore()->getDevice(), vertShaderModule, nullptr);
 }
 
-VkShaderModule Material::CreateShaderModule(const std::vector<char>& code)
+VkShaderModule Material::createShaderModule(const std::vector<char>& code)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -152,7 +152,7 @@ VkShaderModule Material::CreateShaderModule(const std::vector<char>& code)
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 	VkShaderModule shaderModule;
-	if (vkCreateShaderModule(EnginePtr->GetVulkanCore()->GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(engine->getVulkanCore()->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create shader module!");
 	}
@@ -161,7 +161,7 @@ VkShaderModule Material::CreateShaderModule(const std::vector<char>& code)
 }
 
 
-std::vector<char> Material::ReadFile(const std::string& filename)
+std::vector<char> Material::readFile(const std::string& filename)
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 

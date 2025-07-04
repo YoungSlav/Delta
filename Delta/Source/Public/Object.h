@@ -14,17 +14,17 @@ public:
 	virtual ~ITickable() = default;
 
 protected:
-	virtual void Tick(float DeltaTime) = 0;
+	virtual void tick(float DeltaTime) = 0;
 
 private:
-	void Update(float DeltaTime)
+	void update(float DeltaTime)
 	{
-		LifeTime += DeltaTime;
-		Tick(DeltaTime);
+		lifeTime += DeltaTime;
+		tick(DeltaTime);
 	}
 
 protected:
-	float LifeTime = 0.0f;
+	float lifeTime = 0.0f;
 };
 
 typedef MulticastDelegate<const std::shared_ptr<class Object>> OnObjectDestroySignature;
@@ -35,45 +35,45 @@ class Object : public SharedFromThis
 public:
 	Object(const DeltaHandle& _Handle, const std::string& _Name, const std::shared_ptr<class Engine> _Engine, const std::shared_ptr<Object> _Owner) :
 		SharedFromThis(),
-		Handle(_Handle),
-		Name(_Name),
-		EnginePtr(_Engine),
-		Owner(_Owner)
+		handle(_Handle),
+		name(_Name),
+		engine(_Engine),
+		owner(_Owner)
 	{}
 
 	virtual ~Object();
 
 	
-	bool Initialize();
-	void Destroy();
+	bool initialize();
+	void destroy();
 
-	const DeltaHandle& GetHandle() const { return Handle; }
-	const std::shared_ptr<Object> GetOwner() const { return Owner.expired() ? nullptr : Owner.lock(); }
-	const std::list<std::weak_ptr<Object>>& GetChildren() const { return OwnedObjects; }
+	const DeltaHandle& getHandle() const { return handle; }
+	const std::shared_ptr<Object> getOwner() const { return owner.expired() ? nullptr : owner.lock(); }
+	const std::list<std::weak_ptr<Object>>& getChildren() const { return ownedObjects; }
 
-	void SetName(const std::string& _Name) { Name = _Name; }
-	const std::string& GetName() const { return Name; }
+	void setName(const std::string& _Name) { name = _Name; }
+	const std::string& getName() const { return name; }
 
 	template <typename Class, typename... Args>
-	std::shared_ptr<Class> NewObject(const std::string& _Name = "", Args&&... args)
+	std::shared_ptr<Class> spawn(const std::string& _Name = "", Args&&... args)
 	{
 		static_assert(std::is_base_of_v<Object, Class>);
 		
-		if ( !EnginePtr )
+		if ( !engine )
 			return nullptr;
 
 		LOG(Log, "Create object: '{}'", _Name);
 		LOG_INDENT
 		
-		DeltaHandle newHandle = NewHandle();
+		DeltaHandle h = newHandle();
 		std::shared_ptr<Object> newObject = std::shared_ptr<Object>(new Class(std::forward<Args>(args)... ,
-			newHandle,
-			_Name.empty() ? std::to_string(newHandle): _Name,
-			EnginePtr, 
+			h,
+			_Name.empty() ? std::to_string(h): _Name,
+			engine, 
 			Self<Object>())
 		);
 
-		if ( !InitializeNewObject(newObject) )
+		if ( !initializeNewObject(newObject) )
 		{
 			LOG(Error, "Failed to construct object: '{}'", _Name);
 			return nullptr;
@@ -86,30 +86,30 @@ public:
 	OnObjectDestroySignature OnObjectDestroyDelegate;
 
 protected:
-	virtual bool Initialize_Internal() { return true; }
-	virtual void OnChildObjectAdded(std::shared_ptr<Object> _OwnedObject) {}
-	virtual void OnChildObjectRemoved(std::shared_ptr<Object> _OwnedObject) {}
-	virtual void OnDestroy() {}
-	virtual void OnBeginPlay() {}
+	virtual bool initialize_Internal() { return true; }
+	virtual void onChildObjectAdded(std::shared_ptr<Object> _OwnedObject) {}
+	virtual void onChildObjectRemoved(std::shared_ptr<Object> _OwnedObject) {}
+	virtual void onDestroy() {}
+	virtual void onBeginPlay() {}
 
 private:
 	
-	DeltaHandle NewHandle() const;
-	bool InitializeNewObject(std::shared_ptr<Object> obj);
+	DeltaHandle newHandle() const;
+	bool initializeNewObject(std::shared_ptr<Object> obj);
 
-	void AddChildObject(std::shared_ptr<Object> _OwnedObject);
-	void RemoveChildObject(std::shared_ptr<Object> obj);
+	void addChildObject(std::shared_ptr<Object> _OwnedObject);
+	void removeChildObject(std::shared_ptr<Object> obj);
 
 protected:
-	std::shared_ptr<class Engine> EnginePtr;
+	std::shared_ptr<class Engine> engine;
 
 private:
-	std::string Name = "";
+	std::string name = "";
 	
-	const DeltaHandle Handle = 0;
+	const DeltaHandle handle = 0;
 
-	const std::weak_ptr<Object> Owner;
-	std::list<std::weak_ptr<Object>> OwnedObjects;
+	const std::weak_ptr<Object> owner;
+	std::list<std::weak_ptr<Object>> ownedObjects;
 
 };
 

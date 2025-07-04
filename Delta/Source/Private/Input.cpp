@@ -6,69 +6,69 @@
 
 using namespace Delta;
 
-bool Input::Initialize_Internal()
+bool Input::initialize_Internal()
 {
-	Object::Initialize_Internal();
+	Object::initialize_Internal();
 
 	LOG(Log, "Creating input handler");
 
-	EnginePtr->GetWindow()->OnInputKeyDelegate.AddSP(Self<Input>(), &Input::OnInputKey);
-	EnginePtr->GetWindow()->OnMouseMoveDelegate.AddSP(Self<Input>(), &Input::OnMouseMove);
-	EnginePtr->GetWindow()->OnMouseScrollDelegate.AddSP(Self<Input>(), &Input::OnMouseScroll);
+	engine->getWindow()->OnInputKeyDelegate.AddSP(Self<Input>(), &Input::onInputKey);
+	engine->getWindow()->OnMouseMoveDelegate.AddSP(Self<Input>(), &Input::onMouseMove);
+	engine->getWindow()->OnMouseScrollDelegate.AddSP(Self<Input>(), &Input::onMouseScroll);
 
 	return true;
 }
 
-void Input::OnDestroy()
+void Input::onDestroy()
 {
-	Object::OnDestroy();
+	Object::onDestroy();
 
-	if ( EnginePtr->GetWindow() )
+	if ( engine->getWindow() )
 	{
-		EnginePtr->GetWindow()->OnInputKeyDelegate.RemoveObject(this);
-		EnginePtr->GetWindow()->OnMouseMoveDelegate.RemoveObject(this);
-		EnginePtr->GetWindow()->OnMouseScrollDelegate.RemoveObject(this);
+		engine->getWindow()->OnInputKeyDelegate.RemoveObject(this);
+		engine->getWindow()->OnMouseMoveDelegate.RemoveObject(this);
+		engine->getWindow()->OnMouseScrollDelegate.RemoveObject(this);
 	}
 }
 
-void Input::OnInputKey(int32 Key, int32 Action)
+void Input::onInputKey(int32 Key, int32 Action)
 {
 	if ( Action == GLFW_PRESS || Action == GLFW_REPEAT )
-		PressedKeys.insert(Key);
+		pressedKeys.insert(Key);
 	else
-		PressedKeys.erase(Key);
+		pressedKeys.erase(Key);
 }
-void Input::OnMouseMove(glm::vec2 NewMousePos)
+void Input::onMouseMove(glm::vec2 NewMousePos)
 {
-	DeltaMouseMove += NewMousePos - MousePos;
-	MousePos = NewMousePos;
+	deltaMouseMove += NewMousePos - mousePos;
+	mousePos = NewMousePos;
 }
 
-void Input::OnMouseScroll(glm::vec2 MouseScroll)
+void Input::onMouseScroll(glm::vec2 MouseScroll)
 {
-	DeltaMouseScroll = MouseScroll;
+	deltaMouseScroll = MouseScroll;
 }
 
-void Input::SetMouseEnabled(bool bNewMouseEnabled) const
+void Input::setMouseEnabled(bool bNewMouseEnabled) const
 {
-	EnginePtr->GetWindow()->SetMouseEnabled(bNewMouseEnabled);
+	engine->getWindow()->setMouseEnabled(bNewMouseEnabled);
 }
 
-void Input::SubscribeKey(const KeySubscription& NewSubscription)
+void Input::subscribeKey(const KeySubscription& NewSubscription)
 {
-	LOG(Log, "Input subscribe key {}", NewSubscription.Key);
-	KeysSubscribers.push_back(NewSubscription);
+	LOG(Log, "Input subscribe key {}", NewSubscription.key);
+	keysSubscribers.push_back(NewSubscription);
 }
 
-void Input::UnSubscribeAll(std::shared_ptr<Object> Owner)
+void Input::unsubscribeAll(std::shared_ptr<Object> Owner)
 {
 
 	LOG(Log, "Input unsubscribe all");
 
-	for (auto it = KeysSubscribers.begin(); it != KeysSubscribers.end();) 
+	for (auto it = keysSubscribers.begin(); it != keysSubscribers.end();) 
 	{
-		if ( it->Callback.IsBoundTo(Owner.get()) )
-			it = KeysSubscribers.erase(it);
+		if ( it->callback.IsBoundTo(Owner.get()) )
+			it = keysSubscribers.erase(it);
 		else 
 			++it;
 	}
@@ -76,73 +76,73 @@ void Input::UnSubscribeAll(std::shared_ptr<Object> Owner)
 	OnMouseMoveDelegate.RemoveObject(Owner.get());
 
 }
-void Input::UnSubscribeKey(int32 Key, std::shared_ptr<Object> Owner)
+void Input::unsubscribeKey(int32 Key, std::shared_ptr<Object> Owner)
 {
-	LOG(Log, "Input unsubscribe key {} for {}", Key, Owner->GetName());
+	LOG(Log, "Input unsubscribe key {} for {}", Key, Owner->getName());
 
-	for (auto it = KeysSubscribers.begin(); it != KeysSubscribers.end();) 
+	for (auto it = keysSubscribers.begin(); it != keysSubscribers.end();) 
 	{
-		if ( Key == it->Key && it->Callback.IsBoundTo(Owner.get()) ) 
-			it = KeysSubscribers.erase(it);
+		if ( Key == it->key && it->callback.IsBoundTo(Owner.get()) ) 
+			it = keysSubscribers.erase(it);
 		else 
 			++it;
 	}
 }
 
-bool Input::GetKeyState(int32 Key) const
+bool Input::getKeyState(int32 Key) const
 {
-	return PressedKeys.find(Key) != PressedKeys.end();
+	return pressedKeys.find(Key) != pressedKeys.end();
 }
 
-void Input::ProcessInput(float DeltaTime)
+void Input::processInput(float DeltaTime)
 {
-	for ( KeySubscription& listener : KeysSubscribers )
+	for ( KeySubscription& listener : keysSubscribers )
 	{
-		bool bPressedNow = PressedKeys.find(listener.Key) != PressedKeys.end();
-		bool bPressedOld = OldPressedStates.find(listener.Key) != OldPressedStates.end();
+		bool bPressedNow = pressedKeys.find(listener.key) != pressedKeys.end();
+		bool bPressedOld = oldPressedStates.find(listener.key) != oldPressedStates.end();
 
 		if ( !bPressedNow && bPressedOld )
 		{
 			// button released
-			if ( listener.CheckType(EKeySubscriptionType::Released) )
+			if ( listener.checkType(EKeySubscriptionType::RELEASED) )
 			{
 				// user subscribed to button being released
-				listener.Callback.Execute(bPressedNow, DeltaTime);
+				listener.callback.Execute(bPressedNow, DeltaTime);
 			}
 		}
 		else if ( bPressedNow && !bPressedOld )
 		{
 			// button pressed
-			if ( listener.CheckType(EKeySubscriptionType::Pressed | EKeySubscriptionType::Hold) )
+			if ( listener.checkType(EKeySubscriptionType::PRESSED | EKeySubscriptionType::HOLD) )
 			{
 				// user subscribed to button being pressed or hold
-				listener.Callback.Execute(bPressedNow, DeltaTime);
+				listener.callback.Execute(bPressedNow, DeltaTime);
 			}
 		}
 		else if( bPressedNow && bPressedOld )
 		{
 			// button hold
-			if ( listener.CheckType(EKeySubscriptionType::Hold) )
+			if ( listener.checkType(EKeySubscriptionType::HOLD) )
 			{
 				// user subscribed to button being hold
-				listener.Callback.Execute(bPressedNow, DeltaTime);
+				listener.callback.Execute(bPressedNow, DeltaTime);
 			}
 		}
 	}
-	OldPressedStates = PressedKeys;
+	oldPressedStates = pressedKeys;
 
 	
-	if ( !Math::IsNearlyZero(DeltaMouseMove) )
+	if ( !Math::isNearlyZero(deltaMouseMove) )
 	{
-		OnMouseMoveDelegate.Broadcast(MousePos, DeltaMouseMove, DeltaTime);
+		OnMouseMoveDelegate.Broadcast(mousePos, deltaMouseMove, DeltaTime);
 	}
 
-	if ( !Math::IsNearlyZero(DeltaMouseScroll) )
+	if ( !Math::isNearlyZero(deltaMouseScroll) )
 	{
-		OnMouseScrollDelegate.Broadcast(DeltaMouseScroll, DeltaTime);
+		OnMouseScrollDelegate.Broadcast(deltaMouseScroll, DeltaTime);
 	}
 
-	DeltaMouseScroll = glm::vec2(0.0);
-	DeltaMouseMove = glm::vec2(0.0);
+	deltaMouseScroll = glm::vec2(0.0);
+	deltaMouseMove = glm::vec2(0.0);
 }
 

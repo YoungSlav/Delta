@@ -17,39 +17,39 @@ public:
 	{}
 
 
-	void SetMoveSpeed(float NewSpeed);
+	void setMoveSpeed(float NewSpeed);
 
 protected:
-	virtual bool Initialize_Internal() override;
+	virtual bool initialize_Internal() override;
 
-	virtual void Tick(float DeltaTime) override;
+	virtual void tick(float DeltaTime) override;
 
-	void OnInput_W(bool ButtonState, float DeltaTime);
-	void OnInput_S(bool ButtonState, float DeltaTime);
-	void OnInput_A(bool ButtonState, float DeltaTime);
-	void OnInput_D(bool ButtonState, float DeltaTime);
-	void OnInput_E(bool ButtonState, float DeltaTime);
-	void OnInput_Q(bool ButtonState, float DeltaTime);
-	void OnInput_ESCAPE(bool ButtonState, float DeltaTime);
-	void OnInput_MOUSERIGHT(bool ButtonState, float DeltaTime);
+	void onInput_W(bool ButtonState, float DeltaTime);
+	void onInput_S(bool ButtonState, float DeltaTime);
+	void onInput_A(bool ButtonState, float DeltaTime);
+	void onInput_D(bool ButtonState, float DeltaTime);
+	void onInput_E(bool ButtonState, float DeltaTime);
+	void onInput_Q(bool ButtonState, float DeltaTime);
+	void onInput_ESCAPE(bool ButtonState, float DeltaTime);
+	void onInput_MOUSERIGHT(bool ButtonState, float DeltaTime);
 
-	void OnMouseScroll(const glm::vec2& DeltaScroll, float DeltaTime);
-	void OnMouseMove(const glm::vec2& CurrentPosition, const glm::vec2& DeltaMove, float DeltaTime);
+	void onMouseScroll(const glm::vec2& DeltaScroll, float DeltaTime);
+	void onMouseMove(const glm::vec2& CurrentPosition, const glm::vec2& DeltaMove, float DeltaTime);
 
-	void AdjustVelocity(const glm::vec3& DeltaVelocity);
+	void adjustVelocity(const glm::vec3& DeltaVelocity);
 
 private:
-	std::shared_ptr<class Camera> CameraComponent;
+	std::shared_ptr<class Camera> cameraComponent;
 
-	glm::vec3 Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	float MinMoveSpeed = 0.10f;
-	float MaxMoveSpeed = 100.00;
+	glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	float minMoveSpeed = 0.10f;
+	float maxMoveSpeed = 100.00;
 
-	const float InputMoveSensitivity = 2.5f;
-	const float InputMouseMoveSensitivity = 0.1f;
-	const float InputMouseScrollSensitivity = 0.1f;
+	const float inputMoveSensitivity = 2.5f;
+	const float inputMouseMoveSensitivity = 0.1f;
+	const float inputMouseScrollSensitivity = 0.1f;
 
-	float MoveSpeed = MaxMoveSpeed / 2;
+	float moveSpeed = maxMoveSpeed / 2;
 
 	bool bMouseInput = false;
 };

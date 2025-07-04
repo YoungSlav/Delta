@@ -4,21 +4,21 @@
 using namespace Delta;
 
 
-void Asset::OnDestroy()
+void Asset::onDestroy()
 {
-	Cleanup();
-	Object::OnDestroy();
+	cleanup();
+	Object::onDestroy();
 }
 
-EAssetLoadingState Asset::Load()
+EAssetLoadingState Asset::load()
 {
-	State = Load_Internal();
-	return State;
+	state = load_Internal();
+	return state;
 }
 
-void Asset::Cleanup()
+void Asset::cleanup()
 {
-	LOG(Log, "Cleanup asset '{}'", GetName());
-	Cleanup_Internal();
-	State = EAssetLoadingState::Invalid;
+	LOG(Log, "Cleanup asset '{}'", getName());
+	cleanup_Internal();
+	state = EAssetLoadingState::INVALID;
 }

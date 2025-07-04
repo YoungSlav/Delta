@@ -19,112 +19,112 @@ namespace GlobalEngine
 };
 
 
-std::shared_ptr<Engine> Engine::GetEngine()
+std::shared_ptr<Engine> Engine::getEngine()
 {
 	return GlobalEngine::Engine();
 }
 
-bool Engine::Initialize_Internal()
+bool Engine::initialize_Internal()
 {
 	GlobalEngine::_Engine = Self<Engine>();
 	
-	EnginePtr = Self<Engine>();
+	engine = Self<Engine>();
 
-	LastUsedHandle = GetHandle();
+	lastUsedHandle = getHandle();
 
 	LOG(Log, "Delta engine instance created!");
 
-	AssetManagerPtr = NewObject<AssetManager>("AssetManager");
-	WindowPtr = NewObject<Window>("Window");
-	VulkanCorePtr = NewObject<VulkanCore>("Renderer");
-	InputPtr = NewObject<Input>("Input");
+	assetManager = spawn<AssetManager>("AssetManager");
+	window = spawn<Window>("Window");
+	vulkanCore = spawn<VulkanCore>("Renderer");
+	input = spawn<Input>("Input");
 
 
 	return true;
 }
 
 
-void Engine::GameLoop()
+void Engine::gameLoop()
 {
 	LOG(Log, "MAIN LOOP STARTED");
-	while( !bRequestExit && !glfwWindowShouldClose(WindowPtr->GetWindow()) )
+	while( !bRequestExit && !glfwWindowShouldClose(window->getWindow()) )
 	{
 		float newTime = (float)glfwGetTime();
-		float DeltaTime = newTime - GameTime;
-		GameTime = newTime;
+		float DeltaTime = newTime - gameTime;
+		gameTime = newTime;
 		
-		FireFreshBeginPlays();
+		fireFreshBeginPlays();
 	
-		Tick(DeltaTime);
+		tick(DeltaTime);
 		
 		//if ( GetCamera() )
 		//	GetCamera()->UpdateCamera();
 		//
 
-		VulkanCorePtr->DrawFrame(DeltaTime);
+		vulkanCore->drawFrame(DeltaTime);
 		
 		glfwPollEvents();
 
-		if ( InputPtr )
-			InputPtr->ProcessInput(DeltaTime);
+		if ( input )
+			input->processInput(DeltaTime);
 	
-		while ((glfwGetTime()  - newTime) < (1.0 / FPSLimit)) { }
+		while ((glfwGetTime()  - newTime) < (1.0 / fpsLimit)) { }
 	}
 
 	LOG(Log, "Exit main loop");
-	vkDeviceWaitIdle(VulkanCorePtr->GetDevice());
-	this->Destroy();
+	vkDeviceWaitIdle(vulkanCore->getDevice());
+	this->destroy();
 }
 
-void Engine::FireFreshBeginPlays()
+void Engine::fireFreshBeginPlays()
 {
-	for ( auto it : FreshObjects )
+	for ( auto it : freshObjects )
 	{
-		it->OnBeginPlay();
+		it->onBeginPlay();
 	}
-	FreshObjects.clear();
+	freshObjects.clear();
 }
 
-void Engine::Tick(float DeltaTime)
+void Engine::tick(float DeltaTime)
 {
-	for ( auto it : TickableObjects )
-		it->Update(DeltaTime);
+	for ( auto it : tickableObjects )
+		it->update(DeltaTime);
 }
 
 
-void Engine::RegisterObject(std::shared_ptr<Object> newObject)
+void Engine::registerObject(std::shared_ptr<Object> newObject)
 {
-	Objects.push_back(newObject);
+	objects.push_back(newObject);
 	
-	FreshObjects.push_back(newObject);
+	freshObjects.push_back(newObject);
 
-	HandleToObject.insert({newObject->GetHandle(), newObject});
+	handleToObject.insert({newObject->getHandle(), newObject});
 	
 	if ( std::shared_ptr<ITickable> asTickable = std::dynamic_pointer_cast<ITickable>(newObject) )
 	{
-		TickableObjects.push_back(asTickable);
+		tickableObjects.push_back(asTickable);
 	}
 }
 
-std::shared_ptr<Object> Engine::FindObjectByHandle(const DeltaHandle& Handle)
+std::shared_ptr<Object> Engine::findObjectByHandle(const DeltaHandle& Handle)
 {
-	auto it = HandleToObject.find(Handle);
-	if ( it != HandleToObject.end() )
+	auto it = handleToObject.find(Handle);
+	if ( it != handleToObject.end() )
 		return it->second;
 	return nullptr;
 }
 
-void Engine::DestroyObject(std::shared_ptr<Object> Object)
+void Engine::destroyObject(std::shared_ptr<Object> Object)
 {
-	HandleToObject.erase(Object->GetHandle());
+	handleToObject.erase(Object->getHandle());
 
 	if ( std::shared_ptr<Actor> asActor = std::dynamic_pointer_cast<Actor>(Object) )
 	{
-		Actors.erase(std::remove(Actors.begin(), Actors.end(), asActor), Actors.end());
+		actors.erase(std::remove(actors.begin(), actors.end(), asActor), actors.end());
 	}
 
 	if ( std::shared_ptr<ITickable> asTiackble = std::dynamic_pointer_cast<ITickable>(Object) )
-		TickableObjects.erase(std::remove(TickableObjects.begin(), TickableObjects.end(), asTiackble), TickableObjects.end());
+		tickableObjects.erase(std::remove(tickableObjects.begin(), tickableObjects.end(), asTiackble), tickableObjects.end());
 
-	Objects.erase(std::remove(Objects.begin(), Objects.end(), Object), Objects.end());
+	objects.erase(std::remove(objects.begin(), objects.end(), Object), objects.end());
 }

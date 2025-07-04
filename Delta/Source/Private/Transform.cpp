@@ -8,89 +8,89 @@ Transform::Transform()
 }
 
 Transform::Transform(const glm::vec3& _location, const glm::quat& _rotation, const glm::vec3& _scale) :
-	Location(_location), Rotation(_rotation), Scale(_scale)
+	location(_location), rotation(_rotation), scale(_scale)
 {
-	UpdateTransformMatrix();
+	updateTransformMatrix();
 }
 
 Transform::Transform(const glm::mat4& _transform) :
-	TransformMatrix(_transform)
+	matrix(_transform)
 {
-	DecomposeTransformMatrix();
+	decomposeTransformMatrix();
 }
 
-glm::vec3 Transform::GetForwardVector() const
+glm::vec3 Transform::getForwardVector() const
 {
-	return glm::rotate(Rotation, Math::forwardV);
+	return glm::rotate(rotation, Math::forwardV);
 }
 
-glm::vec3 Transform::GetRightVector() const
+glm::vec3 Transform::getRightVector() const
 {
-	return glm::rotate(Rotation, Math::rightV);
+	return glm::rotate(rotation, Math::rightV);
 }
 
-glm::vec3 Transform::GetUpVector() const
+glm::vec3 Transform::getUpVector() const
 {
-	return glm::rotate(Rotation, Math::upV);
+	return glm::rotate(rotation, Math::upV);
 }
 
 
-void Transform::SetTransformMatrix(const glm::mat4& _transform)
+void Transform::setTransformMatrix(const glm::mat4& _transform)
 {
-	TransformMatrix = _transform;
-	DecomposeTransformMatrix();
+	matrix = _transform;
+	decomposeTransformMatrix();
 }
 
-void Transform::SetLocation(const glm::vec3& _location)
+void Transform::setLocation(const glm::vec3& _location)
 {
-	Location = _location;
+	location = _location;
 	bMatrixDirty = true;
 }
 
-void Transform::SetRotation(const glm::quat& _rotation)
+void Transform::setRotation(const glm::quat& _rotation)
 {
-	Rotation = _rotation;
+	rotation = _rotation;
 	bMatrixDirty = true;
 }
 
-void Transform::SetRotationEuler(const glm::vec3& _eulerRotation)
+void Transform::setRotationEuler(const glm::vec3& _eulerRotation)
 {
-	RotationEuler = _eulerRotation;
-	Rotation = Math::EulerToQuat(_eulerRotation);
+	rotationEuler = _eulerRotation;
+	rotation = Math::eulerToQuat(_eulerRotation);
 	bMatrixDirty = true;
 }
 
-const glm::vec3& Transform::GetLocation() const
+const glm::vec3& Transform::getLocation() const
 {
-	return Location;
+	return location;
 }
-const glm::quat& Transform::GetRotation() const
+const glm::quat& Transform::getRotation() const
 {
-	return Rotation;
+	return rotation;
 }
-const glm::vec3& Transform::GetRotationEuler() const
+const glm::vec3& Transform::getRotationEuler() const
 {
-	RotationEuler = Math::QuatToEuler(Rotation);
-	return RotationEuler;
+	rotationEuler = Math::quatToEuler(rotation);
+	return rotationEuler;
 }
-const glm::vec3& Transform::GetScale() const
+const glm::vec3& Transform::getScale() const
 {
-	return Scale;
+	return scale;
 }
-const glm::mat4& Transform::GetTransformMatrix() const
+const glm::mat4& Transform::getTransformMatrix() const
 {
-	UpdateTransformMatrix();
-	return TransformMatrix;
+	updateTransformMatrix();
+	return matrix;
 }
 
 
-void Transform::Rotate(const glm::quat& _rotation)
+void Transform::rotate(const glm::quat& _rotation)
 {
-	Rotation = _rotation * Rotation;
+	rotation = _rotation * rotation;
 	bMatrixDirty = true;
 }
 	
-void Transform::SetDirection(const glm::vec3& _direction)
+void Transform::setDirection(const glm::vec3& _direction)
 {
 	glm::vec3 dir(0.0f);
 	if ( glm::length(_direction) <= FLT_EPS )
@@ -98,30 +98,30 @@ void Transform::SetDirection(const glm::vec3& _direction)
 	else
 		dir = glm::normalize(_direction);
 
-	Rotation = Math::DirectionToQuaternion(dir);
+	rotation = Math::directionToQuaternion(dir);
 	bMatrixDirty = true;
 }
 
-void Transform::SetScale(const glm::vec3& _scale)
+void Transform::setScale(const glm::vec3& _scale)
 {
-	Scale = _scale;
+	scale = _scale;
 	bMatrixDirty = true;
 }
 
-void Transform::UpdateTransformMatrix() const
+void Transform::updateTransformMatrix() const
 {
 	if ( !bMatrixDirty ) return;
 		
-	TransformMatrix = glm::recompose(Scale, Rotation, Location, glm::vec3(0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	matrix = glm::recompose(scale, rotation, location, glm::vec3(0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	bMatrixDirty = false;
 }
 
-void Transform::DecomposeTransformMatrix()
+void Transform::decomposeTransformMatrix()
 {
 	glm::vec3 skew;
 	glm::vec4 perspective;
-	glm::decompose(TransformMatrix, Scale, Rotation, Location, skew, perspective);
+	glm::decompose(matrix, scale, rotation, location, skew, perspective);
 
 	bMatrixDirty = false;
 }

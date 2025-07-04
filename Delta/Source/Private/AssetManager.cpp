@@ -7,20 +7,20 @@
 
 using namespace Delta;
 
-bool AssetManager::Initialize_Internal()
+bool AssetManager::initialize_Internal()
 {
-	Object::Initialize_Internal();
+	Object::initialize_Internal();
 
 	LOG(Log, "Loading asset manager");
 	LOG(Log, "Found resource folders: " );
 	LOG_INDENT
-	for ( auto folder : ResourcesFolders )
+	for ( auto folder : resourcesFolders )
 		LOG(Log, "'{}'", folder );
 
 	return true;
 }
 
-bool AssetManager::IfFileExist(const std::string& FileName)
+bool AssetManager::fileExist(const std::string& FileName)
 {
 	std::ifstream file(FileName);
 	if ( file )
@@ -29,18 +29,18 @@ bool AssetManager::IfFileExist(const std::string& FileName)
 		return false;
 }
 
-std::string AssetManager::FindAsset(const std::string& AssetName)
+std::string AssetManager::findAsset(const std::string& AssetName)
 {
-	for ( const std::string& folder : ResourcesFolders )
+	for ( const std::string& folder : resourcesFolders )
 	{
 		std::string Candidate = folder + AssetName;
-		if ( IfFileExist(Candidate) )
+		if ( fileExist(Candidate) )
 			return Candidate;
 	}
 	return "";
 }
 
-std::string AssetManager::GetRootFolder()
+std::string AssetManager::getRootFolder()
 {
 	char buffer[MAX_PATH];
 	GetModuleFileName(NULL, buffer, MAX_PATH);
@@ -56,7 +56,7 @@ std::string AssetManager::GetRootFolder()
 
 	return fullPath + "\\";
 }
-std::string AssetManager::GetExecutableName()
+std::string AssetManager::getExecutableName()
 {
 	char buffer[MAX_PATH];
 	GetModuleFileName(NULL, buffer, MAX_PATH);

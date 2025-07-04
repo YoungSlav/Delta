@@ -9,45 +9,45 @@
 #include <ctime>
 #include <mutex>
 
-static std::mutex LogMutex;
-std::ofstream DeltaLog::LogFile;
-std::string DeltaLog::LogFileName;
-std::string DeltaLog::LogFolder = "..\\Logs";
-int DeltaLog::LogIndent = 0;
+static std::mutex logMutex;
+std::ofstream DeltaLog::logFile;
+std::string DeltaLog::logFileName;
+std::string DeltaLog::logFolder = "..\\Logs";
+int DeltaLog::logIndent = 0;
 
-void DeltaLog::IncreaseIndent()
+void DeltaLog::increaseIndent()
 {
-	LogIndent++;
+	logIndent++;
 }
-void DeltaLog::DecreaseIndent()
+void DeltaLog::decreaseIndent()
 {
-	LogIndent--;
-	LogIndent = LogIndent < 0 ? 0 : LogIndent;
+	logIndent--;
+	logIndent = logIndent < 0 ? 0 : logIndent;
 }
 
-void DeltaLog::Init(const std::string& logFilename)
+void DeltaLog::init(const std::string& logFilename)
 {
-	LogFileName = logFilename;
+	logFileName = logFilename;
 
 	namespace fs = std::filesystem;
 
-	fs::create_directories(LogFolder);
-	std::string fullLogPath = (fs::path(LogFolder) / logFilename).string();
+	fs::create_directories(logFolder);
+	std::string fullLogPath = (fs::path(logFolder) / logFilename).string();
 
 	if (fs::exists(fullLogPath))
 	{
-		RenameOldLogFile(fullLogPath);
+		renameOldLogFile(fullLogPath);
 	}
 
 	// Open new log file
-	LogFile.open(fullLogPath, std::ios::out | std::ios::trunc);
-	if (!LogFile.is_open())
+	logFile.open(fullLogPath, std::ios::out | std::ios::trunc);
+	if (!logFile.is_open())
 	{
 		throw std::runtime_error("Failed to open log file: " + fullLogPath);
 	}
 }
 
-void DeltaLog::RenameOldLogFile(const std::string& oldFilePath)
+void DeltaLog::renameOldLogFile(const std::string& oldFilePath)
 {
 	namespace fs = std::filesystem;
 
@@ -73,20 +73,20 @@ void DeltaLog::RenameOldLogFile(const std::string& oldFilePath)
 	fs::path oldPath(oldFilePath);
 	std::string newFileName = "log_" + std::string(buffer) + oldPath.extension().string();
 
-	fs::path newPath = fs::path(LogFolder) / newFileName;
+	fs::path newPath = fs::path(logFolder) / newFileName;
 
 	// Rename (move) old log file into folder with timestamped name
 	fs::rename(oldFilePath, newPath);
 }
 
-void DeltaLog::Print( const std::string& Message, ELog Type )
+void DeltaLog::print( const std::string& Message, ELog Type )
 {
-	DeltaLog::Print(Message.c_str(), Type);
+	DeltaLog::print(Message.c_str(), Type);
 }
 
-void DeltaLog::Print(const char* const Message, ELog Type)
+void DeltaLog::print(const char* const Message, ELog Type)
 {
-	std::string indent(LogIndent * IndentSize, ' ');
+	std::string indent(logIndent * indentSize, ' ');
 
 	auto now = std::chrono::system_clock::now();
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);
@@ -99,7 +99,7 @@ void DeltaLog::Print(const char* const Message, ELog Type)
 	localtime_r(&now_time_t, &local_tm);
 #endif
 
-	std::lock_guard<std::mutex> lock(LogMutex);
+	std::lock_guard<std::mutex> lock(logMutex);
 
 	static HANDLE hstdout = GetStdHandle( STD_OUTPUT_HANDLE );
 	
@@ -146,15 +146,15 @@ void DeltaLog::Print(const char* const Message, ELog Type)
 	
 	SetConsoleTextAttribute( hstdout, csbi.wAttributes );
 
-	if (LogFile.is_open())
+	if (logFile.is_open())
 	{
 		std::stringstream prefix_ss;
 		prefix_ss << std::put_time(&local_tm, "%H:%M:%S") << "." << std::setfill('0') << std::setw(3) << now_ms.count();
 		prefix_ss << " " << typeStr << ":";
-		const int prefixWidth = 22 + (LogIndent * IndentSize);
+		const int prefixWidth = 22 + (logIndent * indentSize);
 		std::string prefix = prefix_ss.str();
-		LogFile << std::left << std::setw(prefixWidth) << prefix << " " << Message << std::endl;
+		logFile << std::left << std::setw(prefixWidth) << prefix << " " << Message << std::endl;
 
-		LogFile.flush();
+		logFile.flush();
 	}
 }

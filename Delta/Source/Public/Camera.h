@@ -8,12 +8,12 @@ namespace Delta
 
 struct CameraInfo
 {
-	glm::mat4 View;
-	glm::mat4 Proj;
+	glm::mat4 view;
+	glm::mat4 proj;
 	
-	float FOV;
-	float MinDist;
-	float MaxDist;
+	float fov;
+	float minDist;
+	float maxDist;
 };
 
 
@@ -26,18 +26,18 @@ public:
 	{}
 
 
-	CameraInfo GetCameraInfo(const glm::ivec2& ViewportSize) const;
+	CameraInfo getCameraInfo(const glm::ivec2& ViewportSize) const;
 
 	// 3d camera
-	void SetFOV(float InFOV) { FOV = InFOV; }
-	void SetDrawingDistance(float InMin, float InMax) { MinDrawingDistance = InMin; MaxDrawingDistance = InMax; }
+	void setFov(float InFOV) { fov = InFOV; }
+	void setDrawingDistance(float InMin, float InMax) { minDrawingDistance = InMin; maxDrawingDistance = InMax; }
 
 
 protected:
 
 private:
-	float FOV = 90.0f;
-	float MinDrawingDistance = 0.1f;
-	float MaxDrawingDistance = 1000.0f;
+	float fov = 90.0f;
+	float minDrawingDistance = 0.1f;
+	float maxDrawingDistance = 1000.0f;
 };
 }

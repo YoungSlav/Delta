@@ -7,7 +7,7 @@ const glm::vec3 Math::forwardV = glm::vec3(0, 0, -1.0);
 const glm::vec3 Math::upV = glm::vec3(0.0, 1.0, 0.0);
 const glm::vec3 Math::rightV = glm::vec3(1.0, 0.0, 0.0);
 
-glm::vec3 Math::NormalizeEuler(const glm::vec3& euler)
+glm::vec3 Math::normalizeEuler(const glm::vec3& euler)
 {
 	// Convert Euler angles to rotation matrix
 	glm::mat4 rotationMatrix = glm::eulerAngleYXZ(glm::radians(euler.y), glm::radians(euler.x), glm::radians(euler.z));
@@ -21,7 +21,7 @@ glm::vec3 Math::NormalizeEuler(const glm::vec3& euler)
 }
 
 
-glm::quat Math::DirectionToQuaternion(const glm::vec3& Direction)
+glm::quat Math::directionToQuaternion(const glm::vec3& Direction)
 {
 	glm::vec3 dir = Direction;
 	if ( glm::length(dir) <= FLT_EPS )
@@ -37,69 +37,69 @@ glm::quat Math::DirectionToQuaternion(const glm::vec3& Direction)
 	}
 }
 
-glm::vec3 Math::QuaternionToDirection(const glm::quat& Quaternion)
+glm::vec3 Math::quaternionToDirection(const glm::quat& Quaternion)
 {
 	return glm::rotate(Quaternion, Math::forwardV);
 }
 
-glm::vec3 Math::QuatToEuler(const glm::quat& QuatRotation)
+glm::vec3 Math::quatToEuler(const glm::quat& QuatRotation)
 {
 	glm::vec3 euler = glm::degrees(glm::eulerAngles(QuatRotation));
 
 
 	return euler;
 }
-glm::quat Math::EulerToQuat(const glm::vec3& EulerRotation)
+glm::quat Math::eulerToQuat(const glm::vec3& EulerRotation)
 {
 	return glm::quat(glm::radians(EulerRotation));
 }
 
-glm::vec3 Math::RandVector(float MaxDimension)
+glm::vec3 Math::randVector(float MaxDimension)
 {
 	int32 iMaxDimension = (int32)MaxDimension;
 	glm::vec3 Result(
-		Math::Rand(-MaxDimension, MaxDimension),
-		Math::Rand(-MaxDimension, MaxDimension),
-		Math::Rand(-MaxDimension, MaxDimension)
+		Math::randRange(-MaxDimension, MaxDimension),
+		Math::randRange(-MaxDimension, MaxDimension),
+		Math::randRange(-MaxDimension, MaxDimension)
 	);
 	return Result;
 }
 
-bool Math::IsNearlyZero(float Number)
+bool Math::isNearlyZero(float Number)
 {
 	return std::abs(Number) <= FLT_EPS;
 }
-bool Math::IsNearlyZero(double Number)
+bool Math::isNearlyZero(double Number)
 {
 	return std::abs(Number) <= FLT_EPS;
 }
-bool Math::IsNearlyZero(const glm::vec2& vector)
+bool Math::isNearlyZero(const glm::vec2& vector)
 {
-	return IsNearlyZero(vector.x) && IsNearlyZero(vector.y);
+	return isNearlyZero(vector.x) && isNearlyZero(vector.y);
 }
-bool Math::IsNearlyZero(const glm::vec3& vector)
+bool Math::isNearlyZero(const glm::vec3& vector)
 {
-	return IsNearlyZero(vector.x) && IsNearlyZero(vector.y) && IsNearlyZero(vector.z);
+	return isNearlyZero(vector.x) && isNearlyZero(vector.y) && isNearlyZero(vector.z);
 }
 
-bool Math::IsNearlyEqual(const float& A, const float& B)
+bool Math::isNearlyEqual(const float& A, const float& B)
 {
 	return glm::abs(A-B) <= FLT_EPS;
 }
-bool Math::IsNearlyEqual(const double& A, const double& B)
+bool Math::isNearlyEqual(const double& A, const double& B)
 {
 	return glm::abs(A-B) <= FLT_EPS;
 }
-bool Math::IsNearlyEqual(const glm::vec3& A, const glm::vec3& B)
+bool Math::isNearlyEqual(const glm::vec3& A, const glm::vec3& B)
 {
 	return glm::all(glm::epsilonEqual(A,B, glm::vec3(FLT_EPS)));
 }
-bool Math::IsNearlyEqual(const glm::quat& A, const glm::quat& B)
+bool Math::isNearlyEqual(const glm::quat& A, const glm::quat& B)
 {
 	float dotProduct = glm::dot(A, B);
 	return glm::abs(dotProduct) > 1.0f - FLT_EPS;
 }
-bool Math::IsNearlyEqual(const glm::mat4& A, const glm::mat4& B)
+bool Math::isNearlyEqual(const glm::mat4& A, const glm::mat4& B)
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -114,12 +114,12 @@ bool Math::IsNearlyEqual(const glm::mat4& A, const glm::mat4& B)
 	return true; 
 }
 
-bool Math::IsNearlyEqual(const class Transform& A, const Transform& B)
+bool Math::isNearlyEqual(const class Transform& A, const Transform& B)
 {
-	return IsNearlyEqual(A.GetTransformMatrix(), B.GetTransformMatrix());
+	return isNearlyEqual(A.getTransformMatrix(), B.getTransformMatrix());
 }
 
-float Math::MaxComponent(const glm::vec3& Vector)
+float Math::maxComponent(const glm::vec3& Vector)
 {
 	if ( std::abs(Vector.x) > std::abs(Vector.y) && std::abs(Vector.x) > std::abs(Vector.z) )
 		return Vector.x;
@@ -130,7 +130,7 @@ float Math::MaxComponent(const glm::vec3& Vector)
 	return Vector.z;
 }
 
-void Math::GetFrustumCornersWorldSpace(const glm::mat4& frustrum, std::vector<glm::vec4>& OutFrustumCorners)
+void Math::getFrustumCornersWorldSpace(const glm::mat4& frustrum, std::vector<glm::vec4>& OutFrustumCorners)
 {
 	OutFrustumCorners.clear();
 	OutFrustumCorners.reserve(8);
