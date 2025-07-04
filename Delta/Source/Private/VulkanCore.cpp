@@ -958,6 +958,7 @@ void VulkanCore::cleanup()
 
 	vkDestroyCommandPool(device, renderCommandPool, nullptr);
 	vkDestroyCommandPool(device, transferCommandPool, nullptr);
+	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
 	for (auto framebuffer : swapChainFramebuffers)
 	{

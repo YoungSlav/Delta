@@ -38,12 +38,22 @@ bool Engine::initialize_Internal()
 
 	assetManager = spawn<AssetManager>("AssetManager");
 	window = spawn<Window>("Window");
-	vulkanCore = spawn<VulkanCore>("Renderer");
+	vulkanCore = spawn<VulkanCore>("VulkanCore");
+	renderer = spawn<Renderer>("Renderer");
 	input = spawn<Input>("Input");
 
-	renderer = spawn<Renderer>("Renderer");
-
 	return true;
+}
+
+void Engine::onDestroy()
+{
+	Object::onDestroy();
+
+	assetManager->destroy();
+	input->destroy();
+	window->destroy();
+	renderer->destroy();
+	vulkanCore->destroy();
 }
 
 

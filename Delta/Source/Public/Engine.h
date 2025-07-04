@@ -45,6 +45,7 @@ public:
 
 protected:
 	bool initialize_Internal() override;
+	virtual void onDestroy() override;
 
 private:
 	void fireFreshBeginPlays();
