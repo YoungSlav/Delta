@@ -23,11 +23,11 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	inline const glm::ivec2& GetViewportSize() const { return ViewportSize; }
+	inline const glm::ivec2& getViewportSize() const { return viewportSize; }
 	
-	GLFWwindow* GetWindow() const { return glfwWindow; }
+	GLFWwindow* getWindow() const { return glfwWindow; }
 
-	void SetMouseEnabled(bool bNewMouseEnabled) const;
+	void setMouseEnabled(bool bNewMouseEnabled) const;
 
 	OnResizeSignature OnResizeDelegate;
 
@@ -36,24 +36,24 @@ public:
 	OnMouseScrollSignature OnMouseScrollDelegate;
 
 protected:
-	bool Initialize_Internal() override;
-	virtual void OnDestroy() override;
+	bool initialize_Internal() override;
+	virtual void onDestroy() override;
 
 private:
-	static void Framebuffer_size_callback(struct GLFWwindow* window, int32 width, int32 height);
+	static void windowSizeCallback(struct GLFWwindow* window, int32 width, int32 height);
 	
-	static void SCallbackMouseScroll(struct GLFWwindow* window, double xoffset, double yoffset);
-	static void SCallbackMousePosition(struct GLFWwindow* window, double xpos, double ypos);
-	static void SCallbackMouseButton(GLFWwindow* window, int button, int action, int mods);
-	static void SCallbackKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void windowMouseScrollCallback(struct GLFWwindow* window, double xoffset, double yoffset);
+	static void windowMousePositionCallback(struct GLFWwindow* window, double xpos, double ypos);
+	static void windowMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+	static void windowKeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-	void Resize(const glm::ivec2& InViewportSize);
+	void resize(const glm::ivec2& InViewportSize);
 
 private:
 
 	GLFWwindow* glfwWindow;
 
-	glm::ivec2 ViewportSize = glm::vec2(1440.0f, 900.0f);
+	glm::ivec2 viewportSize = glm::vec2(1440.0f, 900.0f);
 
 };
 

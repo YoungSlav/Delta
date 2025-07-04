@@ -11,79 +11,79 @@ Object::~Object()
 {
 #if TEST_MEMORY_LEAKS
 	ObjectsSpawned--;
-	LOG(Warning, "Object {} destroyed! Total object count: {}", Name, ObjectsSpawned);
+	LOG(Warning, "Object {} destroyed! Total object count: {}", name, ObjectsSpawned);
 #endif
 }
 
-bool Object::InitializeNewObject(std::shared_ptr<Object> newObject)
+bool Object::initializeNewObject(std::shared_ptr<Object> newObject)
 {
-	if ( !newObject->Initialize() )
+	if ( !newObject->initialize() )
 		return false;
 
-	AddChildObject(newObject);
-	EnginePtr->RegisterObject(newObject);
+	addChildObject(newObject);
+	engine->registerObject(newObject);
 
 	return true;
 }
 
-DeltaHandle Object::NewHandle() const
+DeltaHandle Object::newHandle() const
 {
-	return EnginePtr->GenerateNewHandle();
+	return engine->generateNewHandle();
 }
 
 
-bool Object::Initialize()
+bool Object::initialize()
 {
 
 #if	TEST_MEMORY_LEAKS
 	ObjectsSpawned++;
-	LOG(Warning, "Object {} created! Total object count: {}", Name, ObjectsSpawned);
+	LOG(Warning, "Object {} created! Total object count: {}", name, ObjectsSpawned);
 #endif
 
-	return Initialize_Internal();
+	return initialize_Internal();
 }
 
-void Object::AddChildObject(std::shared_ptr<Object> _OwnedObject)
+void Object::addChildObject(std::shared_ptr<Object> _OwnedObject)
 {	
-	_OwnedObject->OnObjectDestroyDelegate.AddSP(Self<Object>(), &Object::RemoveChildObject);
+	_OwnedObject->OnObjectDestroyDelegate.AddSP(Self<Object>(), &Object::removeChildObject);
 
-	OwnedObjects.push_back(_OwnedObject);
-	OnChildObjectAdded(_OwnedObject);
+	ownedObjects.push_back(_OwnedObject);
+	onChildObjectAdded(_OwnedObject);
 }
 
-void Object::RemoveChildObject(std::shared_ptr<Object> obj)
+void Object::removeChildObject(std::shared_ptr<Object> obj)
 {
-	OwnedObjects.remove_if([&](const std::weak_ptr<Object>& weakObj)
+	ownedObjects.remove_if([&](const std::weak_ptr<Object>& weakObj)
 	{
 		if (auto shared = weakObj.lock())
 			return shared.get() == obj.get();
 		return false;
     });
-	OnChildObjectRemoved(obj);
+	onChildObjectRemoved(obj);
 }
 
-void Object::Destroy()
+void Object::destroy()
 {
-	LOG(Log, "Destroy object: '{}'", GetName());
+	LOG(Log, "Destroy object: '{}'", getName());
 	LOG_INDENT
 
 	OnObjectDestroyDelegate.Broadcast(Self<Object>());
 
-	std::list<std::weak_ptr<Object>> OwnedObjectsTmp = OwnedObjects;
+	std::list<std::weak_ptr<Object>> OwnedObjectsTmp = ownedObjects;
 	for( auto it : OwnedObjectsTmp )
 	{
 		if ( it.expired() )
 			continue;
-		it.lock()->Destroy();
+		it.lock()->destroy();
 	}
-	OwnedObjects.clear();
+	ownedObjects.clear();
 
-	if ( EnginePtr )
+	if ( engine )
 	{
-		OnDestroy();
-		EnginePtr->DestroyObject(Self<Object>());
-		EnginePtr.reset();
+		onDestroy();
+		engine->destroyObject(Self<Object>());
+		engine.reset();
 	}
 
-	LOG(Log, "'{}' destroyed", GetName());
+	LOG(Log, "'{}' destroyed", getName());
 }

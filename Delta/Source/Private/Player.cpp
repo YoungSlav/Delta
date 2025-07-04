@@ -6,157 +6,157 @@
 
 using namespace Delta;
 
-bool Player::Initialize_Internal()
+bool Player::initialize_Internal()
 {
-	if ( std::shared_ptr<Input> InputPtr = EnginePtr->GetInput() )
+	if ( std::shared_ptr<Input> InputPtr = engine->getInput() )
 	{
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_W;
-		subscription.SubscribedType = EKeySubscriptionType::Hold;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_W);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_W;
+		subscription.subscribedType = EKeySubscriptionType::HOLD;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_W);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_S;
-		subscription.SubscribedType = EKeySubscriptionType::Hold;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_S);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_S;
+		subscription.subscribedType = EKeySubscriptionType::HOLD;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_S);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_A;
-		subscription.SubscribedType = EKeySubscriptionType::Hold;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_A);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_A;
+		subscription.subscribedType = EKeySubscriptionType::HOLD;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_A);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_D;
-		subscription.SubscribedType = EKeySubscriptionType::Hold;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_D);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_D;
+		subscription.subscribedType = EKeySubscriptionType::HOLD;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_D);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_E;
-		subscription.SubscribedType = EKeySubscriptionType::Hold;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_E);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_E;
+		subscription.subscribedType = EKeySubscriptionType::HOLD;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_E);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_Q;
-		subscription.SubscribedType = EKeySubscriptionType::Hold;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_Q);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_Q;
+		subscription.subscribedType = EKeySubscriptionType::HOLD;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_Q);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_MOUSE_BUTTON_RIGHT;
-		subscription.SubscribedType = EKeySubscriptionType::Hold | EKeySubscriptionType::Released;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_MOUSERIGHT);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_MOUSE_BUTTON_RIGHT;
+		subscription.subscribedType = EKeySubscriptionType::HOLD | EKeySubscriptionType::RELEASED;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_MOUSERIGHT);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
 		KeySubscription subscription;
-		subscription.Key = GLFW_KEY_ESCAPE;
-		subscription.SubscribedType = EKeySubscriptionType::Released;
-		subscription.Callback.BindSP(Self<Player>(), &Player::OnInput_ESCAPE);
-		InputPtr->SubscribeKey(subscription);
+		subscription.key = GLFW_KEY_ESCAPE;
+		subscription.subscribedType = EKeySubscriptionType::RELEASED;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_ESCAPE);
+		InputPtr->subscribeKey(subscription);
 		}
 		{
-			InputPtr->OnMouseMoveDelegate.AddSP(Self<Player>(), &Player::OnMouseMove);
+			InputPtr->OnMouseMoveDelegate.AddSP(Self<Player>(), &Player::onMouseMove);
 		}
 		{
-			InputPtr->OnMouseScrollDelegate.AddSP(Self<Player>(), &Player::OnMouseScroll);
+			InputPtr->OnMouseScrollDelegate.AddSP(Self<Player>(), &Player::onMouseScroll);
 		}
 	}
 
-	CameraComponent = NewObject<Camera>("PlayerCamera");
+	cameraComponent = spawn<Camera>("PlayerCamera");
 
 	return true;
 }
 
-void Player::Tick(float DeltaTime)
+void Player::tick(float DeltaTime)
 {
-	SetLocation(GetLocation() + Velocity * MoveSpeed * DeltaTime);
-	Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	setLocation(getLocation() + velocity * moveSpeed * DeltaTime);
+	velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 }
 
-void Player::OnInput_W(bool ButtonState, float DeltaTime)
+void Player::onInput_W(bool ButtonState, float DeltaTime)
 {
-	AdjustVelocity(GetForwardVector_World());
+	adjustVelocity(getForwardVector_World());
 }
-void Player::OnInput_S(bool ButtonState, float DeltaTime)
+void Player::onInput_S(bool ButtonState, float DeltaTime)
 {
-	AdjustVelocity(-GetForwardVector_World());
+	adjustVelocity(-getForwardVector_World());
 }
-void Player::OnInput_A(bool ButtonState, float DeltaTime)
+void Player::onInput_A(bool ButtonState, float DeltaTime)
 {
-	glm::vec3 right = glm::normalize(glm::cross(Math::upV, GetForwardVector_World()));
-	AdjustVelocity(right);
+	glm::vec3 right = glm::normalize(glm::cross(Math::upV, getForwardVector_World()));
+	adjustVelocity(right);
 }
-void Player::OnInput_D(bool ButtonState, float DeltaTime)
+void Player::onInput_D(bool ButtonState, float DeltaTime)
 {
-	glm::vec3 right = glm::normalize(glm::cross(Math::upV, GetForwardVector_World()));
-	AdjustVelocity(-right);
+	glm::vec3 right = glm::normalize(glm::cross(Math::upV, getForwardVector_World()));
+	adjustVelocity(-right);
 }
-void Player::OnInput_E(bool ButtonState, float DeltaTime)
-{
-	glm::vec3 up = Math::upV;
-	AdjustVelocity(up);
-}
-void Player::OnInput_Q(bool ButtonState, float DeltaTime)
+void Player::onInput_E(bool ButtonState, float DeltaTime)
 {
 	glm::vec3 up = Math::upV;
-	AdjustVelocity(-up);
+	adjustVelocity(up);
 }
-void Player::AdjustVelocity(const glm::vec3& DeltaVelocity)
+void Player::onInput_Q(bool ButtonState, float DeltaTime)
 {
-	Velocity += (DeltaVelocity * InputMoveSensitivity);
+	glm::vec3 up = Math::upV;
+	adjustVelocity(-up);
 }
-void Player::OnInput_ESCAPE(bool ButtonState, float DeltaTime)
+void Player::adjustVelocity(const glm::vec3& DeltaVelocity)
 {
-	EnginePtr->ShutDown();
+	velocity += (DeltaVelocity * inputMoveSensitivity);
 }
-void Player::OnInput_MOUSERIGHT(bool ButtonState, float DeltaTime)
+void Player::onInput_ESCAPE(bool ButtonState, float DeltaTime)
+{
+	engine->ihutDown();
+}
+void Player::onInput_MOUSERIGHT(bool ButtonState, float DeltaTime)
 {
 	bMouseInput = ButtonState;
 }
 
-void Player::OnMouseScroll(const glm::vec2& DeltaScroll, float DeltaTime)
+void Player::onMouseScroll(const glm::vec2& DeltaScroll, float DeltaTime)
 {
-	MoveSpeed = glm::clamp(MoveSpeed + InputMouseScrollSensitivity * DeltaScroll.y, MinMoveSpeed, MaxMoveSpeed);
+	moveSpeed = glm::clamp(moveSpeed + inputMouseScrollSensitivity * DeltaScroll.y, minMoveSpeed, maxMoveSpeed);
 }
 
-void Player::SetMoveSpeed(float NewSpeed)
+void Player::setMoveSpeed(float NewSpeed)
 {
-	MoveSpeed = glm::clamp(NewSpeed, MinMoveSpeed, MaxMoveSpeed);
+	moveSpeed = glm::clamp(NewSpeed, minMoveSpeed, maxMoveSpeed);
 }
-void Player::OnMouseMove(const glm::vec2& CurrentPosition, const glm::vec2& DeltaMove, float DeltaTime)
+void Player::onMouseMove(const glm::vec2& CurrentPosition, const glm::vec2& DeltaMove, float DeltaTime)
 {
 	if ( !bMouseInput || glm::all(glm::epsilonEqual(DeltaMove, glm::vec2(0.0f), FLT_EPS)) ) return;
 
-	glm::quat currentRotation = GetRotation_World();
+	glm::quat currentRotation = getRotation_World();
 		
-	float yawDelta = glm::radians(DeltaMove.x * -InputMouseMoveSensitivity);
+	float yawDelta = glm::radians(DeltaMove.x * -inputMouseMoveSensitivity);
 	glm::quat yawRotation = glm::angleAxis(yawDelta, Math::upV);
 	
-	float pitchDelta = glm::radians(DeltaMove.y * -InputMouseMoveSensitivity);
-	glm::quat pitchRotation = glm::normalize(glm::angleAxis(pitchDelta, GetRightVector_World()));
+	float pitchDelta = glm::radians(DeltaMove.y * -inputMouseMoveSensitivity);
+	glm::quat pitchRotation = glm::normalize(glm::angleAxis(pitchDelta, getRightVector_World()));
 
 	glm::quat newRotation = glm::normalize(pitchRotation * yawRotation * currentRotation);
 
-	const glm::vec3 newCameraDirection = Math::QuaternionToDirection(newRotation);
+	const glm::vec3 newCameraDirection = Math::quaternionToDirection(newRotation);
 	const float MaxPitch = 89.0f;
 	const float maxDot = glm::abs(glm::cos(glm::radians(MaxPitch)));
 	const float newDot = 1.0f - glm::abs(glm::dot(newCameraDirection, Math::upV));
 
 	if ( newDot <= maxDot )
 	{
-		const glm::vec3 currentCameraDirection = Math::QuaternionToDirection(currentRotation);
+		const glm::vec3 currentCameraDirection = Math::quaternionToDirection(currentRotation);
 		const float currentDot = 1.0f - glm::abs(glm::dot(currentCameraDirection, Math::upV));
 
 		if ( newDot <= currentDot )
@@ -164,5 +164,5 @@ void Player::OnMouseMove(const glm::vec2& CurrentPosition, const glm::vec2& Delt
 			newRotation = glm::normalize(yawRotation * currentRotation);
 		}
 	}
-	SetRotation(newRotation);
+	setRotation(newRotation);
 }

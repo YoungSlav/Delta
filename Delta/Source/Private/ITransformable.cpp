@@ -3,167 +3,167 @@
 using namespace Delta;
 
 ITransformable::ITransformable(const Transform& Transform) : 
-	LocalTransform(Transform),
-	WorldTransform(Transform)
+	localTransform(Transform),
+	worldTransform(Transform)
 {
 }
 
 ITransformable::ITransformable(const Transform& Transform, const std::shared_ptr<ITransformable> _Parent) :
-	LocalTransform(Transform),
-	WorldTransform()
+	localTransform(Transform),
+	worldTransform()
 {
-	SetParent(_Parent);
+	setParent(_Parent);
 }
 ITransformable::~ITransformable()
 {
-	if ( std::shared_ptr<ITransformable> parent = GetParent() )
+	if ( std::shared_ptr<ITransformable> parent = getParent() )
 	{
 		parent->OnTransformUpdated.RemoveObject(this);
 	}
 }
 
-void ITransformable::SetParent(const std::shared_ptr<ITransformable> _Parent)
+void ITransformable::setParent(const std::shared_ptr<ITransformable> _Parent)
 {
-	if ( std::shared_ptr<ITransformable> oldParent = GetParent() )
+	if ( std::shared_ptr<ITransformable> oldParent = getParent() )
 	{
 		oldParent->OnTransformUpdated.RemoveObject(this);
 	}
-	ParentPtr = _Parent;
+	parent = _Parent;
 	if ( _Parent != nullptr )
 	{
-		_Parent->OnTransformUpdated.AddRaw(this, &ITransformable::OnParentTransformUpdated);
-		OnParentTransformUpdated(_Parent.get());
+		_Parent->OnTransformUpdated.AddRaw(this, &ITransformable::onParentTransformUpdated);
+		onParentTransformUpdated(_Parent.get());
 	}
 }
-std::shared_ptr<ITransformable> ITransformable::GetParent() const { return ParentPtr.expired() ? nullptr : ParentPtr.lock(); }
+std::shared_ptr<ITransformable> ITransformable::getParent() const { return parent.expired() ? nullptr : parent.lock(); }
 
-const Transform& ITransformable::GetTransform() const { return LocalTransform; }
-const glm::vec3& ITransformable::GetLocation() const { return LocalTransform.GetLocation(); }
-const glm::quat& ITransformable::GetRotation() const { return LocalTransform.GetRotation(); }
-const glm::vec3& ITransformable::GetScale() const { return LocalTransform.GetScale(); }
-glm::vec3 ITransformable::GetForwardVector() const { return LocalTransform.GetForwardVector(); }
-glm::vec3 ITransformable::GetRightVector() const { return LocalTransform.GetRightVector(); }
-glm::vec3 ITransformable::GetUpVector() const { return LocalTransform.GetUpVector(); }
+const Transform& ITransformable::getTransform() const { return localTransform; }
+const glm::vec3& ITransformable::getLocation() const { return localTransform.getLocation(); }
+const glm::quat& ITransformable::getRotation() const { return localTransform.getRotation(); }
+const glm::vec3& ITransformable::getScale() const { return localTransform.getScale(); }
+glm::vec3 ITransformable::getForwardVector() const { return localTransform.getForwardVector(); }
+glm::vec3 ITransformable::getRightVector() const { return localTransform.getRightVector(); }
+glm::vec3 ITransformable::getUpVector() const { return localTransform.getUpVector(); }
 
-void ITransformable::SetTransform(const Transform& InTransform)
+void ITransformable::setTransform(const Transform& InTransform)
 {
-	LocalTransform = InTransform;
-	UpdateWorldTransform();
+	localTransform = InTransform;
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
 }
-void ITransformable::SetLocation(const glm::vec3& InLocation)
+void ITransformable::setLocation(const glm::vec3& InLocation)
 {
-	LocalTransform.SetLocation(InLocation);
-	UpdateWorldTransform();
+	localTransform.setLocation(InLocation);
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
 }
-void ITransformable::SetRotation(const glm::quat& InRotation)
+void ITransformable::setRotation(const glm::quat& InRotation)
 {
-	LocalTransform.SetRotation(InRotation);
-	UpdateWorldTransform();
+	localTransform.setRotation(InRotation);
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
 }
-void ITransformable::SetRotation(const glm::vec3& InRotation)
+void ITransformable::setRotation(const glm::vec3& InRotation)
 {
-	LocalTransform.SetRotationEuler(InRotation);
-	UpdateWorldTransform();
+	localTransform.setRotationEuler(InRotation);
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
 }
-void ITransformable::SetDirection(const glm::vec3& Direction)
+void ITransformable::setDirection(const glm::vec3& Direction)
 {
-	LocalTransform.SetDirection(Direction);
-	UpdateWorldTransform();
+	localTransform.setDirection(Direction);
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
 }
-void ITransformable::Rotate(const glm::quat& InRotation)
+void ITransformable::rotate(const glm::quat& InRotation)
 {
-	LocalTransform.Rotate(InRotation);
-	UpdateWorldTransform();
+	localTransform.rotate(InRotation);
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
 }
-void ITransformable::SetScale(const glm::vec3& InScale)
+void ITransformable::setScale(const glm::vec3& InScale)
 {
-	LocalTransform.SetScale(InScale);
-	UpdateWorldTransform();
+	localTransform.setScale(InScale);
+	updateWorldTransform();
 	OnTransformUpdated.Broadcast(this);
-}
-
-const Transform& ITransformable::GetTransform_World() const
-{
-	return WorldTransform;
 }
 
-const glm::vec3& ITransformable::GetLocation_World() const { return WorldTransform.GetLocation(); }
-const glm::quat& ITransformable::GetRotation_World() const { return WorldTransform.GetRotation(); }
-const glm::vec3& ITransformable::GetScale_World() const { return WorldTransform.GetScale(); }
-glm::vec3 ITransformable::GetForwardVector_World() const { return WorldTransform.GetForwardVector(); }
-glm::vec3 ITransformable::GetRightVector_World() const { return WorldTransform.GetRightVector(); }
-glm::vec3 ITransformable::GetUpVector_World() const { return WorldTransform.GetUpVector(); }
-
-
-void ITransformable::SetTransform_World(const Transform& InTransform)
+const Transform& ITransformable::getTransform_World() const
 {
-	if ( std::shared_ptr<ITransformable> p = GetParent() )
+	return worldTransform;
+}
+
+const glm::vec3& ITransformable::getLocation_World() const { return worldTransform.getLocation(); }
+const glm::quat& ITransformable::getRotation_World() const { return worldTransform.getRotation(); }
+const glm::vec3& ITransformable::getScale_World() const { return worldTransform.getScale(); }
+glm::vec3 ITransformable::getForwardVector_World() const { return worldTransform.getForwardVector(); }
+glm::vec3 ITransformable::getRightVector_World() const { return worldTransform.getRightVector(); }
+glm::vec3 ITransformable::getUpVector_World() const { return worldTransform.getUpVector(); }
+
+
+void ITransformable::setTransform_World(const Transform& InTransform)
+{
+	if ( std::shared_ptr<ITransformable> p = getParent() )
 	{
-		Transform panretTransform = p->GetTransform_World();
-		glm::mat4 parentWorldInverse = glm::inverse(panretTransform.GetTransformMatrix());
-		glm::mat4 localTransform = parentWorldInverse * InTransform.GetTransformMatrix();
-		SetTransform(Transform(localTransform));
+		Transform panretTransform = p->getTransform_World();
+		glm::mat4 parentWorldInverse = glm::inverse(panretTransform.getTransformMatrix());
+		glm::mat4 localTransform = parentWorldInverse * InTransform.getTransformMatrix();
+		setTransform(Transform(localTransform));
 	}
 	else
 	{
-		SetTransform(InTransform);
+		setTransform(InTransform);
 	}
 }
-void ITransformable::SetLocation_World(const glm::vec3& InLocation)
+void ITransformable::setLocation_World(const glm::vec3& InLocation)
 {
-	Transform worldTransform = GetTransform_World();
-	worldTransform.SetLocation(InLocation);
-	SetTransform_World(worldTransform);
+	Transform worldTransform = getTransform_World();
+	worldTransform.setLocation(InLocation);
+	setTransform_World(worldTransform);
 }
-void ITransformable::SetRotation_World(const glm::vec3& InRotation)
+void ITransformable::setRotation_World(const glm::vec3& InRotation)
 {
-	Transform worldTransform = GetTransform_World();
-	worldTransform.SetRotationEuler(InRotation);
-	SetTransform_World(worldTransform);
+	Transform worldTransform = getTransform_World();
+	worldTransform.setRotationEuler(InRotation);
+	setTransform_World(worldTransform);
 }
-void ITransformable::SetRotation_World(const glm::quat& InRotation)
+void ITransformable::setRotation_World(const glm::quat& InRotation)
 {
-	Transform worldTransform = GetTransform_World();
-	worldTransform.SetRotation(InRotation);
-	SetTransform_World(worldTransform);
+	Transform worldTransform = getTransform_World();
+	worldTransform.setRotation(InRotation);
+	setTransform_World(worldTransform);
 }
-void ITransformable::SetDirection_World(const glm::vec3& Direction)
+void ITransformable::setDirection_World(const glm::vec3& Direction)
 {
-	Transform worldTransform = GetTransform_World();
-	worldTransform.SetDirection(Direction);
-	SetTransform_World(worldTransform);
+	Transform worldTransform = getTransform_World();
+	worldTransform.setDirection(Direction);
+	setTransform_World(worldTransform);
 }
-void ITransformable::SetScale_World(const glm::vec3& InScale)
+void ITransformable::setScale_World(const glm::vec3& InScale)
 {
-	Transform worldTransform = GetTransform_World();
-	worldTransform.SetScale(InScale);
-	SetTransform_World(worldTransform);
+	Transform worldTransform = getTransform_World();
+	worldTransform.setScale(InScale);
+	setTransform_World(worldTransform);
 }
 
 
-void ITransformable::UpdateWorldTransform()
+void ITransformable::updateWorldTransform()
 {
-	if ( std::shared_ptr<ITransformable> p = GetParent() )
+	if ( std::shared_ptr<ITransformable> p = getParent() )
 	{
-		const Transform& parentTransform = p->GetTransform_World();
-		glm::mat4 parentMat = parentTransform.GetTransformMatrix();
-		glm::mat4 myMat = LocalTransform.GetTransformMatrix();
+		const Transform& parentTransform = p->getTransform_World();
+		glm::mat4 parentMat = parentTransform.getTransformMatrix();
+		glm::mat4 myMat = localTransform.getTransformMatrix();
 		glm::mat4 myWorld = parentMat * myMat;
-		WorldTransform.SetTransformMatrix(myWorld);
+		worldTransform.setTransformMatrix(myWorld);
 	}
 	else
 	{
-		WorldTransform = LocalTransform;
+		worldTransform = localTransform;
 	}
 }
 
-void ITransformable::OnParentTransformUpdated(const ITransformable* _parent)
+void ITransformable::onParentTransformUpdated(const ITransformable* _parent)
 {
-	UpdateWorldTransform();
+	updateWorldTransform();
 }

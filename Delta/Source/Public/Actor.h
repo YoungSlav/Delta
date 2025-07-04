@@ -16,19 +16,19 @@ public:
 		ITransformable()
 	{}
 
-	void SetVisisble(bool bNewVisible, bool bPropagateToChildren = false);
-	bool IsVisisble() const { return bVisible; }
+	void setVisisble(bool bNewVisible, bool bPropagateToChildren = false);
+	bool isVisisble() const { return bVisible; }
 
-	const std::vector<std::shared_ptr<ActorComponent>>& GetComponents() const { return Components; }
-
-protected:
-	virtual void OnChildObjectAdded(std::shared_ptr<Object> _OwnedObject) override;
-	virtual void OnChildObjectRemoved(std::shared_ptr<Object> _OwnedObject) override;
-	virtual void OnDestroy() override;
+	const std::vector<std::shared_ptr<ActorComponent>>& getComponents() const { return components; }
 
 protected:
+	virtual void onChildObjectAdded(std::shared_ptr<Object> _OwnedObject) override;
+	virtual void onChildObjectRemoved(std::shared_ptr<Object> _OwnedObject) override;
+	virtual void onDestroy() override;
 
-	std::vector<std::shared_ptr<ActorComponent>> Components;
+protected:
+
+	std::vector<std::shared_ptr<ActorComponent>> components;
 
 	bool bVisible = true;
 };

@@ -15,25 +15,25 @@ public:
 	template <typename... Args>
 	Material(const std::string& _ShaderName, Args&&... args) :
 		Asset(std::forward<Args>(args)...),
-		ShaderName(_ShaderName)
+		shaderName(_ShaderName)
 	{}
 
-	VkPipeline GetGraphicsPipeline() const { return GraphicsPipeline; }
+	VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
 
 protected:
 
-	virtual EAssetLoadingState Load_Internal() override;
-	virtual void Cleanup_Internal() override;
+	virtual EAssetLoadingState load_Internal() override;
+	virtual void cleanup_Internal() override;
 
-	void CreateGraphicsPipeline();
-	VkShaderModule CreateShaderModule(const std::vector<char>& code);
-	static std::vector<char> ReadFile(const std::string& filename);
+	void createGraphicsPipeline();
+	VkShaderModule createShaderModule(const std::vector<char>& code);
+	static std::vector<char> readFile(const std::string& filename);
 
 private:
-	VkPipelineLayout PipelineLayout;
-	VkPipeline GraphicsPipeline;
+	VkPipelineLayout pipelineLayout;
+	VkPipeline graphicsPipeline;
 
-	const std::string ShaderName = "";
+	const std::string shaderName = "";
 };
 
 }

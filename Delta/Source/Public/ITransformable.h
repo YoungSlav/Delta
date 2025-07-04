@@ -17,46 +17,46 @@ public:
 
 	virtual ~ITransformable();
 
-	void SetParent(const std::shared_ptr<ITransformable> _Parent);
-	std::shared_ptr<ITransformable> GetParent() const;
+	void setParent(const std::shared_ptr<ITransformable> _Parent);
+	std::shared_ptr<ITransformable> getParent() const;
 
-	const Transform& GetTransform() const;
-	const glm::vec3& GetLocation() const;
-	const glm::quat& GetRotation() const;
-	const glm::vec3& GetScale() const;
-	glm::vec3 GetForwardVector() const;
-	glm::vec3 GetRightVector() const;
-	glm::vec3 GetUpVector() const;
+	const Transform& getTransform() const;
+	const glm::vec3& getLocation() const;
+	const glm::quat& getRotation() const;
+	const glm::vec3& getScale() const;
+	glm::vec3 getForwardVector() const;
+	glm::vec3 getRightVector() const;
+	glm::vec3 getUpVector() const;
 
-	void SetTransform(const Transform& InTransform);
-	void SetLocation(const glm::vec3& InLocation);
-	void SetRotation(const glm::quat& InRotation);
-	void SetRotation(const glm::vec3& InRotation);
-	void SetDirection(const glm::vec3& Direction);
-	void Rotate(const glm::quat& InRotation);
-	void SetScale(const glm::vec3& InScale);
+	void setTransform(const Transform& InTransform);
+	void setLocation(const glm::vec3& InLocation);
+	void setRotation(const glm::quat& InRotation);
+	void setRotation(const glm::vec3& InRotation);
+	void setDirection(const glm::vec3& Direction);
+	void rotate(const glm::quat& InRotation);
+	void setScale(const glm::vec3& InScale);
 
-	const Transform& GetTransform_World() const;
-	const glm::vec3& GetLocation_World() const;
-	const glm::quat& GetRotation_World() const;
-	const glm::vec3& GetScale_World() const;
-	glm::vec3 GetForwardVector_World() const;
-	glm::vec3 GetRightVector_World() const;
-	glm::vec3 GetUpVector_World() const;
+	const Transform& getTransform_World() const;
+	const glm::vec3& getLocation_World() const;
+	const glm::quat& getRotation_World() const;
+	const glm::vec3& getScale_World() const;
+	glm::vec3 getForwardVector_World() const;
+	glm::vec3 getRightVector_World() const;
+	glm::vec3 getUpVector_World() const;
 
 
-	void SetTransform_World(const Transform& InTransform);
-	void SetLocation_World(const glm::vec3& InLocation);
-	void SetRotation_World(const glm::vec3& InRotation);
-	void SetRotation_World(const glm::quat& InRotation);
-	void SetDirection_World(const glm::vec3& Direction);
-	void SetScale_World(const glm::vec3& InScale);
+	void setTransform_World(const Transform& InTransform);
+	void setLocation_World(const glm::vec3& InLocation);
+	void setRotation_World(const glm::vec3& InRotation);
+	void setRotation_World(const glm::quat& InRotation);
+	void setDirection_World(const glm::vec3& Direction);
+	void setScale_World(const glm::vec3& InScale);
 
 private:
 
-	void UpdateWorldTransform();
+	void updateWorldTransform();
 
-	void OnParentTransformUpdated(const ITransformable* _parent);
+	void onParentTransformUpdated(const ITransformable* _parent);
 
 	
 
@@ -64,9 +64,9 @@ public:
 	OnTransformUpdatedSignature OnTransformUpdated;
 
 private:
-	Transform LocalTransform;
-	Transform WorldTransform;
+	Transform localTransform;
+	Transform worldTransform;
 
-	std::weak_ptr<ITransformable> ParentPtr;
+	std::weak_ptr<ITransformable> parent;
 };
 }

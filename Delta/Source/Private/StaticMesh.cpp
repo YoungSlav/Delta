@@ -12,81 +12,81 @@
 
 using namespace Delta;
 
-EAssetLoadingState StaticMesh::Load_Internal()
+EAssetLoadingState StaticMesh::load_Internal()
 { 
 	LOG_INDENT;
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(EnginePtr->GetAssetManager()->FindAsset(MeshPath), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene* scene = importer.ReadFile(engine->getAssetManager()->findAsset(meshPath), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 	
 	if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
-		LOG(Error, "Failed to load mesh {}, with {}", GetName(), importer.GetErrorString());
-		return EAssetLoadingState::Invalid;
+		LOG(Error, "Failed to load mesh {}, with {}", getName(), importer.GetErrorString());
+		return EAssetLoadingState::INVALID;
 	}
 
-	ProcessNode(scene->mRootNode, scene);
+	processNode(scene->mRootNode, scene);
 
-	CreateVertexBuffer();
-	CreateIndexBuffer();
+	createVertexBuffer();
+	createIndexBuffer();
 
-	LOG(Log, "Loaded mesh '{}', verticies: {}, indicies: {}", GetName(), Data.Vertices.size(), Data.Indices.size());
+	LOG(Log, "Loaded mesh '{}', verticies: {}, indicies: {}", getName(), data.vertices.size(), data.indices.size());
 	
-	return EAssetLoadingState::Loaded;
+	return EAssetLoadingState::LOADED;
 }
 
-void StaticMesh::CreateVertexBuffer()
+void StaticMesh::createVertexBuffer()
 {
-	VkDeviceSize bufferSize = sizeof(Vertex) * Data.Vertices.size();
+	VkDeviceSize bufferSize = sizeof(Vertex) * data.vertices.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	engine->getVulkanCore()->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-	void* data;
-	vkMapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, Data.Vertices.data(), (size_t) bufferSize);
-	vkUnmapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory);
+	void* bufferData;
+	vkMapMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, 0, bufferSize, 0, &bufferData);
+		memcpy(bufferData, data.vertices.data(), (size_t) bufferSize);
+	vkUnmapMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory);
 
-	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
+	engine->getVulkanCore()->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-	EnginePtr->GetVulkanCore()->CopyBuffer(stagingBuffer, VertexBuffer, bufferSize);
+	engine->getVulkanCore()->copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, nullptr);
+	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
 }
 
-void StaticMesh::CreateIndexBuffer()
+void StaticMesh::createIndexBuffer()
 {
-	VkDeviceSize bufferSize = sizeof(Data.Indices[0]) * Data.Indices.size();
+	VkDeviceSize bufferSize = sizeof(data.indices[0]) * data.indices.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+	engine->getVulkanCore()->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
-	void* data;
-	vkMapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, Data.Indices.data(), (size_t) bufferSize);
-	vkUnmapMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory);
+	void* bufferData;
+	vkMapMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, 0, bufferSize, 0, &bufferData);
+		memcpy(bufferData, data.indices.data(), (size_t) bufferSize);
+	vkUnmapMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory);
 
 
-	EnginePtr->GetVulkanCore()->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, IndexBuffer, IndexBufferMemory);
+	engine->getVulkanCore()->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 
-	EnginePtr->GetVulkanCore()->CopyBuffer(stagingBuffer, IndexBuffer, bufferSize);
+	engine->getVulkanCore()->copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
-	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), stagingBufferMemory, nullptr);
+	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
 }
 
-void StaticMesh::Cleanup_Internal()
+void StaticMesh::cleanup_Internal()
 {
-	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), VertexBuffer, nullptr);
-	vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), VertexBufferMemory, nullptr);
+	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), vertexBuffer, nullptr);
+	vkFreeMemory(engine->getVulkanCore()->getDevice(), vertexBufferMemory, nullptr);
 
-	vkDestroyBuffer(EnginePtr->GetVulkanCore()->GetDevice(), IndexBuffer, nullptr);
-	vkFreeMemory(EnginePtr->GetVulkanCore()->GetDevice(), IndexBufferMemory, nullptr);
+	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), indexBuffer, nullptr);
+	vkFreeMemory(engine->getVulkanCore()->getDevice(), indexBufferMemory, nullptr);
 }
 
-void StaticMesh::ProcessNode(struct aiNode* node, const struct aiScene* scene)
+void StaticMesh::processNode(struct aiNode* node, const struct aiScene* scene)
 {
 	//LOG_INDENT;
 	//LOG(Log, "Loading node '{}'", node->mName.C_Str());
@@ -109,7 +109,7 @@ void StaticMesh::ProcessNode(struct aiNode* node, const struct aiScene* scene)
 
 		//Log::LogMessage(ELog::Log"  -LoadingMesh: {}", mesh->mName.C_Str());
 		// Walk through each of the mesh's vertices
-		Data.Vertices.reserve(mesh->mNumVertices + Data.Vertices.size());
+		data.vertices.reserve(mesh->mNumVertices + data.vertices.size());
 		for(uint32 i = 0; i < mesh->mNumVertices; i++)
 		{
 			Vertex vertex;
@@ -119,7 +119,7 @@ void StaticMesh::ProcessNode(struct aiNode* node, const struct aiScene* scene)
 				vector.x = mesh->mVertices[i].x;
 				vector.y = mesh->mVertices[i].y;
 				vector.z = mesh->mVertices[i].z;
-				vertex.Position = vector;
+				vertex.position = vector;
 			}
 		
 			if ( mesh->mNormals )
@@ -127,54 +127,54 @@ void StaticMesh::ProcessNode(struct aiNode* node, const struct aiScene* scene)
 				vector.x = mesh->mNormals[i].x;
 				vector.y = mesh->mNormals[i].y;
 				vector.z = mesh->mNormals[i].z;
-				vertex.Normal = vector;
+				vertex.normal = vector;
 			}
 			if(mesh->mTextureCoords[0])
 			{
 				glm::vec2 vec;
 				vec.x = mesh->mTextureCoords[0][i].x; 
 				vec.y = mesh->mTextureCoords[0][i].y;
-				vertex.TexCoords = vec;
+				vertex.texCoords = vec;
 			}
 			else
 			{
-				vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+				vertex.texCoords = glm::vec2(0.0f, 0.0f);
 			}
 			if ( mesh->mTangents )
 			{
 				vector.x = mesh->mTangents[i].x;
 				vector.y = mesh->mTangents[i].y;
 				vector.z = mesh->mTangents[i].z;
-				vertex.Tangent = vector;
+				vertex.tangent = vector;
 			}
 			if ( mesh->mBitangents )
 			{
 				vector.x = mesh->mBitangents[i].x;
 				vector.y = mesh->mBitangents[i].y;
 				vector.z = mesh->mBitangents[i].z;
-				vertex.Bitangent = vector;
+				vertex.bitangent = vector;
 			}
 			if ( mesh->HasVertexColors(0) )
 			{
-				vertex.Color = glm::vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
+				vertex.color = glm::vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
 			}
-			Data.Vertices.push_back(vertex);
+			data.vertices.push_back(vertex);
 		}
 		
 
 		for(uint32 i = 0; i < mesh->mNumFaces; i++)
 		{
 			aiFace face = mesh->mFaces[i];
-			Data.Indices.reserve(face.mNumIndices + Data.Indices.size());
+			data.indices.reserve(face.mNumIndices + data.indices.size());
 			for(uint32 j = 0; j < face.mNumIndices; j++)
 			{
-				Data.Indices.push_back(face.mIndices[j]);	
+				data.indices.push_back(face.mIndices[j]);	
 			}
 		}
 	}
 
 	for(uint32 i = 0; i < node->mNumChildren; i++)
 	{
-		ProcessNode(node->mChildren[i], scene);
+		processNode(node->mChildren[i], scene);
 	}
 }

@@ -38,95 +38,95 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	void DrawFrame(float DeltaTime);
+	void drawFrame(float DeltaTime);
 
-	VkRenderPass GetRenderPass() { return RenderPass; }
-	VkDevice GetDevice() { return Device; }
+	VkRenderPass getRenderPass() { return renderPass; }
+	VkDevice getDevice() { return device; }
 
-	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-	std::shared_ptr<class Material> TempMaterialPtr;
+	std::shared_ptr<class Material> tempMaterialPtr;
 
 protected:
-	bool Initialize_Internal() override;
-	virtual void OnDestroy() override;
+	bool initialize_Internal() override;
+	virtual void onDestroy() override;
 
 private:
 
-	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
-	void CreateInstance();
-	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-	void SetupDebugMessenger();
-	void CreateSurface();
-	void PickPhysicalDevice();
-	void CreateLogicalDevice();
-	void CreateSwapChain();
-	void CreateImageViews();
-	void CreateRenderPass();
-	void CreateFramebuffers();
-	void CreateRenderCommandPool();
-	void CreateTransferCommandPool();
-	void CreateRenderCommandBuffer();
-	void CreateSyncObjects();
+	void createInstance();
+	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+	void setupDebugMessenger();
+	void createSurface();
+	void pickPhysicalDevice();
+	void createLogicalDevice();
+	void createSwapChain();
+	void createImageViews();
+	void createRenderPass();
+	void createFramebuffers();
+	void createRenderCommandPool();
+	void createTransferCommandPool();
+	void createRenderCommandBuffer();
+	void createSyncObjects();
 
-	void OnWindowResize(const glm::ivec2& NewSize);
+	void onWindowResize(const glm::ivec2& NewSize);
 
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-	bool IsDeviceSuitable(VkPhysicalDevice device);
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
-	std::vector<const char*> GetRequiredExtensions();
-	bool CheckValidationLayerSupport();
-	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+	bool isDeviceSuitable(VkPhysicalDevice device);
+	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+	std::vector<const char*> getRequiredExtensions();
+	bool checkValidationLayerSupport();
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
-	void Cleanup();
+	void cleanup();
 
 private:
 
 #ifdef NDEBUG
-	const bool EnableValidationLayers = false;
+	const bool enableValidationLayers = false;
 #else
-	const bool EnableValidationLayers = true;
+	const bool enableValidationLayers = true;
 #endif
-	const std::vector<const char*> ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
-	const std::vector<const char*> DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 
-	VkInstance Instance;
-	VkDebugUtilsMessengerEXT DebugMessenger;
-	VkSurfaceKHR Surface;
+	VkInstance iInstance;
+	VkDebugUtilsMessengerEXT debugMessenger;
+	VkSurfaceKHR surface;
 
-	VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
-	VkDevice Device;
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkDevice device;
 
-	VkQueue GraphicsQueue;
-	VkQueue PresentQueue;
-	VkQueue TransferQueue;
+	VkQueue graphicsQueue;
+	VkQueue presentQueue;
+	VkQueue transferQueue;
 
-	VkSwapchainKHR SwapChain;
-	std::vector<VkImage> SwapChainImages;
-	VkFormat SwapChainImageFormat;
-	VkExtent2D SwapChainExtent;
-	std::vector<VkImageView> SwapChainImageViews;
-	std::vector<VkFramebuffer> SwapChainFramebuffers;
+	VkSwapchainKHR swapChain;
+	std::vector<VkImage> swapChainImages;
+	VkFormat swapChainImageFormat;
+	VkExtent2D swapChainExtent;
+	std::vector<VkImageView> swapChainImageViews;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
 
-	VkRenderPass RenderPass;
+	VkRenderPass renderPass;
 
-	VkCommandPool RenderCommandPool;
-	VkCommandBuffer RenderCommandBuffer;
+	VkCommandPool renderCommandPool;
+	VkCommandBuffer renderCommandBuffer;
 
-	VkCommandPool TransferCommandPool;
+	VkCommandPool transferCommandPool;
 
-	VkSemaphore ImageAvailableSemaphore;
-	VkSemaphore RenderFinishedSemaphore;
-	VkFence InFlightFence;
+	VkSemaphore imageAvailableSemaphore;
+	VkSemaphore renderFinishedSemaphore;
+	VkFence inFlightFence;
 
 
 

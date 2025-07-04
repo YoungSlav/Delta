@@ -11,7 +11,7 @@
 #include <string>
 #include <stdexcept>
 
-#define LOG(Type, ...) DeltaLog::LogMessage(Type, __VA_ARGS__)
+#define LOG(Type, ...) DeltaLog::logMessage(Type, __VA_ARGS__)
 #define LOG_INDENT DeltaLogIndentScope indent;
 
 enum ELog
@@ -30,56 +30,56 @@ class DeltaLog
 	friend class DeltaLogIndentScope;
 public:
 
-	static void Init(const std::string& logFilename = "Delta.log");
+	static void init(const std::string& logFilename = "Delta.log");
 
 
 	template<typename... Args>
-	static void LogMessage(ELog Type, const std::string& format_str, Args&&... args)
+	static void logMessage(ELog Type, const std::string& format_str, Args&&... args)
 	{
-		auto tuple_args = std::make_tuple(DeltaLog::to_string(std::forward<Args>(args))...);
+		auto tuple_args = std::make_tuple(DeltaLog::toString(std::forward<Args>(args))...);
 		auto format_args = std::apply(
 			[&](auto&... args) { return std::make_format_args(args...); },
 			tuple_args
 		);
-		Print(std::vformat(format_str, format_args), Type);
+		print(std::vformat(format_str, format_args), Type);
 	}
 
 	template<typename T>
-	static std::string to_string(const T& val)
+	static std::string toString(const T& val)
 	{
-		return to_string_internal<T>(val);
+		return toStringInternal<T>(val);
 	}
 private:
 
-	static void IncreaseIndent();
-	static void DecreaseIndent();
+	static void increaseIndent();
+	static void decreaseIndent();
 
-	static void Print(const std::string& Message, ELog Type = ELog::Log);
-	static void Print(const char* const Message, ELog Type = ELog::Log);
+	static void print(const std::string& Message, ELog Type = ELog::Log);
+	static void print(const char* const Message, ELog Type = ELog::Log);
 
 	template<typename T=char*>
-	static std::string to_string_internal(const char* val) 
+	static std::string toStringInternal(const char* val) 
 	{
 		return std::string(val);
 	}
 
 	template<typename T=std::string>
-	static std::string to_string_internal(const std::string& val) 
+	static std::string toStringInternal(const std::string& val) 
 	{
 		return val;
 	}
 
 	//template<typename T, typename U = typename T::value_type, typename Q = glm::qualifier::defaultp >
 	template<typename T=glm::qua, typename U = typename T::value_type, glm::qualifier Q = glm::qualifier::defaultp>
-	static std::string to_string_internal(const glm::qua<U, Q>& qua)
+	static std::string toStringInternal(const glm::qua<U, Q>& qua)
 	{
-		return "(" + to_string_internal<glm::vec3>(glm::normalize(glm::vec3(qua.x, qua.y, qua.z))) + " " + to_string_internal<float>(glm::degrees(qua.w)) + ")";
+		return "(" + toStringInternal<glm::vec3>(glm::normalize(glm::vec3(qua.x, qua.y, qua.z))) + " " + toStringInternal<float>(glm::degrees(qua.w)) + ")";
 	}
 	
 	
 	// Templated function to convert glm vector types to string
 	template<typename T, glm::length_t L, typename U = typename T::value_type>
-	static std::string to_string_internal(const glm::vec<L, U>& vec) 
+	static std::string toStringInternal(const glm::vec<L, U>& vec) 
 	{
 		// Create a stringstream to build the string
 		std::stringstream ss;
@@ -113,7 +113,7 @@ private:
 
 	// Templated function to convert glm matrix types to string
 	template<typename T, glm::length_t C, glm::length_t R, typename U = typename T::value_type>
-	static std::string to_string_internal(const glm::mat<C, R, U>& mat) 
+	static std::string toStringInternal(const glm::mat<C, R, U>& mat) 
 	{
 		std::string str = "(";
 		for (int i = 0; i < C; ++i) 
@@ -122,7 +122,7 @@ private:
 			{
 				str += ", ";
 			}
-			str += to_string_internal<T>(mat[i]);
+			str += toStringInternal<T>(mat[i]);
 		}
 		str += ")";
 		return str;
@@ -130,19 +130,19 @@ private:
 
 	// Templated function to convert non-glm types to string using std::to_string
 	template<typename T>
-	static std::string to_string_internal(const T& val) 
+	static std::string toStringInternal(const T& val) 
 	{
 		return std::to_string(val);
 	}
 
 private:
-	static std::ofstream LogFile;
-	static std::string LogFileName;
-	static std::string LogFolder;
-	static int LogIndent;
-	static constexpr int IndentSize = 4;
+	static std::ofstream logFile;
+	static std::string logFileName;
+	static std::string logFolder;
+	static int logIndent;
+	static constexpr int indentSize = 4;
 
-	static void RenameOldLogFile(const std::string& oldFileName);
+	static void renameOldLogFile(const std::string& oldFileName);
 };
 
 class DeltaLogIndentScope
@@ -150,10 +150,10 @@ class DeltaLogIndentScope
 public:
 	DeltaLogIndentScope()
 	{
-		DeltaLog::IncreaseIndent();
+		DeltaLog::increaseIndent();
 	}
 	~DeltaLogIndentScope()
 	{
-		DeltaLog::DecreaseIndent();
+		DeltaLog::decreaseIndent();
 	}
 };

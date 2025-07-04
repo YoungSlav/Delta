@@ -7,11 +7,11 @@ namespace Delta
 
 enum EKeySubscriptionType : int32
 {
-	Pressed = 0x01,
-	Hold = 0x02,
-	Released = 0x04,
+	PRESSED = 0x01,
+	HOLD = 0x02,
+	RELEASED = 0x04,
 
-	Any = 0x07
+	ANY = 0x07
 };
 
 
@@ -21,17 +21,17 @@ typedef MulticastDelegate<const glm::vec2&, const glm::vec2&, float> OnMouseMove
 
 struct KeySubscription
 {
-	int32 Key = 0;
-	int32 SubscribedType = EKeySubscriptionType::Any;
-	OnKeyInputSignature Callback;
+	int32 key = 0;
+	int32 subscribedType = EKeySubscriptionType::ANY;
+	OnKeyInputSignature callback;
 
-	bool CheckType(EKeySubscriptionType Type) const
+	bool checkType(EKeySubscriptionType Type) const
 	{
-		return SubscribedType & Type;
+		return subscribedType & Type;
 	}
-	bool CheckType(int32 Types) const
+	bool checkType(int32 Types) const
 	{
-		return SubscribedType & Types;
+		return subscribedType & Types;
 	}
 };
 
@@ -40,13 +40,13 @@ class Input final : public Object
 	struct KeyEvent
 	{
 		KeyEvent(int32 _Key, EKeySubscriptionType _Event, int32 _Mods) :
-			Key(_Key), EventType(_Event), Mods(_Mods),
-			bPressedNow(_Event == EKeySubscriptionType::Pressed || _Event == EKeySubscriptionType::Hold)
+			key(_Key), eventType(_Event), mods(_Mods),
+			bPressedNow(_Event == EKeySubscriptionType::PRESSED || _Event == EKeySubscriptionType::HOLD)
 		{}
 
-		int32 Key = 0;
-		int32 Mods = 0;
-		EKeySubscriptionType EventType;
+		int32 key = 0;
+		int32 mods = 0;
+		EKeySubscriptionType eventType;
 		bool bPressedNow;
 	};
 
@@ -57,37 +57,37 @@ public:
 	{
 	}
 	
-	void SetMouseEnabled(bool bNewMouseEnabled) const;
-	void ProcessInput(float DeltaTime);
+	void setMouseEnabled(bool bNewMouseEnabled) const;
+	void processInput(float DeltaTime);
 
-	bool GetKeyState(int32 Key) const;
-	const glm::vec2& GetMousePosition() const { return MousePos; }
+	bool getKeyState(int32 Key) const;
+	const glm::vec2& getMousePosition() const { return mousePos; }
 
-	void SubscribeKey(const KeySubscription& NewSubscription);
+	void subscribeKey(const KeySubscription& NewSubscription);
 	OnMouseScrollSignature OnMouseScrollDelegate;
 	OnMouseMoveSignature OnMouseMoveDelegate;
 
-	void UnSubscribeAll(std::shared_ptr<Object> Owner);
-	void UnSubscribeKey(int32 Key, std::shared_ptr<Object> Owner);
+	void unsubscribeAll(std::shared_ptr<Object> Owner);
+	void unsubscribeKey(int32 Key, std::shared_ptr<Object> Owner);
 
 protected:
-	virtual bool Initialize_Internal() override;
-	virtual void OnDestroy() override;
+	virtual bool initialize_Internal() override;
+	virtual void onDestroy() override;
 
-	void OnInputKey(int32 Key, int32 Action);
-	void OnMouseMove(glm::vec2 MousePos);
-	void OnMouseScroll(glm::vec2 MouseScroll);
+	void onInputKey(int32 Key, int32 Action);
+	void onMouseMove(glm::vec2 MousePos);
+	void onMouseScroll(glm::vec2 MouseScroll);
 
 private:
-	std::vector<KeySubscription> KeysSubscribers;
+	std::vector<KeySubscription> keysSubscribers;
 		
-	std::set<int32> PressedKeys;
-	std::set<int32> OldPressedStates;
+	std::set<int32> pressedKeys;
+	std::set<int32> oldPressedStates;
 
 
-	glm::vec2 MousePos = glm::vec2(0.0);
-	glm::vec2 DeltaMouseMove = glm::vec2(0.0);
-	glm::vec2 DeltaMouseScroll = glm::vec2(0.0);
+	glm::vec2 mousePos = glm::vec2(0.0);
+	glm::vec2 deltaMouseMove = glm::vec2(0.0);
+	glm::vec2 deltaMouseScroll = glm::vec2(0.0);
 };
 
 }

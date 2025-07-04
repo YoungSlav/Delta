@@ -15,28 +15,28 @@ public:
 	template <typename... Args>
 	StaticMesh(const std::string& _MeshPath,Args&&... args) :
 		Asset(std::forward<Args>(args)...),
-		MeshPath(_MeshPath)
+		meshPath(_MeshPath)
 	{}
 
 protected:
-	virtual EAssetLoadingState Load_Internal() override;
-	virtual void Cleanup_Internal() override;
+	virtual EAssetLoadingState load_Internal() override;
+	virtual void cleanup_Internal() override;
 
 private:
-	void ProcessNode(aiNode* node, const aiScene* scene);
+	void processNode(aiNode* node, const aiScene* scene);
 
-	void CreateVertexBuffer();
-	void CreateIndexBuffer();
+	void createVertexBuffer();
+	void createIndexBuffer();
 
 private:
 
-	const std::string MeshPath;
-	MeshData Data;
+	const std::string meshPath;
+	MeshData data;
 
-	VkBuffer VertexBuffer;
-	VkDeviceMemory VertexBufferMemory;
-	VkBuffer IndexBuffer;
-	VkDeviceMemory IndexBufferMemory;
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
 };
 
 }

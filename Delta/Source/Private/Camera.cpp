@@ -5,19 +5,19 @@
 
 using namespace Delta;
 
-CameraInfo Camera::GetCameraInfo(const glm::ivec2& ViewportSize) const
+CameraInfo Camera::getCameraInfo(const glm::ivec2& ViewportSize) const
 {
 	CameraInfo outInfo;
 
-	outInfo.FOV = FOV;
-	outInfo.MinDist = MinDrawingDistance;
-	outInfo.MaxDist = MaxDrawingDistance;
+	outInfo.fov = fov;
+	outInfo.minDist = minDrawingDistance;
+	outInfo.maxDist = maxDrawingDistance;
 
 
 	const float AspectRatio = ViewportSize.y > 0.0f ? float(ViewportSize.x) / float(ViewportSize.y) : 0.0f;
 	
-	outInfo.View = glm::lookAt(GetLocation_World(), GetLocation_World() + GetForwardVector_World(), Math::upV);
-	outInfo.Proj = glm::perspective(glm::radians(FOV*0.5f), AspectRatio, MinDrawingDistance, MaxDrawingDistance);
+	outInfo.view = glm::lookAt(getLocation_World(), getLocation_World() + getForwardVector_World(), Math::upV);
+	outInfo.proj = glm::perspective(glm::radians(fov*0.5f), AspectRatio, minDrawingDistance, maxDrawingDistance);
 
 	return outInfo;
 }

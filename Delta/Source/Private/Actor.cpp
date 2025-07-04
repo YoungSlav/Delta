@@ -6,42 +6,42 @@
 
 using namespace Delta;
 
-void Actor::OnChildObjectAdded(std::shared_ptr<Object> _OwnedObject)
+void Actor::onChildObjectAdded(std::shared_ptr<Object> _OwnedObject)
 {
-	Object::OnChildObjectAdded(_OwnedObject);
+	Object::onChildObjectAdded(_OwnedObject);
 
 	if ( std::shared_ptr<ActorComponent> oc = std::dynamic_pointer_cast<ActorComponent>(_OwnedObject) )
 	{
-		Components.push_back(oc);
+		components.push_back(oc);
 	}
 }
 
-void Actor::OnChildObjectRemoved(std::shared_ptr<Object> _OwnedObject)
+void Actor::onChildObjectRemoved(std::shared_ptr<Object> _OwnedObject)
 {
-	Object::OnChildObjectRemoved(_OwnedObject);
+	Object::onChildObjectRemoved(_OwnedObject);
 
 	if ( std::shared_ptr<ActorComponent> oc = std::dynamic_pointer_cast<ActorComponent>(_OwnedObject) )
 	{
-		std::erase(Components, oc);
+		std::erase(components, oc);
 	}
 }
 
-void Actor::OnDestroy()
+void Actor::onDestroy()
 {
-	Components.clear();
-	Object::OnDestroy();
+	components.clear();
+	Object::onDestroy();
 }
 
-void Actor::SetVisisble(bool bNewVisible, bool bPropagateToChildren)
+void Actor::setVisisble(bool bNewVisible, bool bPropagateToChildren)
 {
 	bVisible = bNewVisible;
 	if ( bPropagateToChildren )
 	{
-		for ( auto it : Components )
+		for ( auto it : components )
 		{
 			if ( std::shared_ptr<IRenderable> asRenderable = std::dynamic_pointer_cast<IRenderable>(it) )
 			{
-				asRenderable->SetVisisble(bNewVisible);
+				asRenderable->setVisisble(bNewVisible);
 			}
 		}
 	}
