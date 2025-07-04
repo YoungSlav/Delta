@@ -20,7 +20,7 @@ bool ActorComponent::initialize_Internal()
 	return false;
 }
 
-std::shared_ptr<Actor> ActorComponent::GetOwningActor() const
+std::shared_ptr<Actor> ActorComponent::getOwningActor() const
 {
 	if ( std::shared_ptr<Object> Owner = getOwner() )
 	{

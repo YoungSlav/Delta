@@ -18,6 +18,8 @@ public:
 		meshPath(inMeshPath)
 	{}
 
+	void getBuffers(VkBuffer& outVertexBuffer, VkBuffer& outIndexBuffer, uint32& outIndexCount) const;
+
 protected:
 	virtual EAssetLoadingState load_Internal() override;
 	virtual void cleanup_Internal() override;

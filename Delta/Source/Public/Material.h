@@ -18,20 +18,27 @@ public:
 		shaderName(inShaderName)
 	{}
 
-	VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
+	VkPipeline getPipeline() const { return pipeline; }
+	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
+	VkDescriptorSet getDescriptorSet(uint32 frame) const { return descriptorSets[frame]; }
 
 protected:
 
 	virtual EAssetLoadingState load_Internal() override;
 	virtual void cleanup_Internal() override;
 
+	void createDescriptorSetLayout();
+	void createDescriptorSets();
 	void createGraphicsPipeline();
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 	static std::vector<char> readFile(const std::string& filename);
 
 private:
+	VkDescriptorSetLayout descriptorSetLayout;
+	std::vector<VkDescriptorSet> descriptorSets;
+
 	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
+	VkPipeline pipeline;
 
 	const std::string shaderName = "";
 };

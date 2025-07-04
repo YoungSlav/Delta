@@ -34,6 +34,13 @@ EAssetLoadingState StaticMesh::load_Internal()
 	return EAssetLoadingState::LOADED;
 }
 
+void StaticMesh::getBuffers(VkBuffer& outVertexBuffer, VkBuffer& outIndexBuffer, uint32& outIndexCount) const
+{
+	outVertexBuffer = vertexBuffer;
+    outIndexBuffer = indexBuffer;
+    outIndexCount = static_cast<uint32>(data.indices.size());
+}
+
 void StaticMesh::createVertexBuffer()
 {
 	VkDeviceSize bufferSize = sizeof(Vertex) * data.vertices.size();

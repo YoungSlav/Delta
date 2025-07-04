@@ -15,8 +15,6 @@ public:
 	void setVisisble(bool bNewVisible);
 	virtual bool isVisisble() const;
 
-	virtual void render(const struct CameraInfo& cameraInfo) = 0;
-
 protected:
 	
 

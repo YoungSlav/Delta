@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "DeltaLog.h"
 #include <iostream>
-#include <windows.h>
 
 #include <fstream>
 #include <filesystem>
 #include <chrono>
 #include <ctime>
 #include <mutex>
+
+#include <windows.h>
 
 static std::mutex logMutex;
 std::ofstream DeltaLog::logFile;

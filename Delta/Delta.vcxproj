@@ -31,6 +31,8 @@
     <ClCompile Include="Source\Private\DeltaMath.cpp" />
     <ClCompile Include="Source\Private\Object.cpp" />
     <ClCompile Include="Source\Private\Player.cpp" />
+    <ClCompile Include="Source\Private\Renderer.cpp" />
+    <ClCompile Include="Source\Private\Scene.cpp" />
     <ClCompile Include="Source\Private\VulkanCore.cpp" />
     <ClCompile Include="Source\Private\StaticMesh.cpp" />
     <ClCompile Include="Source\Private\Transform.cpp" />
@@ -51,6 +53,8 @@
     <ClInclude Include="Source\Public\Material.h" />
     <ClInclude Include="Source\Public\Object.h" />
     <ClInclude Include="Source\Public\Player.h" />
+    <ClInclude Include="Source\Public\Renderer.h" />
+    <ClInclude Include="Source\Public\Scene.h" />
     <ClInclude Include="Source\Public\StaticMeshComponent.h" />
     <ClInclude Include="Source\Public\VulkanCore.h" />
     <ClInclude Include="Source\Public\StaticMesh.h" />
