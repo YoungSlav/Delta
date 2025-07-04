@@ -6,21 +6,21 @@
 
 using namespace Delta;
 
-void Actor::onChildObjectAdded(std::shared_ptr<Object> _OwnedObject)
+void Actor::onChildObjectAdded(std::shared_ptr<Object> inOwnedObject)
 {
-	Object::onChildObjectAdded(_OwnedObject);
+	Object::onChildObjectAdded(inOwnedObject);
 
-	if ( std::shared_ptr<ActorComponent> oc = std::dynamic_pointer_cast<ActorComponent>(_OwnedObject) )
+	if ( std::shared_ptr<ActorComponent> oc = std::dynamic_pointer_cast<ActorComponent>(inOwnedObject) )
 	{
 		components.push_back(oc);
 	}
 }
 
-void Actor::onChildObjectRemoved(std::shared_ptr<Object> _OwnedObject)
+void Actor::onChildObjectRemoved(std::shared_ptr<Object> inOwnedObject)
 {
-	Object::onChildObjectRemoved(_OwnedObject);
+	Object::onChildObjectRemoved(inOwnedObject);
 
-	if ( std::shared_ptr<ActorComponent> oc = std::dynamic_pointer_cast<ActorComponent>(_OwnedObject) )
+	if ( std::shared_ptr<ActorComponent> oc = std::dynamic_pointer_cast<ActorComponent>(inOwnedObject) )
 	{
 		std::erase(components, oc);
 	}

@@ -14,8 +14,8 @@ class Engine final : public Object
 {
 public:
 
-	Engine(const std::string& _Name) :
-		Object(0, _Name, nullptr, nullptr)
+	Engine(const std::string& inName) :
+		Object(0, inName, nullptr, nullptr)
 	{}
 
 	void gameLoop();

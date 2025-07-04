@@ -22,8 +22,8 @@ public:
 	const std::vector<std::shared_ptr<ActorComponent>>& getComponents() const { return components; }
 
 protected:
-	virtual void onChildObjectAdded(std::shared_ptr<Object> _OwnedObject) override;
-	virtual void onChildObjectRemoved(std::shared_ptr<Object> _OwnedObject) override;
+	virtual void onChildObjectAdded(std::shared_ptr<Object> inOwnedObject) override;
+	virtual void onChildObjectRemoved(std::shared_ptr<Object> inOwnedObject) override;
 	virtual void onDestroy() override;
 
 protected:

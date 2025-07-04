@@ -39,9 +39,9 @@ class Input final : public Object
 {
 	struct KeyEvent
 	{
-		KeyEvent(int32 _Key, EKeySubscriptionType _Event, int32 _Mods) :
-			key(_Key), eventType(_Event), mods(_Mods),
-			bPressedNow(_Event == EKeySubscriptionType::PRESSED || _Event == EKeySubscriptionType::HOLD)
+		KeyEvent(int32 inKey, EKeySubscriptionType inEvent, int32 inMods) :
+			key(inKey), eventType(inEvent), mods(inMods),
+			bPressedNow(inEvent == EKeySubscriptionType::PRESSED || inEvent == EKeySubscriptionType::HOLD)
 		{}
 
 		int32 key = 0;

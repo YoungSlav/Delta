@@ -8,11 +8,11 @@ ITransformable::ITransformable(const Transform& Transform) :
 {
 }
 
-ITransformable::ITransformable(const Transform& Transform, const std::shared_ptr<ITransformable> _Parent) :
+ITransformable::ITransformable(const Transform& Transform, const std::shared_ptr<ITransformable> inParent) :
 	localTransform(Transform),
 	worldTransform()
 {
-	setParent(_Parent);
+	setParent(inParent);
 }
 ITransformable::~ITransformable()
 {
@@ -22,17 +22,17 @@ ITransformable::~ITransformable()
 	}
 }
 
-void ITransformable::setParent(const std::shared_ptr<ITransformable> _Parent)
+void ITransformable::setParent(const std::shared_ptr<ITransformable> inParent)
 {
 	if ( std::shared_ptr<ITransformable> oldParent = getParent() )
 	{
 		oldParent->OnTransformUpdated.RemoveObject(this);
 	}
-	parent = _Parent;
-	if ( _Parent != nullptr )
+	parent = inParent;
+	if ( inParent != nullptr )
 	{
-		_Parent->OnTransformUpdated.AddRaw(this, &ITransformable::onParentTransformUpdated);
-		onParentTransformUpdated(_Parent.get());
+		inParent->OnTransformUpdated.AddRaw(this, &ITransformable::onParentTransformUpdated);
+		onParentTransformUpdated(inParent.get());
 	}
 }
 std::shared_ptr<ITransformable> ITransformable::getParent() const { return parent.expired() ? nullptr : parent.lock(); }
@@ -163,7 +163,7 @@ void ITransformable::updateWorldTransform()
 	}
 }
 
-void ITransformable::onParentTransformUpdated(const ITransformable* _parent)
+void ITransformable::onParentTransformUpdated(const ITransformable* inparent)
 {
 	updateWorldTransform();
 }

@@ -60,11 +60,7 @@ void DeltaLog::renameOldLogFile(const std::string& oldFilePath)
 	std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
 
 	std::tm localTime;
-#ifdef _WIN32
 	localtime_s(&localTime, &cftime);
-#else
-	localtime_r(&cftime, &localTime);
-#endif
 
 	char buffer[64];
 	std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &localTime);
@@ -93,11 +89,7 @@ void DeltaLog::print(const char* const Message, ELog Type)
 	auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 	// Convert to localtime
 	std::tm local_tm;
-#ifdef _WIN32
 	localtime_s(&local_tm, &now_time_t);
-#else
-	localtime_r(&now_time_t, &local_tm);
-#endif
 
 	std::lock_guard<std::mutex> lock(logMutex);
 

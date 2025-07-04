@@ -7,14 +7,14 @@ Transform::Transform()
 {
 }
 
-Transform::Transform(const glm::vec3& _location, const glm::quat& _rotation, const glm::vec3& _scale) :
-	location(_location), rotation(_rotation), scale(_scale)
+Transform::Transform(const glm::vec3& inLocation, const glm::quat& inRotation, const glm::vec3& inScale) :
+	location(inLocation), rotation(inRotation), scale(inScale)
 {
 	updateTransformMatrix();
 }
 
-Transform::Transform(const glm::mat4& _transform) :
-	matrix(_transform)
+Transform::Transform(const glm::mat4& inTransform) :
+	matrix(inTransform)
 {
 	decomposeTransformMatrix();
 }
@@ -35,28 +35,28 @@ glm::vec3 Transform::getUpVector() const
 }
 
 
-void Transform::setTransformMatrix(const glm::mat4& _transform)
+void Transform::setTransformMatrix(const glm::mat4& inTransform)
 {
-	matrix = _transform;
+	matrix = inTransform;
 	decomposeTransformMatrix();
 }
 
-void Transform::setLocation(const glm::vec3& _location)
+void Transform::setLocation(const glm::vec3& inLocation)
 {
-	location = _location;
+	location = inLocation;
 	bMatrixDirty = true;
 }
 
-void Transform::setRotation(const glm::quat& _rotation)
+void Transform::setRotation(const glm::quat& inRotation)
 {
-	rotation = _rotation;
+	rotation = inRotation;
 	bMatrixDirty = true;
 }
 
-void Transform::setRotationEuler(const glm::vec3& _eulerRotation)
+void Transform::setRotationEuler(const glm::vec3& inEulerRotation)
 {
-	rotationEuler = _eulerRotation;
-	rotation = Math::eulerToQuat(_eulerRotation);
+	rotationEuler = inEulerRotation;
+	rotation = Math::eulerToQuat(inEulerRotation);
 	bMatrixDirty = true;
 }
 
@@ -84,27 +84,27 @@ const glm::mat4& Transform::getTransformMatrix() const
 }
 
 
-void Transform::rotate(const glm::quat& _rotation)
+void Transform::rotate(const glm::quat& inRotation)
 {
-	rotation = _rotation * rotation;
+	rotation = inRotation * rotation;
 	bMatrixDirty = true;
 }
 	
-void Transform::setDirection(const glm::vec3& _direction)
+void Transform::setDirection(const glm::vec3& inDirection)
 {
 	glm::vec3 dir(0.0f);
-	if ( glm::length(_direction) <= FLT_EPS )
+	if ( glm::length(inDirection) <= FLT_EPS )
 		dir = Math::forwardV;
 	else
-		dir = glm::normalize(_direction);
+		dir = glm::normalize(inDirection);
 
 	rotation = Math::directionToQuaternion(dir);
 	bMatrixDirty = true;
 }
 
-void Transform::setScale(const glm::vec3& _scale)
+void Transform::setScale(const glm::vec3& inScale)
 {
-	scale = _scale;
+	scale = inScale;
 	bMatrixDirty = true;
 }
 

@@ -10,8 +10,8 @@ class Transform final
 public:
 	Transform();
 
-	Transform(const glm::vec3& _location, const glm::quat& _rotation, const glm::vec3& _scale);
-	Transform(const glm::mat4& _transform);
+	Transform(const glm::vec3& inLocation, const glm::quat& inRotation, const glm::vec3& inScale);
+	Transform(const glm::mat4& intransform);
 
 	const glm::vec3& getLocation() const;
 	const glm::quat& getRotation() const;
@@ -24,14 +24,14 @@ public:
 	glm::vec3 getUpVector() const;
 
 
-	void setTransformMatrix(const glm::mat4& _transform);
-	void setLocation(const glm::vec3& _location);
-	void setRotation(const glm::quat& _rotation);
-	void setRotationEuler(const glm::vec3& _eulerRotation);
+	void setTransformMatrix(const glm::mat4& intransform);
+	void setLocation(const glm::vec3& inlocation);
+	void setRotation(const glm::quat& inrotation);
+	void setRotationEuler(const glm::vec3& ineulerRotation);
 
-	void rotate(const glm::quat& _rotation);
-	void setDirection(const glm::vec3& _direction);
-	void setScale(const glm::vec3& _scale);
+	void rotate(const glm::quat& inrotation);
+	void setDirection(const glm::vec3& indirection);
+	void setScale(const glm::vec3& inscale);
 
 private:
 	void updateTransformMatrix() const;
