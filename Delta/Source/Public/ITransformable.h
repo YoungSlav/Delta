@@ -13,11 +13,11 @@ public:
 	ITransformable() = default;
 	ITransformable(const Transform& Transform);
 
-	ITransformable(const Transform& Transform, const std::shared_ptr<ITransformable> _Parent);
+	ITransformable(const Transform& Transform, const std::shared_ptr<ITransformable> inParent);
 
 	virtual ~ITransformable();
 
-	void setParent(const std::shared_ptr<ITransformable> _Parent);
+	void setParent(const std::shared_ptr<ITransformable> inParent);
 	std::shared_ptr<ITransformable> getParent() const;
 
 	const Transform& getTransform() const;
@@ -56,7 +56,7 @@ private:
 
 	void updateWorldTransform();
 
-	void onParentTransformUpdated(const ITransformable* _parent);
+	void onParentTransformUpdated(const ITransformable* inparent);
 
 	
 

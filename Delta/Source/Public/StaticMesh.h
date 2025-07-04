@@ -13,9 +13,9 @@ class StaticMesh : public Asset
 {
 public:
 	template <typename... Args>
-	StaticMesh(const std::string& _MeshPath,Args&&... args) :
+	StaticMesh(const std::string& inMeshPath,Args&&... args) :
 		Asset(std::forward<Args>(args)...),
-		meshPath(_MeshPath)
+		meshPath(inMeshPath)
 	{}
 
 protected:

@@ -13,9 +13,9 @@ class Material : public Asset
 {
 public:
 	template <typename... Args>
-	Material(const std::string& _ShaderName, Args&&... args) :
+	Material(const std::string& inShaderName, Args&&... args) :
 		Asset(std::forward<Args>(args)...),
-		shaderName(_ShaderName)
+		shaderName(inShaderName)
 	{}
 
 	VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }

@@ -43,12 +43,12 @@ bool Object::initialize()
 	return initialize_Internal();
 }
 
-void Object::addChildObject(std::shared_ptr<Object> _OwnedObject)
+void Object::addChildObject(std::shared_ptr<Object> inOwnedObject)
 {	
-	_OwnedObject->OnObjectDestroyDelegate.AddSP(Self<Object>(), &Object::removeChildObject);
+	inOwnedObject->OnObjectDestroyDelegate.AddSP(Self<Object>(), &Object::removeChildObject);
 
-	ownedObjects.push_back(_OwnedObject);
-	onChildObjectAdded(_OwnedObject);
+	ownedObjects.push_back(inOwnedObject);
+	onChildObjectAdded(inOwnedObject);
 }
 
 void Object::removeChildObject(std::shared_ptr<Object> obj)
