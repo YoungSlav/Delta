@@ -19,6 +19,8 @@ public:
 
 	void setMoveSpeed(float NewSpeed);
 
+	std::shared_ptr<class Camera> getCamera() const { return cameraComponent; }
+
 protected:
 	virtual bool initialize_Internal() override;
 

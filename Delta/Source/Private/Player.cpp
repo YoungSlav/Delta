@@ -119,7 +119,7 @@ void Player::adjustVelocity(const glm::vec3& DeltaVelocity)
 }
 void Player::onInput_ESCAPE(bool ButtonState, float DeltaTime)
 {
-	engine->ihutDown();
+	engine->shutDown();
 }
 void Player::onInput_MOUSERIGHT(bool ButtonState, float DeltaTime)
 {

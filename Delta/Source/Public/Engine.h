@@ -33,47 +33,15 @@ public:
 	std::shared_ptr<class Input> getInput() const { return input; }
 	std::shared_ptr<class VulkanCore> getVulkanCore() const { return vulkanCore; }
 	std::shared_ptr<class AssetManager> getAssetManager() const { return assetManager; }
+	std::shared_ptr<class Renderer> getRenderer() const { return renderer; }
 
-	template<typename Class>
-	int32 getAllObjects(std::list<std::shared_ptr<Class>>& OutList) const
-	{
-		int32 count = 0;
-		OutList.clear();
-		for ( auto it : objects )
-		{
-			if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
-			{
-				OutList.push_back(asDesired);
-				++count;
-			}
-		}
+	void openScene(std::shared_ptr<class Scene> inScene);
 
-		return count;
-	}
 
-	template<typename Class>
-	int32 getActorsInRadius(const glm::vec3& AtLocation, float Radius, std::list<std::shared_ptr<Class>>& OutList) const
-	{
-		int32 count = 0;
-		float Radius2 = Radius * Radius;
-		OutList.clear();
-		for ( auto it : actors )
-		{
-			if ( std::shared_ptr<Class> asDesired = std::dynamic_pointer_cast<Class>(it) )
-			{
-				if ( glm::distance2(asDesired->GetLocation() - AtLocation) <= Radius2 )
-				{
-					OutList.push_back(asDesired);
-					++count;
-				}
-			}
-		}
-
-		return count;
-	}
+	std::shared_ptr<class Scene> getScene() const { return scene; }
 
 	inline bool isShutingDown() const { return bRequestExit; }
-	void ihutDown() { bRequestExit = true; }
+	void shutDown() { bRequestExit = true; }
 
 protected:
 	bool initialize_Internal() override;
@@ -81,23 +49,25 @@ protected:
 private:
 	void fireFreshBeginPlays();
 
-	void tick(float DeltaTime);
-	
 private:
 
 	std::shared_ptr<class Window> window;
 	std::shared_ptr<class Input> input;
 	std::shared_ptr<class VulkanCore> vulkanCore;
 	std::shared_ptr<class AssetManager> assetManager;
+	std::shared_ptr<class Renderer> renderer;
+
+
+	std::shared_ptr<class Scene> scene;
+
+
+	
+	// object managing
+	std::list< std::weak_ptr<Object> > objects;
+	std::map<DeltaHandle, std::weak_ptr<Object>> handleToObject;
 
 	// freshly created objects awaiting BeginPlay call
-	std::list< std::shared_ptr<Object> > freshObjects;
-
-	// object managing
-	std::list< std::shared_ptr<Object> > objects;
-	std::list< std::shared_ptr<class Actor> > actors;
-	std::map<DeltaHandle, std::shared_ptr<Object>> handleToObject;
-	std::list< std::shared_ptr<ITickable> > tickableObjects;
+	std::list<std::weak_ptr<class Object>> freshObjects;
 
 	DeltaHandle lastUsedHandle = 0;
 

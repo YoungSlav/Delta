@@ -10,6 +10,7 @@ namespace Delta
 {
 
 
+#define MAX_FRAMES_IN_FLIGHT 2
 
 
 class VulkanCore final : public Object
@@ -38,15 +39,16 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	void drawFrame(float DeltaTime);
+	void drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction);
 
 	VkRenderPass getRenderPass() { return renderPass; }
 	VkDevice getDevice() { return device; }
+	VkDescriptorPool getDescriptorPool() { return descriptorPool; }
+
+	uint32 getMaxFramesInFlight() const { return MAX_FRAMES_IN_FLIGHT; }
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-	std::shared_ptr<class Material> tempMaterialPtr;
 
 protected:
 	bool initialize_Internal() override;
@@ -56,7 +58,7 @@ private:
 
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 imageIndex, const std::function<void(VkCommandBuffer, uint32)>& recordFunction);
 
 	void createInstance();
 	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
@@ -68,6 +70,7 @@ private:
 	void createImageViews();
 	void createRenderPass();
 	void createFramebuffers();
+	void createDescriptorPool();
 	void createRenderCommandPool();
 	void createTransferCommandPool();
 	void createRenderCommandBuffer();
@@ -99,7 +102,7 @@ private:
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 
-	VkInstance iInstance;
+	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkSurfaceKHR surface;
 
@@ -120,19 +123,14 @@ private:
 	VkRenderPass renderPass;
 
 	VkCommandPool renderCommandPool;
-	VkCommandBuffer renderCommandBuffer;
-
+	VkDescriptorPool descriptorPool;
 	VkCommandPool transferCommandPool;
 
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore;
-	VkFence inFlightFence;
-
-
-
-
-
-	
+	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
+	std::vector<VkFence> inFlightFences;
+	int32 currentFrame = 0;
 };
 
 }

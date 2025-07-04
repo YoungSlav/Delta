@@ -9,7 +9,7 @@ class Engine;
 
 class ITickable
 {
-	friend class Engine;
+	friend class Scene;
 public:
 	virtual ~ITickable() = default;
 

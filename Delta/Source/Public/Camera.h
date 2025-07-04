@@ -6,7 +6,7 @@
 namespace Delta
 {
 
-struct CameraInfo
+struct alignas(16) CameraInfo
 {
 	glm::mat4 view;
 	glm::mat4 proj;
@@ -14,6 +14,8 @@ struct CameraInfo
 	float fov;
 	float minDist;
 	float maxDist;
+
+	float padding;
 };
 
 
@@ -27,6 +29,7 @@ public:
 
 
 	CameraInfo getCameraInfo(const glm::ivec2& ViewportSize) const;
+	static CameraInfo fallbackCamera(const glm::ivec2& ViewportSize);
 
 	// 3d camera
 	void setFov(float InFOV) { fov = InFOV; }

@@ -4,6 +4,8 @@
 #include "Input.h"
 #include "VulkanCore.h"
 #include "AssetManager.h"
+#include "Scene.h"
+#include "Renderer.h"
 
 using namespace Delta;
 
@@ -39,6 +41,7 @@ bool Engine::initialize_Internal()
 	vulkanCore = spawn<VulkanCore>("Renderer");
 	input = spawn<Input>("Input");
 
+	renderer = spawn<Renderer>("Renderer");
 
 	return true;
 }
@@ -50,23 +53,27 @@ void Engine::gameLoop()
 	while( !bRequestExit && !glfwWindowShouldClose(window->getWindow()) )
 	{
 		float newTime = (float)glfwGetTime();
-		float DeltaTime = newTime - gameTime;
+		float deltaTime = newTime - gameTime;
 		gameTime = newTime;
 		
+		
 		fireFreshBeginPlays();
-	
-		tick(DeltaTime);
-		
-		//if ( GetCamera() )
-		//	GetCamera()->UpdateCamera();
-		//
 
-		vulkanCore->drawFrame(DeltaTime);
-		
+		if ( scene )
+		{
+			scene->update(deltaTime);
+
+			renderer->drawFrame(scene);
+		}
+		else
+		{
+			LOG(Error, "No scene is set to render!");
+		}
+
 		glfwPollEvents();
 
 		if ( input )
-			input->processInput(DeltaTime);
+			input->processInput(deltaTime);
 	
 		while ((glfwGetTime()  - newTime) < (1.0 / fpsLimit)) { }
 	}
@@ -76,21 +83,30 @@ void Engine::gameLoop()
 	this->destroy();
 }
 
+void Engine::openScene(std::shared_ptr<Scene> inScene)
+{
+	scene = inScene;
+}
+
 void Engine::fireFreshBeginPlays()
 {
 	for ( auto it : freshObjects )
 	{
-		it->onBeginPlay();
+		if ( it.expired() ) continue;
+		it.lock()->onBeginPlay();
 	}
 	freshObjects.clear();
 }
 
-void Engine::tick(float DeltaTime)
+std::shared_ptr<Object> Engine::findObjectByHandle(const DeltaHandle& Handle)
 {
-	for ( auto it : tickableObjects )
-		it->update(DeltaTime);
+	auto it = handleToObject.find(Handle);
+	if ( it != handleToObject.end() )
+	{
+		return it->second.expired() ? nullptr : it->second.lock();
+	}
+	return nullptr;
 }
-
 
 void Engine::registerObject(std::shared_ptr<Object> newObject)
 {
@@ -100,31 +116,33 @@ void Engine::registerObject(std::shared_ptr<Object> newObject)
 
 	handleToObject.insert({newObject->getHandle(), newObject});
 	
-	if ( std::shared_ptr<ITickable> asTickable = std::dynamic_pointer_cast<ITickable>(newObject) )
-	{
-		tickableObjects.push_back(asTickable);
-	}
+	if ( scene )
+		scene->registerObject(newObject);
 }
 
-std::shared_ptr<Object> Engine::findObjectByHandle(const DeltaHandle& Handle)
+void Engine::destroyObject(std::shared_ptr<Object> object)
 {
-	auto it = handleToObject.find(Handle);
-	if ( it != handleToObject.end() )
-		return it->second;
-	return nullptr;
-}
+	if ( scene )
+		scene->removeObject(object);
 
-void Engine::destroyObject(std::shared_ptr<Object> Object)
-{
-	handleToObject.erase(Object->getHandle());
+	auto sameObject = [](auto& ptr, auto& other) {
+		return !ptr.owner_before(other) && !other.owner_before(ptr);
+	};
 
-	if ( std::shared_ptr<Actor> asActor = std::dynamic_pointer_cast<Actor>(Object) )
-	{
-		actors.erase(std::remove(actors.begin(), actors.end(), asActor), actors.end());
-	}
+	objects.remove_if([&](const std::weak_ptr<Object>& weak) {
+		return sameObject(weak, object);
+	});
 
-	if ( std::shared_ptr<ITickable> asTiackble = std::dynamic_pointer_cast<ITickable>(Object) )
-		tickableObjects.erase(std::remove(tickableObjects.begin(), tickableObjects.end(), asTiackble), tickableObjects.end());
-
-	objects.erase(std::remove(objects.begin(), objects.end(), Object), objects.end());
+	for (auto it = handleToObject.begin(); it != handleToObject.end(); )
+    {
+        std::weak_ptr<Object>& weak = it->second;
+        if (sameObject(weak, object))
+        {
+            it = handleToObject.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }

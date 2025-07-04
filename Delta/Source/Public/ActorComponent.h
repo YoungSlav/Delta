@@ -17,11 +17,11 @@ public:
 		Object(std::forward<Args>(args)...),
 		ITransformable()
 	{
-		setParent(GetOwningActor());
+		setParent(getOwningActor());
 	}
 
 
-	std::shared_ptr<class Actor> GetOwningActor() const;
+	std::shared_ptr<class Actor> getOwningActor() const;
 protected:
 	virtual bool initialize_Internal() override;
 };

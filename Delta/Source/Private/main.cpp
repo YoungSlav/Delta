@@ -9,7 +9,9 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 #include "AssetManager.h"
 #include "StaticMesh.h"
 #include "Player.h"
-
+#include "Scene.h"
+#include "StaticMeshComponent.h"
+#include "Actor.h"
 
 int main()
 {
@@ -18,20 +20,29 @@ int main()
 
 	try
 	{
-		std::shared_ptr<Delta::Engine> Engine(new Delta::Engine("Delta Engine"));
+		std::shared_ptr<Delta::Engine> engine(new Delta::Engine("Delta Engine"));
 	
-		Engine->initialize();
-
-		Engine->spawn<Delta::Player>("FirstPersonPlayer");
+		engine->initialize();
 
 
-		auto TempMaterialPtr = Engine->getAssetManager()->findOrLoad<Delta::Material>("TestMaterial", "Shaders\\triangle");
+		auto scene = engine->spawn<Delta::Scene>("TestScene");
+		engine->openScene(scene);
 
-		auto TestMesh = Engine->getAssetManager()->findOrLoad<Delta::StaticMesh>("TestMesh", "primitives\\triangle.fbx");
+		auto player = scene->spawn<Delta::Player>("First person player");
 
-		Engine->getVulkanCore()->tempMaterialPtr = TempMaterialPtr;
+		scene->setCamera(player->getCamera());
 
-		Engine->gameLoop();
+		auto actor = scene->spawn<Delta::Actor>("Test Actor");
+		auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component");
+
+		auto testMesh = engine->getAssetManager()->findOrLoad<Delta::StaticMesh>("Test mesh", "primitives\\cube.fbx");
+		auto testMaterial = engine->getAssetManager()->findOrLoad<Delta::Material>("Test material", "Shaders\\triangle");
+
+		meshComp->setMesh(testMesh);
+		meshComp->setMaterial(testMaterial);
+
+
+		engine->gameLoop();
 	}
 	catch (const std::exception& e)
 	{

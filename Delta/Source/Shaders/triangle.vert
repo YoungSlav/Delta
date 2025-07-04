@@ -15,20 +15,30 @@ layout(location = 3) out vec3 outNormal;
 layout(location = 4) out vec2 outTexCoords;
 layout(location = 5) out vec4 outColor;
 
-layout(set = 0, binding = 0) uniform Matrices
+layout(std140, set=0, binding=0) uniform CameraInfo
+{
+    mat4 view;
+    mat4 proj;
+    float fov;
+    float minDist;
+    float maxDist;
+
+
+    float padding;
+};
+
+layout(push_constant) uniform PushConstants
 {
     mat4 model;
-    mat4 view;
-    mat4 projection;
-} ubo;
+} pc;
 
 void main()
 {
-    outPosition = vec3(ubo.model * vec4(inPosition, 1.0));
+    outPosition = vec3(pc.model * vec4(inPosition, 1.0));
 	outTexCoords = inTexCoords;
 
-	vec3 T = normalize(vec3(ubo.model * vec4(inTangent, 0.0)));
-	vec3 N = normalize(vec3(ubo.model * vec4(inNormal, 0.0)));
+	vec3 T = normalize(vec3(pc.model * vec4(inTangent, 0.0)));
+	vec3 N = normalize(vec3(pc.model * vec4(inNormal, 0.0)));
 	T = normalize(T - dot(T, N) * N);
 	vec3 B = cross(N, T);
 	
@@ -36,6 +46,6 @@ void main()
 	outBitangent = B;
 	outNormal = N;
 
-	gl_Position = ubo.projection * ubo.view * vec4(outPosition, 1.0);
+	gl_Position = proj * view * vec4(outPosition, 1.0);
 	outColor = inColor;
 }
