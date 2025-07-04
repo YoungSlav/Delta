@@ -67,6 +67,8 @@ void Object::destroy()
 	LOG(Log, "Destroy object: '{}'", getName());
 	LOG_INDENT
 
+	onDestroy();
+
 	OnObjectDestroyDelegate.Broadcast(Self<Object>());
 
 	std::list<std::weak_ptr<Object>> OwnedObjectsTmp = ownedObjects;
@@ -80,7 +82,6 @@ void Object::destroy()
 
 	if ( engine )
 	{
-		onDestroy();
 		engine->destroyObject(Self<Object>());
 		engine.reset();
 	}

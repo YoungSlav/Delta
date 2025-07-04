@@ -41,6 +41,9 @@ int main()
 		meshComp->setMesh(testMesh);
 		meshComp->setMaterial(testMaterial);
 
+		player->setLocation(glm::vec3(10.0f, 0.0f, 0.0f));
+		player->setDirection(glm::vec3(0.0f));
+
 
 		engine->gameLoop();
 	}
