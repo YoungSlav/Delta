@@ -127,7 +127,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.309.0\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -135,7 +135,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.309.0\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -143,7 +143,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.309.0\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -151,7 +151,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.309.0\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
