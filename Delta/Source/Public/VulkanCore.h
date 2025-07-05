@@ -77,6 +77,7 @@ private:
 	void createSyncObjects();
 
 	void onWindowResize(const glm::ivec2& NewSize);
+	void recreateSwapChain();
 
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -90,6 +91,7 @@ private:
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 
 	void cleanup();
+	void cleanupSwapChain();
 
 private:
 
@@ -131,6 +133,7 @@ private:
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	int32 currentFrame = 0;
+	bool bFamebufferResized = false;
 };
 
 }

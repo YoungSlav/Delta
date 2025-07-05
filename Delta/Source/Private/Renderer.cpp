@@ -57,47 +57,45 @@ void Renderer::updateCameraUniformBuffer(const CameraInfo& cameraInfo, uint32 cu
 void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 {
 	engine->getVulkanCore()->drawFrame(
-		[=](VkCommandBuffer commandBuffer, uint32 currentFrame)
+		[&](VkCommandBuffer commandBuffer, uint32 currentFrame)
 		{
 			CameraInfo cameraInfo;
 			scene->getCameraInfo(cameraInfo, engine->getWindow()->getViewportSize());
-
+	
 			updateCameraUniformBuffer(cameraInfo, currentFrame);
-
+	
 			std::vector<std::shared_ptr<StaticMeshComponent>> renderGeometry;
 			scene->getRenderGeometry(renderGeometry);
-
+	
 			for ( auto it : renderGeometry )
 			{
 				std::shared_ptr<StaticMesh> staticMesh = it->getMesh();
 				std::shared_ptr<Material> material = it->getMaterial();
 				Transform transform = it->getTransform_World();
-
+	
 				glm::mat4 model = transform.getTransformMatrix();
 				VkBuffer vertexBuffer;
 				VkBuffer indexBuffer;
 				uint32 indexCount;
-
+	
 				staticMesh->getBuffers(vertexBuffer, indexBuffer, indexCount);
-
+	
 				VkBuffer vertexBuffers[] = {vertexBuffer};
 				VkDeviceSize offsets[] = {0};
 				vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 				vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
+	
 				VkDescriptorSet descriptorSet = material->getDescriptorSet(currentFrame);
-
+	
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->getPipeline());
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
-
+	
 				vkCmdPushConstants(commandBuffer, material->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &model);
-
-
+	
+	
 				vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indexCount), 1, 0, 0, 0);
-
-				
 			}
-
+	
 		}
 	);
 }
