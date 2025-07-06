@@ -22,6 +22,7 @@ EAssetLoadingState Material::load_Internal()
 
 void Material::cleanup_Internal()
 {
+	vkFreeDescriptorSets(engine->getVulkanCore()->getDevice(), engine->getVulkanCore()->getDescriptorPool(), static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data());
 	vkDestroyPipeline(engine->getVulkanCore()->getDevice(), pipeline, nullptr);
 	vkDestroyPipelineLayout(engine->getVulkanCore()->getDevice(), pipelineLayout, nullptr);
 	vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), descriptorSetLayout, nullptr);
@@ -62,8 +63,6 @@ void Material::createDescriptorSets()
 	{
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
-
-
 
 	std::vector<VkBuffer> cameraUniformBuffers  = engine->getRenderer()->getCameraUniformBuffers();
 

@@ -33,6 +33,8 @@
     <ClCompile Include="Source\Private\Player.cpp" />
     <ClCompile Include="Source\Private\Renderer.cpp" />
     <ClCompile Include="Source\Private\Scene.cpp" />
+    <ClCompile Include="Source\Private\StaticMeshComponent.cpp" />
+    <ClCompile Include="Source\Private\Texture.cpp" />
     <ClCompile Include="Source\Private\VulkanCore.cpp" />
     <ClCompile Include="Source\Private\StaticMesh.cpp" />
     <ClCompile Include="Source\Private\Transform.cpp" />
@@ -56,6 +58,8 @@
     <ClInclude Include="Source\Public\Renderer.h" />
     <ClInclude Include="Source\Public\Scene.h" />
     <ClInclude Include="Source\Public\StaticMeshComponent.h" />
+    <ClInclude Include="Source\Public\Texture.h" />
+    <ClInclude Include="Source\Public\TextureData.h" />
     <ClInclude Include="Source\Public\VulkanCore.h" />
     <ClInclude Include="Source\Public\StaticMesh.h" />
     <ClInclude Include="Source\Public\Transform.h" />
@@ -127,7 +131,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;$(VULKAN_SDK)\Include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -135,7 +139,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;$(VULKAN_SDK)\Include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -143,7 +147,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;$(VULKAN_SDK)\Include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -151,7 +155,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\Build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;C:\VulkanSDK\1.4.313.2\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(SolutionDir)$(ProjectName)\Source\;$(SolutionDir)$(ProjectName)\Source\Public\;$(SolutionDir)ThirdParty\include\;$(VULKAN_SDK)\Include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)ThirdParty\lib\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
@@ -167,7 +171,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mtd.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -189,7 +193,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mt.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -207,7 +211,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mtd.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -229,7 +233,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;assimp-vc143-mt.lib;glfw3.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>

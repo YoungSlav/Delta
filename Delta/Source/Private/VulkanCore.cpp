@@ -153,6 +153,8 @@ void VulkanCore::cleanupSwapChain()
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
+
+
 void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction)
 {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -274,6 +276,47 @@ void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 image
 	}
 }
 
+void VulkanCore::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+{
+	LOG(Log, "Creating GPU image");
+	LOG_INDENT
+
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.extent.width = width;
+	imageInfo.extent.height = height;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = format;
+	imageInfo.tiling = tiling;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = usage;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create image!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to allocate image memory!");
+	}
+
+	vkBindImageMemory(device, image, imageMemory, 0);
+}
+
 void VulkanCore::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
 	LOG(Log, "Creating GPU buffer, size: {}", static_cast<uint64>(size));
@@ -305,10 +348,8 @@ void VulkanCore::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMem
 	vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+void VulkanCore::singleTimeCommand(const std::function<void(VkCommandBuffer)>& recordFunction)
 {
-	LOG(Log, "Coping GPU buffer, size {}", static_cast<uint64>(size));
-
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -316,10 +357,7 @@ void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer commandBuffer;
-	if ( vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS )
-	{
-		throw std::runtime_error("failed to allocate command pool!");
-	}
+	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -330,24 +368,11 @@ void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
-	VkBufferCopy copyRegion{};
-	copyRegion.srcOffset = 0;
-	copyRegion.dstOffset = 0;
-	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	recordFunction(commandBuffer);
 
 	if ( vkEndCommandBuffer(commandBuffer) != VK_SUCCESS )
 	{
 		throw std::runtime_error("failed to record command buffer!");
-	}
-
-	VkFenceCreateInfo fenceInfo{};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-	VkFence copyFence;
-	if ( vkCreateFence(device, &fenceInfo, nullptr, &copyFence) != VK_SUCCESS )
-	{
-		throw std::runtime_error("failed to create synchronization objects for a copying a buffer!");
 	}
 
 	VkSubmitInfo submitInfo{};
@@ -355,15 +380,53 @@ void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	if ( vkQueueSubmit(transferQueue, 1, &submitInfo, copyFence) != VK_SUCCESS )
+	if ( vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS )
 	{
-		throw std::runtime_error("failed to submit transfer command buffer!");
+		throw std::runtime_error("failed to submit command buffer!");
 	}
+	vkQueueWaitIdle(transferQueue);
 
-    vkWaitForFences(device, 1, &copyFence, VK_TRUE, UINT64_MAX);
-
-    vkDestroyFence(device, copyFence, nullptr);
 	vkFreeCommandBuffers(device, transferCommandPool, 1, &commandBuffer);
+}
+
+void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	LOG(Log, "Coping GPU buffer, size {}", static_cast<uint64>(size));
+
+	singleTimeCommand(
+		[&](VkCommandBuffer commandBuffer)
+		{
+			VkBufferCopy copyRegion{};
+			copyRegion.srcOffset = 0;
+			copyRegion.dstOffset = 0;
+			copyRegion.size = size;
+			vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+		});
+}
+
+void VulkanCore::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+{
+	LOG(Log, "Coping GPU buffer to image!");
+	LOG_INDENT
+
+	singleTimeCommand(
+		[&](VkCommandBuffer commandBuffer)
+		{
+			VkBufferImageCopy region{};
+			region.bufferOffset = 0;
+			region.bufferRowLength = 0;
+			region.bufferImageHeight = 0;
+
+			region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.imageSubresource.mipLevel = 0;
+			region.imageSubresource.baseArrayLayer = 0;
+			region.imageSubresource.layerCount = 1;
+
+			region.imageOffset = {0, 0, 0};
+			region.imageExtent = { width, height, 1 };
+
+			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		});
 }
 
 uint32_t VulkanCore::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -721,9 +784,9 @@ void VulkanCore::createDescriptorPool()
 	VkDescriptorPoolSize poolSize{};
 	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	poolInfo.poolSizeCount = 1;
 	poolInfo.pPoolSizes = &poolSize;
 	poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
