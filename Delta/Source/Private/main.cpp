@@ -1,5 +1,6 @@
 
 #include "stdafx.h"
+
 unsigned int DelegateHandle::CURRENT_ID = 0;
 
 
@@ -17,7 +18,7 @@ int main()
 {
 	DeltaLog::init("DeltaApp.log");
 	LOG(Log, "Starting Delta application");
-
+	
 	try
 	{
 		std::shared_ptr<Delta::Engine> engine(new Delta::Engine("Delta Engine"));
@@ -29,20 +30,14 @@ int main()
 		engine->openScene(scene);
 
 		auto player = scene->spawn<Delta::Player>("First person player");
+		player->setLocation(glm::vec3(10.0f, 0.0f, 0.0f));
+		player->setDirection(glm::vec3(0.0f) - glm::vec3(10.0f, 0.0f, 0.0f));
 
 		scene->setCamera(player->getCamera());
 
 		auto actor = scene->spawn<Delta::Actor>("Test Actor");
-		auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component");
+		auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component", "primitives\\cube.fbx", "Shaders\\triangle");
 
-		auto testMesh = engine->getAssetManager()->findOrLoad<Delta::StaticMesh>("Test mesh", "primitives\\cube.fbx");
-		auto testMaterial = engine->getAssetManager()->findOrLoad<Delta::Material>("Test material", "Shaders\\triangle");
-
-		meshComp->setMesh(testMesh);
-		meshComp->setMaterial(testMaterial);
-
-		player->setLocation(glm::vec3(10.0f, 0.0f, 0.0f));
-		player->setDirection(glm::vec3(0.0f));
 
 
 		engine->gameLoop();

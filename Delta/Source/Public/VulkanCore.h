@@ -39,6 +39,8 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
+	void singleTimeCommand(const std::function<void(VkCommandBuffer)>& recordFunction);
+
 	void drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction);
 
 	VkRenderPass getRenderPass() { return renderPass; }
@@ -49,6 +51,9 @@ public:
 
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 protected:
 	bool initialize_Internal() override;
