@@ -64,11 +64,11 @@ private:
 
 	
 	// object managing
-	std::list< std::weak_ptr<Object> > objects;
-	std::map<DeltaHandle, std::weak_ptr<Object>> handleToObject;
+	std::list< std::shared_ptr<Object> > objects;
+	std::map<DeltaHandle, std::shared_ptr<Object>> handleToObject;
 
 	// freshly created objects awaiting BeginPlay call
-	std::list<std::weak_ptr<class Object>> freshObjects;
+	std::list<std::shared_ptr<class Object>> freshObjects;
 
 	DeltaHandle lastUsedHandle = 0;
 

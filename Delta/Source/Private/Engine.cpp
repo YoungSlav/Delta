@@ -103,8 +103,7 @@ void Engine::fireFreshBeginPlays()
 {
 	for ( auto it : freshObjects )
 	{
-		if ( it.expired() ) continue;
-		it.lock()->onBeginPlay();
+		it->onBeginPlay();
 	}
 	freshObjects.clear();
 }
@@ -114,7 +113,7 @@ std::shared_ptr<Object> Engine::findObjectByHandle(const DeltaHandle& Handle)
 	auto it = handleToObject.find(Handle);
 	if ( it != handleToObject.end() )
 	{
-		return it->second.expired() ? nullptr : it->second.lock();
+		return it->second;
 	}
 	return nullptr;
 }
@@ -140,13 +139,13 @@ void Engine::destroyObject(std::shared_ptr<Object> object)
 		return !ptr.owner_before(other) && !other.owner_before(ptr);
 	};
 
-	objects.remove_if([&](const std::weak_ptr<Object>& weak) {
+	objects.remove_if([&](const std::shared_ptr<Object>& weak) {
 		return sameObject(weak, object);
 	});
 
 	for (auto it = handleToObject.begin(); it != handleToObject.end(); )
     {
-        std::weak_ptr<Object>& weak = it->second;
+        std::shared_ptr<Object>& weak = it->second;
         if (sameObject(weak, object))
         {
             it = handleToObject.erase(it);
