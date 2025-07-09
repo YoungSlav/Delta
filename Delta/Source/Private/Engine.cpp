@@ -50,6 +50,7 @@ void Engine::onDestroy()
 	Object::onDestroy();
 
 	assetManager->destroy();
+	scene->destroy();
 	input->destroy();
 	window->destroy();
 	renderer->destroy();
