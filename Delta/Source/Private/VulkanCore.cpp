@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "Window.h"
 
-#include "Material.h"
+#include "Pipeline.h"
 
 using namespace Delta;
 
@@ -348,12 +348,31 @@ void VulkanCore::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMem
 	vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-void VulkanCore::singleTimeCommand(const std::function<void(VkCommandBuffer)>& recordFunction)
+void VulkanCore::singleTimeCommand(EQueueType queueType, const std::function<void(VkCommandBuffer)>& recordFunction)
 {
+	VkCommandPool commandPool = VK_NULL_HANDLE;
+    VkQueue queue = VK_NULL_HANDLE;
+	
+	switch (queueType)
+    {
+	case EQueueType::GRAPHICS:
+        commandPool = renderCommandPool;
+        queue = graphicsQueue;
+        break;
+    case EQueueType::TRANSFER:
+        commandPool = transferCommandPool;
+        queue = transferQueue;
+        break;
+    case EQueueType::COMPUTE:
+		LOG(Error, "Unsupported queue compute type in singleTimeCommand");
+        throw std::runtime_error("Unsupported queue type");
+        return;
+    }
+
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = transferCommandPool;
+	allocInfo.commandPool = commandPool;
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer commandBuffer;
@@ -380,20 +399,20 @@ void VulkanCore::singleTimeCommand(const std::function<void(VkCommandBuffer)>& r
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffer;
 
-	if ( vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS )
+	if ( vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS )
 	{
 		throw std::runtime_error("failed to submit command buffer!");
 	}
-	vkQueueWaitIdle(transferQueue);
+	vkQueueWaitIdle(queue);
 
-	vkFreeCommandBuffers(device, transferCommandPool, 1, &commandBuffer);
+	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
 void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
 	LOG(Log, "Coping GPU buffer, size {}", static_cast<uint64>(size));
 
-	singleTimeCommand(
+	singleTimeCommand(EQueueType::TRANSFER,
 		[&](VkCommandBuffer commandBuffer)
 		{
 			VkBufferCopy copyRegion{};
@@ -409,7 +428,7 @@ void VulkanCore::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t widt
 	LOG(Log, "Coping GPU buffer to image!");
 	LOG_INDENT
 
-	singleTimeCommand(
+	singleTimeCommand(EQueueType::TRANSFER,
 		[&](VkCommandBuffer commandBuffer)
 		{
 			VkBufferImageCopy region{};
@@ -427,6 +446,28 @@ void VulkanCore::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t widt
 
 			vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 		});
+}
+
+VkImageView VulkanCore::createImageView(VkImage image, VkFormat format)
+{
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = image;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = format;
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	VkImageView imageView;
+	if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create texture image view!");
+	}
+
+	return imageView;
 }
 
 uint32_t VulkanCore::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -552,6 +593,8 @@ void VulkanCore::pickPhysicalDevice()
 		}
 	}
 
+	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
 	if (physicalDevice == VK_NULL_HANDLE)
 	{
 		throw std::runtime_error("failed to find a suitable GPU!");
@@ -583,6 +626,7 @@ void VulkanCore::createLogicalDevice()
 	}
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
+	deviceFeatures.samplerAnisotropy = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -683,25 +727,7 @@ void VulkanCore::createImageViews()
 
 	for (size_t i = 0; i < swapChainImages.size(); i++)
 	{
-		VkImageViewCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.image = swapChainImages[i];
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = swapChainImageFormat;
-		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		createInfo.subresourceRange.baseMipLevel = 0;
-		createInfo.subresourceRange.levelCount = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount = 1;
-
-		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create image views!");
-		}
+		swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat);
 	}
 }
 
@@ -757,10 +783,7 @@ void VulkanCore::createFramebuffers()
 
 	for (size_t i = 0; i < swapChainImageViews.size(); i++)
 	{
-		VkImageView attachments[] =
-		{
-						swapChainImageViews[i]
-		};
+		VkImageView attachments[] = { swapChainImageViews[i] };
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -782,13 +805,16 @@ void VulkanCore::createDescriptorPool()
 {
 	LOG(Log, "Create descriptor pool");
 	VkDescriptorPoolSize poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
@@ -969,7 +995,10 @@ bool VulkanCore::isDeviceSuitable(VkPhysicalDevice Device)
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 
-	return indices.isComplete() && extensionsSupported && swapChainAdequate;
+	VkPhysicalDeviceFeatures supportedFeatures;
+    vkGetPhysicalDeviceFeatures(Device, &supportedFeatures);
+
+	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;;
 }
 
 bool VulkanCore::checkDeviceExtensionSupport(VkPhysicalDevice Device)

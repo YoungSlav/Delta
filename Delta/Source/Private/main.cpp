@@ -5,7 +5,7 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 
 
 #include "Engine.h"
-#include "Material.h"
+#include "Pipeline.h"
 #include "VulkanCore.h"
 #include "AssetManager.h"
 #include "StaticMesh.h"
@@ -36,7 +36,7 @@ int main()
 		scene->setCamera(player->getCamera());
 
 		auto actor = scene->spawn<Delta::Actor>("Test Actor");
-		auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component", "primitives\\cube.fbx", "Shaders\\triangle");
+		auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component", "primitives\\cube.fbx", "Shaders\\triangle", "textures\\pedro.png");
 
 
 

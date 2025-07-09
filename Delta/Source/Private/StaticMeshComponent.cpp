@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "AssetManager.h"
 #include "StaticMesh.h"
+#include "Pipeline.h"
 #include "Material.h"
 
 using namespace Delta;
@@ -13,8 +14,8 @@ bool StaticMeshComponent::initialize_Internal()
 		return false;
 
 	mesh = engine->getAssetManager()->findOrLoad<StaticMesh>(meshAssetPath, meshAssetPath);
-	material = engine->getAssetManager()->findOrLoad<Material>(materialAssetPath, materialAssetPath);
-
+	pipeline = engine->getAssetManager()->findOrLoad<Pipeline>(pipelineAssetPath, pipelineAssetPath);
+	material = spawn<Material>(texturePath + "_material", pipeline, texturePath);
 
 	return true;
 }

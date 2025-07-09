@@ -28,6 +28,7 @@
     <ClCompile Include="Source\Private\DeltaLog.cpp" />
     <ClCompile Include="Source\Private\Input.cpp" />
     <ClCompile Include="Source\Private\Material.cpp" />
+    <ClCompile Include="Source\Private\Pipeline.cpp" />
     <ClCompile Include="Source\Private\DeltaMath.cpp" />
     <ClCompile Include="Source\Private\Object.cpp" />
     <ClCompile Include="Source\Private\Player.cpp" />
@@ -53,6 +54,7 @@
     <ClInclude Include="Source\Public\DeltaMath.h" />
     <ClInclude Include="Source\Public\Input.h" />
     <ClInclude Include="Source\Public\Material.h" />
+    <ClInclude Include="Source\Public\Pipeline.h" />
     <ClInclude Include="Source\Public\Object.h" />
     <ClInclude Include="Source\Public\Player.h" />
     <ClInclude Include="Source\Public\Renderer.h" />

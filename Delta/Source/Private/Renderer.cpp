@@ -4,11 +4,12 @@
 #include "Scene.h"
 #include "StaticMeshComponent.h"
 #include "StaticMesh.h"
-#include "Material.h"
+#include "Pipeline.h"
 #include "Camera.h"
 #include "Window.h"
 #include "Transform.h"
 #include "VulkanCore.h"
+#include "Material.h"
 
 using namespace Delta;
 
@@ -70,6 +71,7 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 			for ( auto it : renderGeometry )
 			{
 				std::shared_ptr<StaticMesh> staticMesh = it->getMesh();
+				std::shared_ptr<Pipeline> pipeline = it->getPipeline();
 				std::shared_ptr<Material> material = it->getMaterial();
 				Transform transform = it->getTransform_World();
 	
@@ -85,12 +87,14 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 				vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 				vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	
-				VkDescriptorSet descriptorSet = material->getDescriptorSet(currentFrame);
+				VkDescriptorSet cameraDescriptorSet = pipeline->getGlobalDescriptorSet(currentFrame);
+				VkDescriptorSet materialDescriptorSet = material->getMaterialDescriptorSet();
 	
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->getPipeline());
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->getPipelineLayout(), 0, 1, &descriptorSet, 0, nullptr);
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipelineLayout(), 0, 1, &cameraDescriptorSet, 0, nullptr);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipelineLayout(), 1, 1, &materialDescriptorSet, 0, nullptr);
 	
-				vkCmdPushConstants(commandBuffer, material->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &model);
+				vkCmdPushConstants(commandBuffer, pipeline->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &model);
 	
 	
 				vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indexCount), 1, 0, 0, 0);
