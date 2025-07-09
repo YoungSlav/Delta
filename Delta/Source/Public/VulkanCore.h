@@ -10,6 +10,7 @@ namespace Delta
 {
 
 #define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_MATERIAL_DESCRIPTOR_SETS 10
 
 
 enum EQueueType
