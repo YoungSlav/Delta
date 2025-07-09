@@ -26,6 +26,7 @@ void Pipeline::cleanup_Internal()
 	vkDestroyPipeline(engine->getVulkanCore()->getDevice(), pipeline, nullptr);
 	vkDestroyPipelineLayout(engine->getVulkanCore()->getDevice(), pipelineLayout, nullptr);
 	vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), globalDescriptorSetLayout, nullptr);
+	vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), materialDescriptorSetLayout, nullptr);
 }
 
 void Pipeline::createDescriptorSetLayout()

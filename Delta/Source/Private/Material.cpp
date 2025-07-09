@@ -21,7 +21,7 @@ bool Material::initialize_Internal()
 	allocInfo.descriptorSetCount = 1;
 	allocInfo.pSetLayouts = layouts.data();
 
-	if (vkAllocateDescriptorSets(engine->getVulkanCore()->getDevice(), &allocInfo, &materialDescriptorSet) != VK_SUCCESS)
+	if ( vkAllocateDescriptorSets(engine->getVulkanCore()->getDevice(), &allocInfo, &materialDescriptorSet) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate material descriptor sets!");
 	}
