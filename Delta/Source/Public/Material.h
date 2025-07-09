@@ -1,46 +1,41 @@
 #pragma once
-#include "stdafx.h"
 
-#include "Asset.h"
+#include "stdafx.h"
+#include "Object.h"
 
 
 namespace Delta
 {
 
+struct MaterialCreateInfo
+{
+	
+};
 
-
-class Material : public Asset
+class Material : public Object
 {
 public:
 	template <typename... Args>
-	Material(const std::string& inShaderName, Args&&... args) :
-		Asset(std::forward<Args>(args)...),
-		shaderName(inShaderName)
+	Material(std::shared_ptr<class Pipeline> inPipeline, const std::string& inTexturePath, Args&&... args) :
+		Object(std::forward<Args>(args)...),
+		pipeline(inPipeline),
+		texturePath(inTexturePath)
 	{}
 
-	VkPipeline getPipeline() const { return pipeline; }
-	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
-	VkDescriptorSet getDescriptorSet(uint32 frame) const { return descriptorSets[frame]; }
+	VkDescriptorSet getMaterialDescriptorSet() const { return materialDescriptorSet; }
 
 protected:
+	virtual bool initialize_Internal() override;
+	virtual void onDestroy() override;
 
-	virtual EAssetLoadingState load_Internal() override;
-	virtual void cleanup_Internal() override;
-
-	void createDescriptorSetLayout();
-	void createDescriptorSets();
-	void createGraphicsPipeline();
-	VkShaderModule createShaderModule(const std::vector<char>& code);
-	static std::vector<char> readFile(const std::string& filename);
 
 private:
-	VkDescriptorSetLayout descriptorSetLayout;
-	std::vector<VkDescriptorSet> descriptorSets;
+	const std::shared_ptr<class Pipeline> pipeline;
 
-	VkPipelineLayout pipelineLayout;
-	VkPipeline pipeline;
+	const std::string texturePath;
+	std::shared_ptr<class Texture> texture;
 
-	const std::string shaderName = "";
+	VkDescriptorSet materialDescriptorSet;
 };
 
 }

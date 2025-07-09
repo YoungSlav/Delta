@@ -9,9 +9,15 @@
 namespace Delta
 {
 
-
 #define MAX_FRAMES_IN_FLIGHT 2
 
+
+enum EQueueType
+{
+	GRAPHICS,
+	TRANSFER,
+	COMPUTE
+};
 
 class VulkanCore final : public Object
 {
@@ -39,12 +45,13 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	void singleTimeCommand(const std::function<void(VkCommandBuffer)>& recordFunction);
+	void singleTimeCommand(EQueueType queueType, const std::function<void(VkCommandBuffer)>& recordFunction);
 
 	void drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction);
 
 	VkRenderPass getRenderPass() { return renderPass; }
 	VkDevice getDevice() { return device; }
+	VkPhysicalDeviceProperties  getPhysicalDeviceProperties() { return physicalDeviceProperties; }
 	VkDescriptorPool getDescriptorPool() { return descriptorPool; }
 
 	uint32 getMaxFramesInFlight() const { return MAX_FRAMES_IN_FLIGHT; }
@@ -54,6 +61,7 @@ public:
 	
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+	VkImageView createImageView(VkImage image, VkFormat format);
 
 protected:
 	bool initialize_Internal() override;
@@ -114,6 +122,7 @@ private:
 	VkSurfaceKHR surface;
 
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	VkPhysicalDeviceProperties physicalDeviceProperties;
 	VkDevice device;
 
 	VkQueue graphicsQueue;
