@@ -11,7 +11,9 @@ Object::~Object()
 {
 #if TEST_MEMORY_LEAKS
 	ObjectsSpawned--;
-	LOG(Warning, "Object {} destroyed! Total object count: {}", name, ObjectsSpawned);
+	LOG(Log, "Object {} destroyed! Total object count: {}", name, ObjectsSpawned);
+#else
+	LOG(Log, "'{}' destroyed", getName());
 #endif
 }
 
@@ -37,7 +39,7 @@ bool Object::initialize()
 
 #if	TEST_MEMORY_LEAKS
 	ObjectsSpawned++;
-	LOG(Warning, "Object {} created! Total object count: {}", name, ObjectsSpawned);
+	LOG(Log, "Object {} created! Total object count: {}", name, ObjectsSpawned);
 #endif
 
 	return initialize_Internal();
@@ -85,6 +87,6 @@ void Object::destroy()
 		engine->destroyObject(Self<Object>());
 		engine.reset();
 	}
-
-	LOG(Log, "'{}' destroyed", getName());
+	LOG(Log, "'{}' cleaned up.", getName());
+	
 }

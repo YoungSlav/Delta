@@ -23,7 +23,7 @@ protected:
 	virtual EAssetLoadingState load_Internal() override;
 	virtual void cleanup_Internal() override;
 
-	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	
 	void createTextureSampler();
 
 private:
