@@ -13,7 +13,16 @@
       ],
       "envFile": "${workspaceFolder}/.vscode/vulkan.env",
       "MIMode": "lldb",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "windows": {
+        "type": "cppvsdbg",
+        "program": "${command:cmake.launchTargetPath}",
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "environment": [
+          { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+        ]
+      }
     },
     {
       "name": "Run (macOS arm64, Debug)",
