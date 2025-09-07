@@ -2,14 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Detect Vulkan SDK",
-      "type": "shell",
-      "command": "bash",
-      "args": ["scripts/detect_vulkan.sh"],
-      "group": "none",
-      "problemMatcher": []
-    },
-    {
       "label": "Deps: Build (Debug)",
       "type": "shell",
       "command": "make deps CONFIG=Debug",
