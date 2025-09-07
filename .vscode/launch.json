@@ -9,7 +9,9 @@
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
-      "environment": [],
+      "environment": [
+        { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+      ],
       "envFile": "${workspaceFolder}/.vscode/vulkan.env",
       "MIMode": "lldb",
       "externalConsole": false,
@@ -36,6 +38,9 @@
       "program": "${workspaceFolder}\\Build\\x64\\Debug\\Delta.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
+      "environment": [
+        { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+      ],
       "envFile": "${workspaceFolder}\\.vscode\\vulkan.env",
       "stopAtEntry": false,
       "console": "integratedTerminal",
