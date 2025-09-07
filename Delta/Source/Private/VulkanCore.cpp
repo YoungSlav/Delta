@@ -514,9 +514,37 @@ void VulkanCore::onDestroy()
 void VulkanCore::createInstance()
 {
     LOG(Log, "Create vulkan instance");
-    if (enableValidationLayers && !checkValidationLayerSupport())
+    // Log validation layers state and availability
+    LOG(Log, "Validation layers enabled: {}", enableValidationLayers ? "yes" : "no");
+    if (enableValidationLayers)
     {
-        throw std::runtime_error("validation layers requested, but not available!");
+        uint32_t layerCount = 0;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        LOG(Log, "Available instance layers ({}):", (uint32)availableLayers.size());
+        {
+            LOG_INDENT
+            for (const auto& lp : availableLayers)
+            {
+                LOG(Log, "{}", lp.layerName);
+            }
+        }
+        LOG(Log, "Requested layers ({}):", (uint32)validationLayers.size());
+        {
+            LOG_INDENT
+            for (auto* name : validationLayers)
+            {
+                LOG(Log, "{}", name);
+            }
+        }
+
+        if (!checkValidationLayerSupport())
+        {
+            LOG(Error, "Requested validation layers are not available");
+            throw std::runtime_error("validation layers requested, but not available!");
+        }
     }
 
 	VkApplicationInfo appInfo{};
@@ -531,11 +559,28 @@ void VulkanCore::createInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
+#if defined(__APPLE__)
+    // Required by MoltenVK portability on macOS
+    #ifndef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+    #define VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR 0x00000001
+    #endif
+    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
+
  
 
     auto extensions = getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
+    // Log instance extensions we are enabling
+    LOG(Log, "Instance extensions ({}):", (uint32)extensions.size());
+    {
+        LOG_INDENT
+        for (auto* e : extensions)
+        {
+            LOG(Log, "{}", e);
+        }
+    }
 
  
 
@@ -555,8 +600,9 @@ void VulkanCore::createInstance()
 		createInfo.pNext = nullptr;
 	}
 
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+    if (VkResult res = vkCreateInstance(&createInfo, nullptr, &instance); res != VK_SUCCESS)
     {
+        LOG(Error, "vkCreateInstance failed with code {}", (int)res);
         throw std::runtime_error("failed to create Instance!");
     }
 }
@@ -1174,7 +1220,11 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
-
+#if defined(__APPLE__)
+    // Required by MoltenVK portability on macOS
+    extensions.push_back("VK_KHR_portability_enumeration");
+#endif
+    
 	return extensions;
 }
 

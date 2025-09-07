@@ -96,6 +96,13 @@ ifeq ($(OS),Darwin)
   LIBS += -lvulkan
   # zlib for assimp
   LIBS += -lz
+  # Embed rpaths so libvulkan.dylib can be found without DYLD envs
+  ifneq ($(VKS_SDK_LIB_DIR),)
+    LDFLAGS += -Wl,-rpath,$(VKS_SDK_LIB_DIR)
+  endif
+  ifneq ($(VULKAN_SDK),)
+    LDFLAGS += -Wl,-rpath,$(VULKAN_SDK)/macOS/lib -Wl,-rpath,$(VULKAN_SDK)/lib
+  endif
 else ifeq ($(OS),Linux)
   # Linux: X11 dependencies for GLFW
   LIBS += -lglfw -ldl -lpthread -lX11 -lXrandr -lXi -lXxf86vm -lXcursor

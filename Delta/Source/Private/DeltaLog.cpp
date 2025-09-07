@@ -13,7 +13,7 @@
 static std::mutex logMutex;
 std::ofstream DeltaLog::logFile;
 std::string DeltaLog::logFileName;
-std::string DeltaLog::logFolder = "../Logs";
+std::string DeltaLog::logFolder = "Logs";
 int DeltaLog::logIndent = 0;
 
 void DeltaLog::increaseIndent()

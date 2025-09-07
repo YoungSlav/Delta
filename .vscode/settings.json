@@ -1,0 +1,15 @@
+{
+  "files.exclude": {
+    "**/Intermediate": true,
+    "**/Intermediate/**": true,
+    "**/Build": false
+  },
+  "search.exclude": {
+    "**/Intermediate": true,
+    "**/Intermediate/**": true
+  },
+  "files.watcherExclude": {
+    "**/Intermediate/**": true
+  }
+}
+
