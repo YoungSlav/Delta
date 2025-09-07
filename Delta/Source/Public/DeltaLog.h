@@ -69,12 +69,12 @@ private:
 		return val;
 	}
 
-	//template<typename T, typename U = typename T::value_type, typename Q = glm::qualifier::defaultp >
-	template<typename T=glm::qua, typename U = typename T::value_type, glm::qualifier Q = glm::qualifier::defaultp>
-	static std::string toStringInternal(const glm::qua<U, Q>& qua)
-	{
-		return "(" + toStringInternal<glm::vec3>(glm::normalize(glm::vec3(qua.x, qua.y, qua.z))) + " " + toStringInternal<float>(glm::degrees(qua.w)) + ")";
-	}
+    // GLM quaternion overload (use tquat to be version-agnostic)
+    template<typename U, glm::qualifier Q = glm::qualifier::defaultp>
+    static std::string toStringInternal(const glm::tquat<U, Q>& q)
+    {
+        return "(" + toStringInternal<glm::vec3>(glm::normalize(glm::vec3(q.x, q.y, q.z))) + " " + toStringInternal<float>(glm::degrees(q.w)) + ")";
+    }
 	
 	
 	// Templated function to convert glm vector types to string

@@ -23,7 +23,7 @@ cmake --build "$GLFW_BUILD" --config $CONFIG --parallel
 
 # Copy resulting library (name differs across platforms)
 echo "-- Copying GLFW libs"
-find "$GLFW_BUILD" -name "libglfw*.a" -o -name "glfw3.lib" -o -name "libglfw*.dylib" -o -name "glfw3.dll" \
+find "$GLFW_BUILD" \( -name "libglfw*.a" -o -name "glfw3.lib" -o -name "libglfw*.dylib" -o -name "glfw3.dll" \) \
   -exec cp {} "$ROOT_DIR/ThirdParty/lib/$CONFIG" \; || true
 
 # Build Assimp
@@ -40,8 +40,7 @@ cmake -S "$ASSIMP_SRC" -B "$ASSIMP_BUILD" \
 cmake --build "$ASSIMP_BUILD" --config $CONFIG --parallel
 
 echo "-- Copying Assimp libs"
-find "$ASSIMP_BUILD" -name "libassimp*.a" -o -name "assimp*.lib" -o -name "libassimp*.dylib" -o -name "assimp*.dll" \
+find "$ASSIMP_BUILD" \( -name "libassimp*.a" -o -name "assimp*.lib" -o -name "libassimp*.dylib" -o -name "assimp*.dll" \) \
   -exec cp {} "$ROOT_DIR/ThirdParty/lib/$CONFIG" \; || true
 
 echo "Dependencies built and copied to ThirdParty/lib/$CONFIG"
-

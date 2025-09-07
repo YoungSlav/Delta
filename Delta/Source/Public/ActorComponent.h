@@ -16,9 +16,7 @@ public:
 	ActorComponent(Args&&... args) :
 		Object(std::forward<Args>(args)...),
 		ITransformable()
-	{
-		setParent(getOwningActor());
-	}
+	{}
 
 
 	std::shared_ptr<class Actor> getOwningActor() const;
