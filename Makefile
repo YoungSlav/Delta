@@ -27,13 +27,23 @@ INCLUDES := \
   -IDelta \
   -IDelta/Source \
   -IDelta/Source/Public \
-  -IThirdParty/include \
   -IThirdParty/glm \
   -IThirdParty/glfw/include \
-  -IThirdParty/assimp/include
+  -IThirdParty/assimp/include \
+  -IThirdParty/include
 
-# Vulkan SDK include/library if available
-ifdef VULKAN_SDK
+# Vulkan SDK detection
+GLSLC_PATH := $(shell command -v glslc 2>/dev/null)
+ifeq ($(VULKAN_SDK),)
+  ifneq ($(GLSLC_PATH),)
+    VULKAN_SDK_C1 := $(abspath $(dir $(dir $(GLSLC_PATH))))
+    VULKAN_SDK_C2 := $(abspath $(dir $(VULKAN_SDK_C1)))
+    VULKAN_SDK := $(shell [ -f "$(VULKAN_SDK_C1)/Include/vulkan/vulkan.h" ] && echo $(VULKAN_SDK_C1) || ([ -f "$(VULKAN_SDK_C2)/Include/vulkan/vulkan.h" ] && echo $(VULKAN_SDK_C2)))
+  endif
+endif
+
+# Vulkan SDK include/library if available (env or auto-detected)
+ifneq ($(VULKAN_SDK),)
   INCLUDES += -I$(VULKAN_SDK)/Include -I$(VULKAN_SDK)/include
   LDFLAGS += -L$(VULKAN_SDK)/Lib -L$(VULKAN_SDK)/lib
 endif
@@ -105,4 +115,3 @@ deps:
 # Compile GLSL shaders to SPIR-V
 shaders:
 	@bash scripts/compile_shaders.sh
-
