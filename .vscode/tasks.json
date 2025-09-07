@@ -14,21 +14,48 @@
       "type": "shell",
       "command": "make deps CONFIG=Debug",
       "group": "build",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "scripts\\build_deps_windows.bat Debug",
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
     },
     {
       "label": "Deps: Build (Release)",
       "type": "shell",
       "command": "make deps CONFIG=Release",
       "group": "build",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "scripts\\build_deps_windows.bat Release",
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
     },
     {
       "label": "Shaders: Compile",
       "type": "shell",
       "command": "make shaders",
       "group": "build",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "windows": {
+        "command": "scripts\\compile_shaders_windows.bat",
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
     },
     {
       "label": "Build (Debug)",
@@ -38,14 +65,32 @@
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": ["$gcc"],
+      "windows": {
+        "command": "make msvc-debug",
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
     },
     {
       "label": "Build (Release)",
       "type": "shell",
       "command": "make release",
       "group": "build",
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": ["$gcc"],
+      "windows": {
+        "command": "make msvc-release",
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
     },
     {
       "label": "Build (MSVC Debug)",
@@ -86,4 +131,3 @@
     }
   ]
 }
-
