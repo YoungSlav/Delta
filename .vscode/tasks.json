@@ -1,0 +1,89 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Detect Vulkan SDK",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/detect_vulkan.sh"],
+      "group": "none",
+      "problemMatcher": []
+    },
+    {
+      "label": "Deps: Build (Debug)",
+      "type": "shell",
+      "command": "make deps CONFIG=Debug",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Deps: Build (Release)",
+      "type": "shell",
+      "command": "make deps CONFIG=Release",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Shaders: Compile",
+      "type": "shell",
+      "command": "make shaders",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build (Debug)",
+      "type": "shell",
+      "command": "make debug",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Build (Release)",
+      "type": "shell",
+      "command": "make release",
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Build (MSVC Debug)",
+      "type": "shell",
+      "command": "make msvc-debug",
+      "group": "build",
+      "problemMatcher": ["$msCompile"],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
+    },
+    {
+      "label": "Build (MSVC Release)",
+      "type": "shell",
+      "command": "make msvc-release",
+      "group": "build",
+      "problemMatcher": ["$msCompile"],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
+    },
+    {
+      "label": "Clean (Current Config)",
+      "type": "shell",
+      "command": "make clean",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
+

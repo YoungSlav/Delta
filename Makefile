@@ -115,3 +115,46 @@ deps:
 # Compile GLSL shaders to SPIR-V
 shaders:
 	@bash scripts/compile_shaders.sh
+
+# =====================
+# MSVC (Windows) targets
+# =====================
+# Build using Microsoft Visual C++ toolchain. Run these from a Developer Command Prompt
+# or any shell where vcvars are already set (CL, LINK, LIB environment configured).
+
+ifeq ($(OS),Windows_NT)
+
+MSVC_INT_DIR := $(INT_DIR)
+MSVC_OBJ := $(patsubst $(SRC_DIR)/Private/%.cpp,$(MSVC_INT_DIR)/%.obj,$(SRC))
+MSVC_INCLUDES := $(INCLUDES: -I%=/I%)
+
+# Common MSVC flags
+CL_FLAGS_COMMON := /nologo /std:c++20 /EHsc /W3 /MD
+CL_FLAGS_DEBUG := /Zi /Od /D _DEBUG
+CL_FLAGS_RELEASE := /O2 /DNDEBUG
+
+LINK_FLAGS_COMMON := /nologo /SUBSYSTEM:CONSOLE
+LINK_LIBPATHS := /LIBPATH:ThirdParty\\lib\\$(CONFIG)
+
+# Library names (assimp name may vary; adjust if needed)
+MSVC_LIBS_DEBUG := vulkan-1.lib glfw3.lib assimp-vc143-mtd.lib
+MSVC_LIBS_RELEASE := vulkan-1.lib glfw3.lib assimp-vc143-mt.lib
+
+.PHONY: msvc-debug msvc-release
+
+msvc-debug: CONFIG=Debug
+msvc-debug: $(TARGET).exe
+
+msvc-release: CONFIG=Release
+msvc-release: $(TARGET).exe
+
+$(TARGET).exe: $(MSVC_OBJ) | $(OUT_DIR)
+	link $(LINK_FLAGS_COMMON) $(LINK_LIBPATHS) /OUT:$@ $(MSVC_OBJ) $(MSVC_LIBS_$(CONFIG))
+
+$(MSVC_INT_DIR)/%.obj: $(SRC_DIR)/Private/%.cpp | $(MSVC_INT_DIR)
+	cl $(CL_FLAGS_COMMON) $(CL_FLAGS_$(CONFIG)) $(MSVC_INCLUDES) /Fo$@ /c $<
+
+$(MSVC_INT_DIR):
+	@mkdir -p $(MSVC_INT_DIR)
+
+endif
