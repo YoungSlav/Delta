@@ -7,6 +7,18 @@
 
 using namespace Delta;
 
+#if defined(__APPLE__)
+extern "C" void* Delta_GetNSViewFromGLFW(GLFWwindow* window);
+// Minimal MVK macOS surface declarations to avoid header conflicts
+typedef VkFlags VkMacOSSurfaceCreateFlagsMVK;
+typedef struct VkMacOSSurfaceCreateInfoMVK {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkMacOSSurfaceCreateFlagsMVK    flags;
+    const void*                     pView; // NSView*
+} VkMacOSSurfaceCreateInfoMVK;
+typedef VkResult (VKAPI_PTR *PFN_vkCreateMacOSSurfaceMVK)(VkInstance, const VkMacOSSurfaceCreateInfoMVK*, const VkAllocationCallbacks*, VkSurfaceKHR*);
+#endif
 VkResult CreateDebugUtilsMessengerEXT(VkInstance Instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
 {
 	LOG(Log, "Create debug utils messenger...");
@@ -504,12 +516,9 @@ void VulkanCore::createInstance()
     LOG(Log, "Create vulkan instance");
     bool wantValidation = enableValidationLayers;
 #if defined(__APPLE__)
-    // Allow opt-in on Apple via env variable or presence of VK_LAYER_PATH
+    // Allow opt-in on Apple ONLY via explicit env flag. Do not auto-enable based on VK_LAYER_PATH.
     if (const char* envFlag = std::getenv("DELTA_ENABLE_VALIDATION")) {
         if (std::string(envFlag) == "1") wantValidation = true;
-    }
-    if (std::getenv("VK_LAYER_PATH") != nullptr) {
-        wantValidation = true;
     }
 #endif
     useValidationLayers = wantValidation && checkValidationLayerSupport();
@@ -564,10 +573,31 @@ void VulkanCore::createInstance()
 		createInfo.pNext = nullptr;
 	}
 
-	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create Instance!");
-	}
+    VkResult instRes = vkCreateInstance(&createInfo, nullptr, &instance);
+    if (instRes != VK_SUCCESS)
+    {
+        if (useValidationLayers)
+        {
+            LOG(Warning, "vkCreateInstance failed with validation layers enabled (code {}). Retrying without layers...", (int)instRes);
+
+            // Retry without validation layers
+            useValidationLayers = false;
+            createInfo.enabledLayerCount = 0;
+            createInfo.ppEnabledLayerNames = nullptr;
+
+            // Recompute extensions to drop debug utils
+            auto extNoLayers = getRequiredExtensions();
+            createInfo.enabledExtensionCount = static_cast<uint32_t>(extNoLayers.size());
+            createInfo.ppEnabledExtensionNames = extNoLayers.data();
+
+            instRes = vkCreateInstance(&createInfo, nullptr, &instance);
+        }
+
+        if (instRes != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create Instance!");
+        }
+    }
 }
 
 void VulkanCore::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
@@ -601,6 +631,28 @@ void VulkanCore::createSurface()
     if (res != VK_SUCCESS)
     {
         LOG(Error, "glfwCreateWindowSurface failed with code {}", (int)res);
+#if defined(__APPLE__)
+        // Fallback: create macOS surface directly via MVK extension
+        void* viewPtr = Delta_GetNSViewFromGLFW(engine->getWindow()->getWindow());
+        if (viewPtr)
+        {
+            VkMacOSSurfaceCreateInfoMVK ci{};
+            ci.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+            ci.pNext = nullptr;
+            ci.flags = 0;
+            ci.pView = viewPtr;
+            PFN_vkCreateMacOSSurfaceMVK pfnCreateMacOSSurfaceMVK = (PFN_vkCreateMacOSSurfaceMVK)vkGetInstanceProcAddr(instance, "vkCreateMacOSSurfaceMVK");
+            VkResult r2 = pfnCreateMacOSSurfaceMVK ? pfnCreateMacOSSurfaceMVK(instance, &ci, nullptr, &surface) : VK_ERROR_EXTENSION_NOT_PRESENT;
+            if (r2 == VK_SUCCESS)
+            {
+                return;
+            }
+            else
+            {
+                LOG(Error, "vkCreateMacOSSurfaceMVK fallback failed with code {}", (int)r2);
+            }
+        }
+#endif
         throw std::runtime_error("failed to create window Surface!");
     }
 }

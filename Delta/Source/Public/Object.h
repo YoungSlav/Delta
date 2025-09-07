@@ -33,13 +33,13 @@ class Object : public SharedFromThis
 {
 	friend class Engine;
 public:
-	Object(const DeltaHandle& inHandle, const std::string& inName, const std::shared_ptr<class Engine> inEngine, const std::shared_ptr<Object> inOwner) :
-		SharedFromThis(),
-		handle(inHandle),
-		name(inName),
-		engine(inEngine),
-		owner(inOwner)
-	{}
+    Object(const DeltaHandle& inHandle, const std::string& inName, const std::shared_ptr<class Engine> inEngine, const std::shared_ptr<Object> inOwner) :
+        SharedFromThis(),
+        engine(inEngine),
+        name(inName),
+        handle(inHandle),
+        owner(inOwner)
+    {}
 
 	virtual ~Object();
 

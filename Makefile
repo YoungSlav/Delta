@@ -21,7 +21,7 @@ TARGET := $(OUT_DIR)/Delta
 
 # Sources and includes
 SRC_DIR := Delta/Source
-SRC := $(wildcard $(SRC_DIR)/Private/*.cpp)
+SRC := $(wildcard $(SRC_DIR)/Private/*.cpp) $(wildcard $(SRC_DIR)/Private/*.mm)
 
 INCLUDES := \
   -IDelta \
@@ -49,7 +49,9 @@ ifneq ($(VULKAN_SDK),)
   LDFLAGS += -L$(VULKAN_SDK)/Lib -L$(VULKAN_SDK)/lib
 endif
 
-OBJ := $(patsubst $(SRC_DIR)/Private/%.cpp,$(INT_DIR)/%.o,$(SRC))
+OBJ_CPP := $(patsubst $(SRC_DIR)/Private/%.cpp,$(INT_DIR)/%.o,$(wildcard $(SRC_DIR)/Private/*.cpp))
+OBJ_MM  := $(patsubst $(SRC_DIR)/Private/%.mm,$(INT_DIR)/%.o,$(wildcard $(SRC_DIR)/Private/*.mm))
+OBJ := $(OBJ_CPP) $(OBJ_MM)
 
 CXX ?= c++
 CXXFLAGS ?= -std=c++20 -Wall -Wextra -Wno-unused-parameter $(INCLUDES)
@@ -121,8 +123,14 @@ $(TARGET): $(OBJ) | $(OUT_DIR)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LIBS) $(EXTRA_LIBS)
 
 # Compile
+
+# Compile C++
 $(INT_DIR)/%.o: $(SRC_DIR)/Private/%.cpp | $(INT_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compile Objective-C++ (.mm) for macOS
+$(INT_DIR)/%.o: $(SRC_DIR)/Private/%.mm | $(INT_DIR)
+	$(CXX) $(CXXFLAGS) -x objective-c++ -c $< -o $@
 
 $(INT_DIR):
 	@mkdir -p $(INT_DIR)
