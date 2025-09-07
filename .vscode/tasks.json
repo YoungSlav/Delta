@@ -60,11 +60,13 @@
         "args": ["-l", "-c", "make debug"]
       },
       "windows": {
-        "command": "cmd.exe",
+        "command": "powershell",
         "args": [
-          "/d",
-          "/c",
-          "call \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-debug"
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-debug"
         ]
       }
     },
@@ -79,11 +81,13 @@
         "args": ["-l", "-c", "make release"]
       },
       "windows": {
-        "command": "cmd.exe",
+        "command": "powershell",
         "args": [
-          "/d",
-          "/c",
-          "call \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-release"
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-release"
         ]
       }
     },
@@ -94,11 +98,13 @@
       "group": "build",
       "problemMatcher": ["$msCompile"],
       "windows": {
-        "command": "cmd.exe",
+        "command": "powershell",
         "args": [
-          "/d",
-          "/c",
-          "call \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-debug"
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-debug"
         ]
       }
     },
@@ -109,11 +115,13 @@
       "group": "build",
       "problemMatcher": ["$msCompile"],
       "windows": {
-        "command": "cmd.exe",
+        "command": "powershell",
         "args": [
-          "/d",
-          "/c",
-          "call \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-release"
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-release"
         ]
       }
     },
