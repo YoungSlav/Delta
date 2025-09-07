@@ -680,12 +680,13 @@ void VulkanCore::pickPhysicalDevice()
 		}
 	}
 
-	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+    if (physicalDevice == VK_NULL_HANDLE)
+    {
+        LOG(Error, "No suitable physical device found");
+        throw std::runtime_error("failed to find a suitable GPU!");
+    }
 
-	if (physicalDevice == VK_NULL_HANDLE)
-	{
-		throw std::runtime_error("failed to find a suitable GPU!");
-	}
+    vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 }
 
 void VulkanCore::createLogicalDevice()
