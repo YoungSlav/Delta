@@ -49,7 +49,22 @@ Intermediate/
 */Debug/
 */CMakeFiles/
 
-!/ThirdParty/Lib/
 !/Resources/*
+
+# Ignore vendor build outputs and binary libs
+ThirdParty/build/
+ThirdParty/lib/
+
+# Common binary artifacts
+*.exe
+*.dll
+*.lib
+*.a
+*.dylib
+*.so
+*.pdb
+*.exp
+*.ilk
+*.dSYM/
 
 Resources/Shaders/
