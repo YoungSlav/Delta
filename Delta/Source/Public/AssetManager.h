@@ -20,16 +20,17 @@ public:
 	{
 		resourcesFolders.reserve(2);
 		{
-			std::string folderStr = rootFolder + engineResourcesRelativePath;
-			std::filesystem::path folder(folderStr);
-			if ( std::filesystem::exists(folder) && std::filesystem::is_directory(folder) )
-				resourcesFolders.push_back(folderStr);
+			namespace fs = std::filesystem;
+			fs::path folderPath = fs::path(rootFolder) / engineResourcesRelativePath;
+			if ( fs::exists(folderPath) && fs::is_directory(folderPath) )
+				resourcesFolders.push_back(folderPath.string());
 		}
 		{
-			std::string folderStr = rootFolder + std::format(projectResourcesRelativePath, projectName);
-			std::filesystem::path folder(folderStr);
-			if ( std::filesystem::exists(folder) && std::filesystem::is_directory(folder) )
-				resourcesFolders.push_back(folderStr);
+			namespace fs = std::filesystem;
+			std::string projRel = std::format(projectResourcesRelativePath, projectName);
+			fs::path folderPath = fs::path(rootFolder) / projRel;
+			if ( fs::exists(folderPath) && fs::is_directory(folderPath) )
+				resourcesFolders.push_back(folderPath.string());
 		}
 	}
 

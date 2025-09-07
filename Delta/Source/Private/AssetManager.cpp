@@ -22,20 +22,19 @@ bool AssetManager::initialize_Internal()
 
 bool AssetManager::fileExist(const std::string& FileName)
 {
-	std::ifstream file(FileName);
-	if ( file )
-		return true;
-	else
-		return false;
+	namespace fs = std::filesystem;
+	fs::path p(FileName);
+	return fs::exists(p) && fs::is_regular_file(p);
 }
 
 std::string AssetManager::findAsset(const std::string& AssetName)
 {
+	namespace fs = std::filesystem;
 	for ( const std::string& folder : resourcesFolders )
 	{
-		std::string Candidate = folder + AssetName;
-		if ( fileExist(Candidate) )
-			return Candidate;
+		fs::path Candidate = fs::path(folder) / AssetName;
+		if ( fileExist(Candidate.string()) )
+			return Candidate.string();
 	}
 	return "";
 }
