@@ -2,17 +2,29 @@
 
 # Configuration
 CONFIG ?= Debug
-OS := $(shell uname -s)
-ARCH := $(shell uname -m)
 
-# Map ARCH to folder names similar to VS
-ifeq ($(ARCH),x86_64)
-  PLATFORM := x64
-else ifeq ($(ARCH),arm64)
-  PLATFORM := arm64
+# Host OS/ARCH detection (portable across shells)
+ifeq ($(OS),Windows_NT)
+  HOST_OS := Windows
 else
-  PLATFORM := $(ARCH)
+  HOST_OS := $(shell uname -s)
 endif
+
+ifeq ($(HOST_OS),Windows)
+  # Default to x64 for MSVC builds
+  PLATFORM := x64
+else
+  ARCH := $(shell uname -m)
+  # Map ARCH to folder names similar to VS
+  ifeq ($(ARCH),x86_64)
+    PLATFORM := x64
+  else ifeq ($(ARCH),arm64)
+    PLATFORM := arm64
+  else
+    PLATFORM := $(ARCH)
+  endif
+endif
+
 
 OUT_DIR := Build/$(PLATFORM)/$(CONFIG)
 INT_DIR := Intermediate/$(PLATFORM)/$(CONFIG)/Delta
@@ -89,7 +101,7 @@ endif
 
 LIBS :=
 
-ifeq ($(OS),Darwin)
+ifeq ($(HOST_OS),Darwin)
   # macOS: frameworks needed by GLFW
   LIBS += -framework Cocoa -framework IOKit -framework CoreVideo -framework QuartzCore -framework Metal
   # Vulkan loader on macOS typically via Vulkan SDK / MoltenVK
@@ -103,11 +115,11 @@ ifeq ($(OS),Darwin)
   ifneq ($(VULKAN_SDK),)
     LDFLAGS += -Wl,-rpath,$(VULKAN_SDK)/macOS/lib -Wl,-rpath,$(VULKAN_SDK)/lib
   endif
-else ifeq ($(OS),Linux)
+else ifeq ($(HOST_OS),Linux)
   # Linux: X11 dependencies for GLFW
   LIBS += -lglfw -ldl -lpthread -lX11 -lXrandr -lXi -lXxf86vm -lXcursor
   LIBS += -lvulkan
-else
+else ifneq ($(HOST_OS),Windows)
   # Other POSIX-like; leave as-is and let linker report missing pieces
   LIBS += -lglfw -lvulkan
 endif
@@ -160,11 +172,19 @@ $(INT_DIR)/%.o: $(SRC_DIR)/Private/%.cpp | $(INT_DIR)
 
 # (no Objective-C++ sources required in portable path)
 
+ifeq ($(HOST_OS),Windows)
+$(INT_DIR):
+	@if not exist "$(INT_DIR)" mkdir "$(INT_DIR)"
+
+$(OUT_DIR):
+	@if not exist "$(OUT_DIR)" mkdir "$(OUT_DIR)"
+else
 $(INT_DIR):
 	@mkdir -p $(INT_DIR)
 
 $(OUT_DIR):
 	@mkdir -p $(OUT_DIR)
+endif
 
 clean:
 	rm -rf Build/$(PLATFORM)/$(CONFIG) Intermediate/$(PLATFORM)/$(CONFIG)/Delta
