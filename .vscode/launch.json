@@ -20,7 +20,8 @@
         "cwd": "${workspaceFolder}",
         "console": "integratedTerminal",
         "environment": [
-          { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+          { "name": "DELTA_ENABLE_VALIDATION", "value": "1" },
+          { "name": "VK_LAYER_PATH", "value": "${env:VULKAN_SDK}\\Bin" }
         ]
       }
     },
