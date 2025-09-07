@@ -502,7 +502,17 @@ void VulkanCore::onDestroy()
 void VulkanCore::createInstance()
 {
     LOG(Log, "Create vulkan instance");
-    useValidationLayers = enableValidationLayers && checkValidationLayerSupport();
+    bool wantValidation = enableValidationLayers;
+#if defined(__APPLE__)
+    // Allow opt-in on Apple via env variable or presence of VK_LAYER_PATH
+    if (const char* envFlag = std::getenv("DELTA_ENABLE_VALIDATION")) {
+        if (std::string(envFlag) == "1") wantValidation = true;
+    }
+    if (std::getenv("VK_LAYER_PATH") != nullptr) {
+        wantValidation = true;
+    }
+#endif
+    useValidationLayers = wantValidation && checkValidationLayerSupport();
     if (enableValidationLayers && !useValidationLayers)
     {
         LOG(Warning, "Validation layers requested, but not available. Continuing without them.");

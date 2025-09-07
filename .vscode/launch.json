@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run (macOS arm64, Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/Build/arm64/Debug/Delta",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
+      "MIMode": "lldb",
+      "externalConsole": false,
+      "preLaunchTask": "Build (Debug)"
+    },
+    {
+      "name": "Run (Windows x64, Debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\Build\\x64\\Debug\\Delta.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}\\.vscode\\vulkan.env",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "preLaunchTask": "Build (MSVC Debug)"
+    }
+  ]
+}
+

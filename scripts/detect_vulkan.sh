@@ -41,5 +41,21 @@ fi
 echo "Detected Vulkan SDK at: $SDK"
 ENV_FILE="$ROOT_DIR/.vulkan.env"
 echo "export VULKAN_SDK=\"$SDK\"" > "$ENV_FILE"
+
+# Try to detect validation layer path (Homebrew layout on macOS)
+if [ -d "/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d" ]; then
+  echo "export VK_LAYER_PATH=\"/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d\"" >> "$ENV_FILE"
+fi
+
 echo "Wrote $ENV_FILE. You can source it: 'source .vulkan.env'"
 
+# Also create a VS Code-friendly env file (KEY=VALUE format)
+mkdir -p "$ROOT_DIR/.vscode"
+VSC_ENV_FILE="$ROOT_DIR/.vscode/vulkan.env"
+{
+  echo "VULKAN_SDK=$SDK"
+  if [ -d "/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d" ]; then
+    echo "VK_LAYER_PATH=/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d"
+  fi
+} > "$VSC_ENV_FILE"
+echo "Wrote $VSC_ENV_FILE for VS Code launch envFile"
