@@ -8,12 +8,14 @@
 #include <ctime>
 #include <mutex>
 
+#if defined(_WIN32)
 #include <windows.h>
+#endif
 
 static std::mutex logMutex;
 std::ofstream DeltaLog::logFile;
 std::string DeltaLog::logFileName;
-std::string DeltaLog::logFolder = "..\\Logs";
+std::string DeltaLog::logFolder = "../Logs";
 int DeltaLog::logIndent = 0;
 
 void DeltaLog::increaseIndent()
@@ -60,8 +62,12 @@ void DeltaLog::renameOldLogFile(const std::string& oldFilePath)
 
 	std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
 
-	std::tm localTime;
-	localtime_s(&localTime, &cftime);
+    std::tm localTime{};
+#if defined(_WIN32)
+    localtime_s(&localTime, &cftime);
+#else
+    localtime_r(&cftime, &localTime);
+#endif
 
 	char buffer[64];
 	std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &localTime);
@@ -89,55 +95,80 @@ void DeltaLog::print(const char* const Message, ELog Type)
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);
 	auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 	// Convert to localtime
-	std::tm local_tm;
-	localtime_s(&local_tm, &now_time_t);
+    std::tm local_tm{};
+#if defined(_WIN32)
+    localtime_s(&local_tm, &now_time_t);
+#else
+    localtime_r(&now_time_t, &local_tm);
+#endif
 
 	std::lock_guard<std::mutex> lock(logMutex);
 
-	static HANDLE hstdout = GetStdHandle( STD_OUTPUT_HANDLE );
-	
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	GetConsoleScreenBufferInfo( hstdout, &csbi );
+    #if defined(_WIN32)
+    static HANDLE hstdout = GetStdHandle( STD_OUTPUT_HANDLE );
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo( hstdout, &csbi );
+    #endif
 
 	char debugMessage[512];
 	const char* typeStr = nullptr;
 
-	switch (Type)
-	{
-	case ELog::Success:
-		SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN );
-		snprintf(debugMessage, sizeof(debugMessage), "Log: %s%s\n", indent.c_str(),Message);
-		typeStr = "Success";
-		break;
-	case ELog::Log:
-		SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE);
-		snprintf(debugMessage, sizeof(debugMessage), "Log: %s%s\n", indent.c_str(),Message);
-		typeStr = "Log";
-		break;
-	case ELog::Warning:
-		SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED );
-		snprintf(debugMessage, sizeof(debugMessage), "Warning: %s%s\n", indent.c_str(),Message);
-		std::cout <<"Warning: ";
-		typeStr = "Warning";
-		break;
-	case ELog::Error:
-		SetConsoleTextAttribute( hstdout, FOREGROUND_RED );
-		snprintf(debugMessage, sizeof(debugMessage), "Error: %s%s\n", indent.c_str(),Message);
-		std::cout <<"Error: ";
-		typeStr = "Error";
-		break;
-	case ELog::Fatal:
-		SetConsoleTextAttribute( hstdout, BACKGROUND_RED | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
-		snprintf(debugMessage, sizeof(debugMessage), "Fatal: %s%s\n", indent.c_str(),Message);
-		std::cout <<"Fatal: ";
-		typeStr = "Fatal";
-		break;
-	}
+    switch (Type)
+    {
+    case ELog::Success:
+        typeStr = "Success";
+        break;
+    case ELog::Log:
+        typeStr = "Log";
+        break;
+    case ELog::Warning:
+        typeStr = "Warning";
+        break;
+    case ELog::Error:
+        typeStr = "Error";
+        break;
+    case ELog::Fatal:
+        typeStr = "Fatal";
+        break;
+    }
 
-	std::cout << indent << Message << std::endl;
-	OutputDebugString(debugMessage);
-	
-	SetConsoleTextAttribute( hstdout, csbi.wAttributes );
+    #if defined(_WIN32)
+    // Windows console coloring and debug output
+    switch (Type)
+    {
+    case ELog::Success:
+        SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN );
+        break;
+    case ELog::Log:
+        SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE);
+        break;
+    case ELog::Warning:
+        SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED );
+        break;
+    case ELog::Error:
+        SetConsoleTextAttribute( hstdout, FOREGROUND_RED );
+        break;
+    case ELog::Fatal:
+        SetConsoleTextAttribute( hstdout, BACKGROUND_RED | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
+        break;
+    }
+    snprintf(debugMessage, sizeof(debugMessage), "%s: %s%s\n", typeStr, indent.c_str(), Message);
+    std::cout << indent << Message << std::endl;
+    OutputDebugString(debugMessage);
+    SetConsoleTextAttribute( hstdout, csbi.wAttributes );
+    #else
+    // ANSI colors for non-Windows
+    const char* color = "\033[0m";
+    switch (Type)
+    {
+    case ELog::Success: color = "\033[32m"; break; // green
+    case ELog::Log:     color = "\033[0m";  break; // reset
+    case ELog::Warning: color = "\033[33m"; break; // yellow
+    case ELog::Error:   color = "\033[31m"; break; // red
+    case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
+    }
+    std::cout << color << indent << Message << "\033[0m" << std::endl;
+    #endif
 
 	if (logFile.is_open())
 	{

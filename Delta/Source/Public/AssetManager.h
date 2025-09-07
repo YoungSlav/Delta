@@ -84,8 +84,8 @@ private:
 
 	const std::string rootFolder;
 	const std::string projectName;
-	const std::string engineResourcesRelativePath = "Resources\\";
-	static constexpr std::string_view projectResourcesRelativePath = "Games\\{}\\Resources\\";
+    const std::string engineResourcesRelativePath = "Resources/";
+    static constexpr std::string_view projectResourcesRelativePath = "Games/{}/Resources/";
 
 	std::vector<std::string> resourcesFolders;
 	std::vector<std::string> shaderFolders;
