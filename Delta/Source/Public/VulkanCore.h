@@ -4,6 +4,22 @@
 #include "Object.h"
 
 
+// Fallbacks for MoltenVK portability where headers might be older
+#if defined(__APPLE__)
+#ifndef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+#define VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR 0x00000001
+#endif
+#ifndef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+#define VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME "VK_KHR_portability_enumeration"
+#endif
+#ifndef VK_EXT_METAL_SURFACE_EXTENSION_NAME
+#define VK_EXT_METAL_SURFACE_EXTENSION_NAME "VK_EXT_metal_surface"
+#endif
+#ifndef VK_MVK_MACOS_SURFACE_EXTENSION_NAME
+#define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
+#endif
+#endif
+
 
 
 namespace Delta

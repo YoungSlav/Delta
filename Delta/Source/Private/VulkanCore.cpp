@@ -531,13 +531,22 @@ void VulkanCore::createInstance()
 	createInfo.pApplicationInfo = &appInfo;
 
 #if defined(__APPLE__)
-	// Required for MoltenVK portability on macOS
-	createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    // Required for MoltenVK portability on macOS (guard if header lacks the define)
+#ifdef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
 #endif
 
-	auto extensions = getRequiredExtensions();
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
+    auto extensions = getRequiredExtensions();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    createInfo.ppEnabledExtensionNames = extensions.data();
+
+    {
+        std::string exts;
+        for (auto* e : extensions) { exts += std::string(e) + "; "; }
+        LOG(Log, "Instance flags: {}", (uint32)createInfo.flags);
+        LOG(Log, "Instance extensions ({}): {}", (uint32)extensions.size(), exts);
+    }
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     if (useValidationLayers)
@@ -587,11 +596,13 @@ void VulkanCore::setupDebugMessenger()
 
 void VulkanCore::createSurface()
 {
-	LOG(Log, "Create surface");
-	if (glfwCreateWindowSurface(instance, engine->getWindow()->getWindow(), nullptr, &surface) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create window Surface!");
-	}
+    LOG(Log, "Create surface");
+    VkResult res = glfwCreateWindowSurface(instance, engine->getWindow()->getWindow(), nullptr, &surface);
+    if (res != VK_SUCCESS)
+    {
+        LOG(Error, "glfwCreateWindowSurface failed with code {}", (int)res);
+        throw std::runtime_error("failed to create window Surface!");
+    }
 }
 
 void VulkanCore::pickPhysicalDevice()
@@ -1166,18 +1177,36 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if (enableValidationLayers)
-	{
-		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
+    // Ensure generic surface extension is present
+    auto has_surface = std::find_if(extensions.begin(), extensions.end(), [](const char* s){ return std::string(s) == std::string(VK_KHR_SURFACE_EXTENSION_NAME); }) != extensions.end();
+    if (!has_surface) extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+
+    if (useValidationLayers)
+    {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
 
 #if defined(__APPLE__)
     // Required by MoltenVK to enumerate portability drivers
+#ifdef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
     extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+#else
+    extensions.push_back("VK_KHR_portability_enumeration");
+#endif
     // Ensure Metal surface extension is present
+#ifdef VK_EXT_METAL_SURFACE_EXTENSION_NAME
     extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+#else
+    extensions.push_back("VK_EXT_metal_surface");
+#endif
+    // Also add legacy MVK macOS surface for older GLFW builds
+#ifdef VK_MVK_MACOS_SURFACE_EXTENSION_NAME
+    extensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+#else
+    extensions.push_back("VK_MVK_macos_surface");
+#endif
 #endif
 
 	return extensions;

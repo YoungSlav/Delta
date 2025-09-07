@@ -47,6 +47,11 @@ if [ -d "/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d
   echo "export VK_LAYER_PATH=\"/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d\"" >> "$ENV_FILE"
 fi
 
+# Prefer explicit ICD on macOS Homebrew if available
+if [ -f "/opt/homebrew/share/vulkan/icd.d/MoltenVK_icd.json" ]; then
+  echo "export VK_ICD_FILENAMES=\"/opt/homebrew/share/vulkan/icd.d/MoltenVK_icd.json\"" >> "$ENV_FILE"
+fi
+
 echo "Wrote $ENV_FILE. You can source it: 'source .vulkan.env'"
 
 # Also create a VS Code-friendly env file (KEY=VALUE format)
@@ -56,6 +61,9 @@ VSC_ENV_FILE="$ROOT_DIR/.vscode/vulkan.env"
   echo "VULKAN_SDK=$SDK"
   if [ -d "/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d" ]; then
     echo "VK_LAYER_PATH=/opt/homebrew/opt/vulkan-validationlayers/share/vulkan/explicit_layer.d"
+  fi
+  if [ -f "/opt/homebrew/share/vulkan/icd.d/MoltenVK_icd.json" ]; then
+    echo "VK_ICD_FILENAMES=/opt/homebrew/share/vulkan/icd.d/MoltenVK_icd.json"
   fi
 } > "$VSC_ENV_FILE"
 echo "Wrote $VSC_ENV_FILE for VS Code launch envFile"

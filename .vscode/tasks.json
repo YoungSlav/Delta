@@ -15,6 +15,10 @@
       "command": "make deps CONFIG=Debug",
       "group": "build",
       "problemMatcher": [],
+      "osx": {
+        "command": "bash",
+        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make deps CONFIG=Debug"]
+      },
       "windows": {
         "command": "scripts\\build_deps_windows.bat Debug",
         "options": {
@@ -31,6 +35,10 @@
       "command": "make deps CONFIG=Release",
       "group": "build",
       "problemMatcher": [],
+      "osx": {
+        "command": "bash",
+        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make deps CONFIG=Release"]
+      },
       "windows": {
         "command": "scripts\\build_deps_windows.bat Release",
         "options": {
@@ -47,6 +55,10 @@
       "command": "make shaders",
       "group": "build",
       "problemMatcher": [],
+      "osx": {
+        "command": "bash",
+        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make shaders"]
+      },
       "windows": {
         "command": "scripts\\compile_shaders_windows.bat",
         "options": {
@@ -66,6 +78,10 @@
         "isDefault": true
       },
       "problemMatcher": ["$gcc"],
+      "osx": {
+        "command": "bash",
+        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make debug"]
+      },
       "windows": {
         "command": "make msvc-debug",
         "options": {
@@ -82,6 +98,10 @@
       "command": "make release",
       "group": "build",
       "problemMatcher": ["$gcc"],
+      "osx": {
+        "command": "bash",
+        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make release"]
+      },
       "windows": {
         "command": "make msvc-release",
         "options": {
