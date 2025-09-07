@@ -63,10 +63,9 @@
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-debug"
+          "cmd.exe /d /c \"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-debug\""
         ]
       }
     },
@@ -84,10 +83,9 @@
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-release"
+          "cmd.exe /d /c \"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-release\""
         ]
       }
     },
@@ -101,10 +99,9 @@
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-debug"
+          "cmd.exe /d /c \"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-debug\""
         ]
       }
     },
@@ -118,10 +115,9 @@
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"$env:ProgramFiles(x86)\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-release"
+          "cmd.exe /d /c \"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && make msvc-release\""
         ]
       }
     },
