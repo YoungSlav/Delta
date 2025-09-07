@@ -29,6 +29,7 @@ INCLUDES := \
   -IDelta/Source/Public \
   -IThirdParty/glm \
   -IThirdParty/glfw/include \
+  -IThirdParty/build/assimp/$(CONFIG)/include \
   -IThirdParty/assimp/include \
   -IThirdParty/include
 
@@ -65,20 +66,44 @@ LIBS :=
 
 ifeq ($(OS),Darwin)
   # macOS: frameworks needed by GLFW
-  LIBS += -framework Cocoa -framework IOKit -framework CoreVideo
-  # Try both names to support different GLFW builds
-  LIBS += -lglfw -lglfw3
-  LIBS += -lassimp
+  LIBS += -framework Cocoa -framework IOKit -framework CoreVideo -framework QuartzCore -framework Metal
   # Vulkan loader on macOS typically via Vulkan SDK / MoltenVK
   LIBS += -lvulkan
+  # zlib for assimp
+  LIBS += -lz
 else ifeq ($(OS),Linux)
   # Linux: X11 dependencies for GLFW
   LIBS += -lglfw -ldl -lpthread -lX11 -lXrandr -lXi -lXxf86vm -lXcursor
-  LIBS += -lassimp
   LIBS += -lvulkan
 else
   # Other POSIX-like; leave as-is and let linker report missing pieces
-  LIBS += -lglfw -lassimp -lvulkan
+  LIBS += -lglfw -lvulkan
+endif
+
+# Prefer directly built static libs if present
+GLFW_STATIC := ThirdParty/lib/$(CONFIG)/libglfw3.a
+ASSIMP_STATIC_DBG := ThirdParty/lib/Debug/libassimpd.a
+ASSIMP_STATIC_REL := ThirdParty/lib/Release/libassimp.a
+
+EXTRA_LIBS :=
+ifneq (,$(wildcard $(GLFW_STATIC)))
+  EXTRA_LIBS += $(GLFW_STATIC)
+else
+  EXTRA_LIBS += -lglfw3 -lglfw
+endif
+
+ifeq ($(CONFIG),Debug)
+  ifneq (,$(wildcard $(ASSIMP_STATIC_DBG)))
+    EXTRA_LIBS += $(ASSIMP_STATIC_DBG)
+  else
+    EXTRA_LIBS += -lassimp
+  endif
+else
+  ifneq (,$(wildcard $(ASSIMP_STATIC_REL)))
+    EXTRA_LIBS += $(ASSIMP_STATIC_REL)
+  else
+    EXTRA_LIBS += -lassimp
+  endif
 endif
 
 .PHONY: all debug release clean deps shaders
@@ -93,7 +118,7 @@ release:
 
 # Link
 $(TARGET): $(OBJ) | $(OUT_DIR)
-	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LIBS)
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LIBS) $(EXTRA_LIBS)
 
 # Compile
 $(INT_DIR)/%.o: $(SRC_DIR)/Private/%.cpp | $(INT_DIR)

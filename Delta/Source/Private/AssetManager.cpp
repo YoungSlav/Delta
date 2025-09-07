@@ -54,10 +54,8 @@ std::string AssetManager::getRootFolder()
     p += fs::path::preferred_separator;
     return p.string();
 #else
-    // On non-Windows, approximate by using the current working directory
-    // and going up 4 levels to mirror the VS layout (Build/<Platform>/<Config>)
+    // On non-Windows, use the current working directory as project root
     fs::path p = fs::current_path();
-    for (int i = 0; i < 4 && p.has_parent_path(); ++i) p = p.parent_path();
     p += fs::path::preferred_separator;
     return p.string();
 #endif

@@ -501,11 +501,12 @@ void VulkanCore::onDestroy()
 
 void VulkanCore::createInstance()
 {
-	LOG(Log, "Create vulkan instance");
-	if (enableValidationLayers && !checkValidationLayerSupport())
-	{
-		throw std::runtime_error("validation layers requested, but not available!");
-	}
+    LOG(Log, "Create vulkan instance");
+    useValidationLayers = enableValidationLayers && checkValidationLayerSupport();
+    if (enableValidationLayers && !useValidationLayers)
+    {
+        LOG(Warning, "Validation layers requested, but not available. Continuing without them.");
+    }
 
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -519,19 +520,24 @@ void VulkanCore::createInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
+#if defined(__APPLE__)
+	// Required for MoltenVK portability on macOS
+	createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
+
 	auto extensions = getRequiredExtensions();
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-	if (enableValidationLayers)
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
+    if (useValidationLayers)
+    {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
 
-		populateDebugMessengerCreateInfo(debugCreateInfo);
-		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-	}
+        populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+    }
 	else
 	{
 		createInfo.enabledLayerCount = 0;
@@ -557,7 +563,7 @@ void VulkanCore::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInf
 
 void VulkanCore::setupDebugMessenger()
 {
-	if (!enableValidationLayers) return;
+    if (!useValidationLayers) return;
 	LOG(Log, "Setup debug messenger");
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -647,11 +653,11 @@ void VulkanCore::createLogicalDevice()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-	if (enableValidationLayers)
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	}
+    if (useValidationLayers)
+    {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    }
 	else
 	{
 		createInfo.enabledLayerCount = 0;
@@ -1156,6 +1162,13 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
 	{
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
+
+#if defined(__APPLE__)
+    // Required by MoltenVK to enumerate portability drivers
+    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    // Ensure Metal surface extension is present
+    extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+#endif
 
 	return extensions;
 }

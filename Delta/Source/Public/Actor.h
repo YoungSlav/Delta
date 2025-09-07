@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Object.h"
-#include "Math.h"
+#include "DeltaMath.h"
 #include "ITransformable.h"
 #include "ActorComponent.h"
 
