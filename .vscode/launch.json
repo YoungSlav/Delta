@@ -11,6 +11,7 @@
       "environment": [
         { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
       ],
+      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
       "MIMode": "lldb",
       "console": "integratedTerminal"
     },

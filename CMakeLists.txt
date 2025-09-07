@@ -25,42 +25,74 @@ target_include_directories(Delta PRIVATE
 find_package(Vulkan REQUIRED)
 target_link_libraries(Delta PRIVATE Vulkan::Vulkan)
 
-# GLFW (prefer imported static from ThirdParty/lib if not found)
+# zlib (needed by Assimp static lib)
+find_package(ZLIB)
+if (ZLIB_FOUND)
+  target_link_libraries(Delta PRIVATE ZLIB::ZLIB)
+else()
+  # Fallback to system lib name
+  target_link_libraries(Delta PRIVATE z)
+endif()
+
+# GLFW (import static lib from ThirdParty/lib)
 if(NOT TARGET glfw)
-  if (WIN32)
-    set(GLFW_LIB ${CMAKE_SOURCE_DIR}/ThirdParty/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/glfw3.lib)
-  elseif(APPLE)
-    set(GLFW_LIB ${CMAKE_SOURCE_DIR}/ThirdParty/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/libglfw3.a)
-  else()
-    set(GLFW_LIB ${CMAKE_SOURCE_DIR}/ThirdParty/lib/$<IF:$<CONFIG:Debug>,Debug,Release>/libglfw3.a)
-  endif()
   add_library(glfw STATIC IMPORTED)
-  set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${GLFW_LIB})
+  if(CMAKE_CONFIGURATION_TYPES)
+    if (WIN32)
+      set_target_properties(glfw PROPERTIES
+        IMPORTED_LOCATION_DEBUG   ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/glfw3.lib
+        IMPORTED_LOCATION_RELEASE ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/glfw3.lib)
+    else()
+      set_target_properties(glfw PROPERTIES
+        IMPORTED_LOCATION_DEBUG   ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/libglfw3.a
+        IMPORTED_LOCATION_RELEASE ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/libglfw3.a)
+    endif()
+  else()
+    if (WIN32)
+      if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/glfw3.lib)
+      else()
+        set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/glfw3.lib)
+      endif()
+    else()
+      if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/libglfw3.a)
+      else()
+        set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/libglfw3.a)
+      endif()
+    endif()
+  endif()
 endif()
 target_link_libraries(Delta PRIVATE glfw)
 
 # Assimp (import from ThirdParty/lib)
-if (WIN32)
-  set(ASSIMP_LIB_DEBUG ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/assimp-vc143-mtd.lib)
-  set(ASSIMP_LIB_RELEASE ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/assimp-vc143-mt.lib)
+if(NOT TARGET assimp)
   add_library(assimp STATIC IMPORTED)
-  set_target_properties(assimp PROPERTIES
-    IMPORTED_LOCATION_DEBUG ${ASSIMP_LIB_DEBUG}
-    IMPORTED_LOCATION_RELEASE ${ASSIMP_LIB_RELEASE}
-    IMPORTED_LOCATION_RELWITHDEBINFO ${ASSIMP_LIB_RELEASE}
-    IMPORTED_LOCATION_MINSIZEREL ${ASSIMP_LIB_RELEASE}
-  )
-else()
-  # macOS/Linux static libs
-  set(ASSIMP_LIB_DEBUG ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/libassimpd.a)
-  set(ASSIMP_LIB_RELEASE ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/libassimp.a)
-  add_library(assimp STATIC IMPORTED)
-  set_target_properties(assimp PROPERTIES
-    IMPORTED_LOCATION_DEBUG ${ASSIMP_LIB_DEBUG}
-    IMPORTED_LOCATION_RELEASE ${ASSIMP_LIB_RELEASE}
-    IMPORTED_LOCATION_RELWITHDEBINFO ${ASSIMP_LIB_RELEASE}
-    IMPORTED_LOCATION_MINSIZEREL ${ASSIMP_LIB_RELEASE}
-  )
+  if(CMAKE_CONFIGURATION_TYPES)
+    if (WIN32)
+      set_target_properties(assimp PROPERTIES
+        IMPORTED_LOCATION_DEBUG   ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/assimp-vc143-mtd.lib
+        IMPORTED_LOCATION_RELEASE ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/assimp-vc143-mt.lib)
+    else()
+      set_target_properties(assimp PROPERTIES
+        IMPORTED_LOCATION_DEBUG   ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/libassimpd.a
+        IMPORTED_LOCATION_RELEASE ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/libassimp.a)
+    endif()
+  else()
+    if (WIN32)
+      if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/assimp-vc143-mtd.lib)
+      else()
+        set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/assimp-vc143-mt.lib)
+      endif()
+    else()
+      if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Debug/libassimpd.a)
+      else()
+        set_target_properties(assimp PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/ThirdParty/lib/Release/libassimp.a)
+      endif()
+    endif()
+  endif()
 endif()
 target_link_libraries(Delta PRIVATE assimp)
 
@@ -119,4 +151,3 @@ foreach(SH ${SHADERS})
 endforeach()
 
 add_dependencies(Delta compile_shaders)
-
