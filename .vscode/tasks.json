@@ -20,13 +20,8 @@
         "args": ["-l", "-c", "make deps CONFIG=Debug"]
       },
       "windows": {
-        "command": "scripts\\build_deps_windows.bat Debug",
-        "options": {
-          "shell": {
-            "executable": "cmd.exe",
-            "args": ["/d", "/c"]
-          }
-        }
+        "command": "bash",
+        "args": ["-lc", "scripts/build_deps.sh Debug"]
       }
     },
     {
@@ -40,13 +35,8 @@
         "args": ["-l", "-c", "make deps CONFIG=Release"]
       },
       "windows": {
-        "command": "scripts\\build_deps_windows.bat Release",
-        "options": {
-          "shell": {
-            "executable": "cmd.exe",
-            "args": ["/d", "/c"]
-          }
-        }
+        "command": "bash",
+        "args": ["-lc", "scripts/build_deps.sh Release"]
       }
     },
     {
@@ -60,13 +50,8 @@
         "args": ["-l", "-c", "make shaders"]
       },
       "windows": {
-        "command": "scripts\\compile_shaders_windows.bat",
-        "options": {
-          "shell": {
-            "executable": "cmd.exe",
-            "args": ["/d", "/c"]
-          }
-        }
+        "command": "bash",
+        "args": ["-lc", "scripts/compile_shaders.sh"]
       }
     },
     {
