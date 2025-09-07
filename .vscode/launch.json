@@ -2,6 +2,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "CMake: Debug (auto)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+      ],
+      "MIMode": "lldb",
+      "console": "integratedTerminal"
+    },
+    {
       "name": "Run (macOS arm64, Debug)",
       "type": "cppdbg",
       "request": "launch",

@@ -10,6 +10,9 @@
   },
   "files.watcherExclude": {
     "**/Intermediate/**": true
-  }
+  },
+  "cmake.useCMakePresets": "always",
+  "cmake.configureOnOpen": true,
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "cmake.generator": "Ninja"
 }
-
