@@ -4,21 +4,6 @@
 #include "Object.h"
 
 
-// Fallbacks for MoltenVK portability where headers might be older
-#if defined(__APPLE__)
-#ifndef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
-#define VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR 0x00000001
-#endif
-#ifndef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-#define VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME "VK_KHR_portability_enumeration"
-#endif
-#ifndef VK_EXT_METAL_SURFACE_EXTENSION_NAME
-#define VK_EXT_METAL_SURFACE_EXTENSION_NAME "VK_EXT_metal_surface"
-#endif
-#ifndef VK_MVK_MACOS_SURFACE_EXTENSION_NAME
-#define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
-#endif
-#endif
 
 
 
@@ -131,18 +116,14 @@ private:
 
 private:
 
-#if defined(NDEBUG) || defined(__APPLE__)
+
+#ifdef NDEBUG
     const bool enableValidationLayers = false;
 #else
     const bool enableValidationLayers = true;
 #endif
 	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-    const std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-#if defined(__APPLE__)
-        , "VK_KHR_portability_subset"
-#endif
-    };
+    const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
 
 	VkInstance instance;
@@ -181,7 +162,6 @@ private:
     int32 currentFrame = 0;
     bool bFamebufferResized = false;
 
-    bool useValidationLayers = false;
 };
 
 }

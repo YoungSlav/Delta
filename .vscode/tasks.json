@@ -16,8 +16,8 @@
       "group": "build",
       "problemMatcher": [],
       "osx": {
-        "command": "bash",
-        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make deps CONFIG=Debug"]
+        "command": "/bin/zsh",
+        "args": ["-l", "-c", "make deps CONFIG=Debug"]
       },
       "windows": {
         "command": "scripts\\build_deps_windows.bat Debug",
@@ -36,8 +36,8 @@
       "group": "build",
       "problemMatcher": [],
       "osx": {
-        "command": "bash",
-        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make deps CONFIG=Release"]
+        "command": "/bin/zsh",
+        "args": ["-l", "-c", "make deps CONFIG=Release"]
       },
       "windows": {
         "command": "scripts\\build_deps_windows.bat Release",
@@ -56,8 +56,8 @@
       "group": "build",
       "problemMatcher": [],
       "osx": {
-        "command": "bash",
-        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make shaders"]
+        "command": "/bin/zsh",
+        "args": ["-l", "-c", "make shaders"]
       },
       "windows": {
         "command": "scripts\\compile_shaders_windows.bat",
@@ -79,8 +79,8 @@
       },
       "problemMatcher": ["$gcc"],
       "osx": {
-        "command": "bash",
-        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make debug"]
+        "command": "/bin/zsh",
+        "args": ["-l", "-c", "make debug"]
       },
       "windows": {
         "command": "make msvc-debug",
@@ -99,8 +99,8 @@
       "group": "build",
       "problemMatcher": ["$gcc"],
       "osx": {
-        "command": "bash",
-        "args": ["-lc", "source .vulkan.env 2>/dev/null || true; make release"]
+        "command": "/bin/zsh",
+        "args": ["-l", "-c", "make release"]
       },
       "windows": {
         "command": "make msvc-release",

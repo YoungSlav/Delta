@@ -514,17 +514,9 @@ void VulkanCore::onDestroy()
 void VulkanCore::createInstance()
 {
     LOG(Log, "Create vulkan instance");
-    bool wantValidation = enableValidationLayers;
-#if defined(__APPLE__)
-    // Allow opt-in on Apple ONLY via explicit env flag. Do not auto-enable based on VK_LAYER_PATH.
-    if (const char* envFlag = std::getenv("DELTA_ENABLE_VALIDATION")) {
-        if (std::string(envFlag) == "1") wantValidation = true;
-    }
-#endif
-    useValidationLayers = wantValidation && checkValidationLayerSupport();
-    if (enableValidationLayers && !useValidationLayers)
+    if (enableValidationLayers && !checkValidationLayerSupport())
     {
-        LOG(Warning, "Validation layers requested, but not available. Continuing without them.");
+        throw std::runtime_error("validation layers requested, but not available!");
     }
 
 	VkApplicationInfo appInfo{};
@@ -539,26 +531,16 @@ void VulkanCore::createInstance()
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-#if defined(__APPLE__)
-    // Required for MoltenVK portability on macOS (guard if header lacks the define)
-#ifdef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
-    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-#endif
-#endif
+ 
 
     auto extensions = getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    {
-        std::string exts;
-        for (auto* e : extensions) { exts += std::string(e) + "; "; }
-        LOG(Log, "Instance flags: {}", (uint32)createInfo.flags);
-        LOG(Log, "Instance extensions ({}): {}", (uint32)extensions.size(), exts);
-    }
+ 
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-    if (useValidationLayers)
+    if (enableValidationLayers)
     {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -573,30 +555,9 @@ void VulkanCore::createInstance()
 		createInfo.pNext = nullptr;
 	}
 
-    VkResult instRes = vkCreateInstance(&createInfo, nullptr, &instance);
-    if (instRes != VK_SUCCESS)
+    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
     {
-        if (useValidationLayers)
-        {
-            LOG(Warning, "vkCreateInstance failed with validation layers enabled (code {}). Retrying without layers...", (int)instRes);
-
-            // Retry without validation layers
-            useValidationLayers = false;
-            createInfo.enabledLayerCount = 0;
-            createInfo.ppEnabledLayerNames = nullptr;
-
-            // Recompute extensions to drop debug utils
-            auto extNoLayers = getRequiredExtensions();
-            createInfo.enabledExtensionCount = static_cast<uint32_t>(extNoLayers.size());
-            createInfo.ppEnabledExtensionNames = extNoLayers.data();
-
-            instRes = vkCreateInstance(&createInfo, nullptr, &instance);
-        }
-
-        if (instRes != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create Instance!");
-        }
+        throw std::runtime_error("failed to create Instance!");
     }
 }
 
@@ -612,7 +573,7 @@ void VulkanCore::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInf
 
 void VulkanCore::setupDebugMessenger()
 {
-    if (!useValidationLayers) return;
+    if (!enableValidationLayers) return;
 	LOG(Log, "Setup debug messenger");
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -627,32 +588,8 @@ void VulkanCore::setupDebugMessenger()
 void VulkanCore::createSurface()
 {
     LOG(Log, "Create surface");
-    VkResult res = glfwCreateWindowSurface(instance, engine->getWindow()->getWindow(), nullptr, &surface);
-    if (res != VK_SUCCESS)
+    if (glfwCreateWindowSurface(instance, engine->getWindow()->getWindow(), nullptr, &surface) != VK_SUCCESS)
     {
-        LOG(Error, "glfwCreateWindowSurface failed with code {}", (int)res);
-#if defined(__APPLE__)
-        // Fallback: create macOS surface directly via MVK extension
-        void* viewPtr = Delta_GetNSViewFromGLFW(engine->getWindow()->getWindow());
-        if (viewPtr)
-        {
-            VkMacOSSurfaceCreateInfoMVK ci{};
-            ci.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-            ci.pNext = nullptr;
-            ci.flags = 0;
-            ci.pView = viewPtr;
-            PFN_vkCreateMacOSSurfaceMVK pfnCreateMacOSSurfaceMVK = (PFN_vkCreateMacOSSurfaceMVK)vkGetInstanceProcAddr(instance, "vkCreateMacOSSurfaceMVK");
-            VkResult r2 = pfnCreateMacOSSurfaceMVK ? pfnCreateMacOSSurfaceMVK(instance, &ci, nullptr, &surface) : VK_ERROR_EXTENSION_NOT_PRESENT;
-            if (r2 == VK_SUCCESS)
-            {
-                return;
-            }
-            else
-            {
-                LOG(Error, "vkCreateMacOSSurfaceMVK fallback failed with code {}", (int)r2);
-            }
-        }
-#endif
         throw std::runtime_error("failed to create window Surface!");
     }
 }
@@ -727,7 +664,7 @@ void VulkanCore::createLogicalDevice()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    if (useValidationLayers)
+    if (enableValidationLayers)
     {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -1232,35 +1169,11 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
 
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-    // Ensure generic surface extension is present
-    auto has_surface = std::find_if(extensions.begin(), extensions.end(), [](const char* s){ return std::string(s) == std::string(VK_KHR_SURFACE_EXTENSION_NAME); }) != extensions.end();
-    if (!has_surface) extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-
-    if (useValidationLayers)
+    if (enableValidationLayers)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
-#if defined(__APPLE__)
-    // Required by MoltenVK to enumerate portability drivers
-#ifdef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-#else
-    extensions.push_back("VK_KHR_portability_enumeration");
-#endif
-    // Ensure Metal surface extension is present
-#ifdef VK_EXT_METAL_SURFACE_EXTENSION_NAME
-    extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
-#else
-    extensions.push_back("VK_EXT_metal_surface");
-#endif
-    // Also add legacy MVK macOS surface for older GLFW builds
-#ifdef VK_MVK_MACOS_SURFACE_EXTENSION_NAME
-    extensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#else
-    extensions.push_back("VK_MVK_macos_surface");
-#endif
-#endif
 
 	return extensions;
 }

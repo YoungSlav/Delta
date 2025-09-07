@@ -12,7 +12,6 @@
       "environment": [
         { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
       ],
-      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
       "MIMode": "lldb",
       "externalConsole": false,
       "preLaunchTask": "Build (Debug)"
@@ -26,7 +25,6 @@
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
-      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
       "MIMode": "lldb",
       "externalConsole": false,
       "preLaunchTask": "Build (Release)"

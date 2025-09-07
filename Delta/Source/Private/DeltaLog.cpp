@@ -8,9 +8,7 @@
 #include <ctime>
 #include <mutex>
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
+// Fully portable: no platform-specific console APIs
 
 static std::mutex logMutex;
 std::ofstream DeltaLog::logFile;
@@ -104,14 +102,8 @@ void DeltaLog::print(const char* const Message, ELog Type)
 
 	std::lock_guard<std::mutex> lock(logMutex);
 
-    #if defined(_WIN32)
-    static HANDLE hstdout = GetStdHandle( STD_OUTPUT_HANDLE );
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo( hstdout, &csbi );
-    #endif
-
-	char debugMessage[512];
-	const char* typeStr = nullptr;
+    char debugMessage[512];
+    const char* typeStr = nullptr;
 
     switch (Type)
     {
@@ -132,31 +124,6 @@ void DeltaLog::print(const char* const Message, ELog Type)
         break;
     }
 
-    #if defined(_WIN32)
-    // Windows console coloring and debug output
-    switch (Type)
-    {
-    case ELog::Success:
-        SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN );
-        break;
-    case ELog::Log:
-        SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE);
-        break;
-    case ELog::Warning:
-        SetConsoleTextAttribute( hstdout, FOREGROUND_GREEN | FOREGROUND_RED );
-        break;
-    case ELog::Error:
-        SetConsoleTextAttribute( hstdout, FOREGROUND_RED );
-        break;
-    case ELog::Fatal:
-        SetConsoleTextAttribute( hstdout, BACKGROUND_RED | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
-        break;
-    }
-    snprintf(debugMessage, sizeof(debugMessage), "%s: %s%s\n", typeStr, indent.c_str(), Message);
-    std::cout << indent << Message << std::endl;
-    OutputDebugString(debugMessage);
-    SetConsoleTextAttribute( hstdout, csbi.wAttributes );
-    #else
     // ANSI colors for non-Windows
     const char* color = "\033[0m";
     switch (Type)
@@ -168,7 +135,6 @@ void DeltaLog::print(const char* const Message, ELog Type)
     case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
     }
     std::cout << color << indent << Message << "\033[0m" << std::endl;
-    #endif
 
 	if (logFile.is_open())
 	{

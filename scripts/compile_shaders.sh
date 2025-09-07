@@ -17,6 +17,8 @@ if [ -z "$GLSLC_BIN" ] && [ -n "${VULKAN_SDK:-}" ]; then
     GLSLC_BIN="$VULKAN_SDK/bin/glslc"
   elif [ -x "$VULKAN_SDK/Bin/glslc" ]; then
     GLSLC_BIN="$VULKAN_SDK/Bin/glslc"
+  elif [ -x "$VULKAN_SDK/macOS/bin/glslc" ]; then
+    GLSLC_BIN="$VULKAN_SDK/macOS/bin/glslc"
   fi
 fi
 
@@ -36,4 +38,3 @@ for f in "$INPUT_DIR"/*; do
 done
 
 echo "Done."
-

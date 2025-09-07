@@ -33,7 +33,7 @@ INCLUDES := \
   -IThirdParty/assimp/include \
   -IThirdParty/include
 
-# Vulkan SDK detection
+# Vulkan SDK detection (respects user-exported env on macOS)
 GLSLC_PATH := $(shell command -v glslc 2>/dev/null)
 ifeq ($(VULKAN_SDK),)
   ifneq ($(GLSLC_PATH),)
@@ -43,10 +43,33 @@ ifeq ($(VULKAN_SDK),)
   endif
 endif
 
-# Vulkan SDK include/library if available (env or auto-detected)
+# Normalize SDK include/lib directories for different vendor layouts
+VKS_SDK_INC_DIR :=
+VKS_SDK_LIB_DIR :=
 ifneq ($(VULKAN_SDK),)
-  INCLUDES += -I$(VULKAN_SDK)/Include -I$(VULKAN_SDK)/include
-  LDFLAGS += -L$(VULKAN_SDK)/Lib -L$(VULKAN_SDK)/lib
+  ifneq (,$(wildcard $(VULKAN_SDK)/Include/vulkan/vulkan.h))
+    VKS_SDK_INC_DIR := $(VULKAN_SDK)/Include
+  else ifneq (,$(wildcard $(VULKAN_SDK)/include/vulkan/vulkan.h))
+    VKS_SDK_INC_DIR := $(VULKAN_SDK)/include
+  else ifneq (,$(wildcard $(VULKAN_SDK)/macOS/include/vulkan/vulkan.h))
+    VKS_SDK_INC_DIR := $(VULKAN_SDK)/macOS/include
+  endif
+
+  ifneq (,$(wildcard $(VULKAN_SDK)/Lib))
+    VKS_SDK_LIB_DIR := $(VULKAN_SDK)/Lib
+  else ifneq (,$(wildcard $(VULKAN_SDK)/lib))
+    VKS_SDK_LIB_DIR := $(VULKAN_SDK)/lib
+  else ifneq (,$(wildcard $(VULKAN_SDK)/macOS/lib))
+    VKS_SDK_LIB_DIR := $(VULKAN_SDK)/macOS/lib
+  endif
+endif
+
+# Vulkan SDK include/library if available (env or auto-detected)
+ifneq ($(VKS_SDK_INC_DIR),)
+  INCLUDES += -I$(VKS_SDK_INC_DIR)
+endif
+ifneq ($(VKS_SDK_LIB_DIR),)
+  LDFLAGS += -L$(VKS_SDK_LIB_DIR)
 endif
 
 OBJ_CPP := $(patsubst $(SRC_DIR)/Private/%.cpp,$(INT_DIR)/%.o,$(wildcard $(SRC_DIR)/Private/*.cpp))
@@ -128,9 +151,7 @@ $(TARGET): $(OBJ) | $(OUT_DIR)
 $(INT_DIR)/%.o: $(SRC_DIR)/Private/%.cpp | $(INT_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Compile Objective-C++ (.mm) for macOS
-$(INT_DIR)/%.o: $(SRC_DIR)/Private/%.mm | $(INT_DIR)
-	$(CXX) $(CXXFLAGS) -x objective-c++ -c $< -o $@
+# (no Objective-C++ sources required in portable path)
 
 $(INT_DIR):
 	@mkdir -p $(INT_DIR)
@@ -168,6 +189,10 @@ CL_FLAGS_RELEASE := /O2 /DNDEBUG
 
 LINK_FLAGS_COMMON := /nologo /SUBSYSTEM:CONSOLE
 LINK_LIBPATHS := /LIBPATH:ThirdParty\\lib\\$(CONFIG)
+# Add Vulkan SDK lib path if provided by environment
+ifdef VULKAN_SDK
+LINK_LIBPATHS += /LIBPATH:$(VULKAN_SDK)\\Lib
+endif
 
 # Library names (assimp name may vary; adjust if needed)
 MSVC_LIBS_DEBUG := vulkan-1.lib glfw3.lib assimp-vc143-mtd.lib
