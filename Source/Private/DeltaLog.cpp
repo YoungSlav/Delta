@@ -7,6 +7,15 @@
 #include <chrono>
 #include <ctime>
 #include <mutex>
+#include <cstdlib>
+
+#if defined(_WIN32)
+#  include <io.h>
+#  define isatty _isatty
+#  define fileno _fileno
+#else
+#  include <unistd.h>
+#endif
 
 // Fully portable: no platform-specific console APIs
 
@@ -87,7 +96,7 @@ void DeltaLog::print( const std::string& Message, ELog Type )
 
 void DeltaLog::print(const char* const Message, ELog Type)
 {
-	std::string indent(logIndent * indentSize, ' ');
+    std::string indent(logIndent * indentSize, ' ');
 
 	auto now = std::chrono::system_clock::now();
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);
@@ -124,17 +133,52 @@ void DeltaLog::print(const char* const Message, ELog Type)
         break;
     }
 
-    // ANSI colors for non-Windows
-    const char* color = "\033[0m";
+    // Decide whether to emit ANSI colors
+    auto shouldUseColor = []() -> bool
+    {
+        static int cached = -1;
+        if (cached != -1) return cached != 0;
+
+        const char* force = std::getenv("FORCE_COLOR");
+        if (force && force[0] != '\0' && !(force[0] == '0' && force[1] == '\0'))
+        {
+            cached = 1; // FORCE_COLOR set and not "0"
+            return true;
+        }
+
+        if ( !force )
+        {
+            const char* term = std::getenv("TERM");
+            if (!term || std::string(term) == "dumb")
+            {
+                cached = 0;
+                return false;
+            }
+        }
+
+        // Only enable if stdout is a TTY
+        cached = isatty(fileno(stdout)) ? 1 : 0;
+        return cached != 0;
+    }();
+
+    // ANSI colors
+    const char* color = "";
     switch (Type)
     {
-    case ELog::Success: color = "\033[32m"; break; // green
-    case ELog::Log:     color = "\033[0m";  break; // reset
-    case ELog::Warning: color = "\033[33m"; break; // yellow
-    case ELog::Error:   color = "\033[31m"; break; // red
-    case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
+    case ELog::Success: color = shouldUseColor ? "\033[32m" : ""; break; // green
+    case ELog::Log:     color = shouldUseColor ? "\033[0m"  : ""; break; // reset
+    case ELog::Warning: color = shouldUseColor ? "\033[33m" : ""; break; // yellow
+    case ELog::Error:   color = shouldUseColor ? "\033[31m" : ""; break; // red
+    case ELog::Fatal:   color = shouldUseColor ? "\033[41;37m" : ""; break; // red background, white text
     }
-    std::cout << color << indent << Message << "\033[0m" << std::endl;
+    if (shouldUseColor)
+    {
+        std::cout << color << indent << Message << "\033[0m" << std::endl;
+    }
+    else
+    {
+        std::cout << indent << Message << std::endl;
+    }
 
 	if (logFile.is_open())
 	{

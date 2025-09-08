@@ -17,13 +17,16 @@ Requirements
 
 Getting Started (VS Code)
 - Open the repo in VS Code. The provided tasks/launch configs are under `.vscode`.
+- All launches use LLDB (macOS and Windows) for a consistent debugger experience and colored logs.
 - macOS
   - Use launch: `Run (macOS, Debug)` or `Run (macOS, Release)`.
   - Pre-launch does: build deps → `cmake --preset macos-<config>` → build.
+  - Debugger output: launch uses the Integrated Terminal and sets `FORCE_COLOR=1`, so ANSI log colors render. View output in the Terminal panel (not Debug Console).
   - Vulkan env: `.vscode/vulkan.macos.env` (absolute SDK paths).
 - Windows
   - Use launch: `Run (Windows x64, Debug)` or `Run (Windows x64, Release)`.
   - Pre-launch does: build deps → `cmake --preset windows-vs-<config>` → build.
+  - Debugger output: LLDB runs in the Integrated Terminal and sets `FORCE_COLOR=1`, so ANSI log colors render. View output in the Terminal panel (not Debug Console).
   - Vulkan env: `.vscode/vulkan.win.env` (usually empty; the SDK installer sets env vars).
 
 Dependencies

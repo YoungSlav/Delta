@@ -1,62 +1,67 @@
-  {
+{
   "version": "0.2.0",
   "configurations": [
-        {
-          "name": "Run (macOS, Debug)",
-          "type": "cppdbg",
-          "request": "launch",
-          "program": "${workspaceFolder}/build/macos-debug/Delta",
-          "args": [],
-          "stopAtEntry": false,
-          "cwd": "${workspaceFolder}",
-          "environment": [
-            { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
-          ],
-          "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
-          "MIMode": "lldb",
-          "console": "integratedTerminal",
-          "preLaunchTask": "Prep + Build (Debug)"
-        },
-        {
-          "name": "Run (macOS, Release)",
-          "type": "cppdbg",
-          "request": "launch",
-          "program": "${workspaceFolder}/build/macos-release/Delta",
-          "args": [],
-          "stopAtEntry": false,
-          "cwd": "${workspaceFolder}",
-          "environment": [],
-          "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
-          "MIMode": "lldb",
-          "console": "integratedTerminal",
-          "preLaunchTask": "Prep + Build (Release)"
-        },
-        {
-          "name": "Run (Windows x64, Debug)",
-          "type": "cppvsdbg",
-          "request": "launch",
-          "program": "${workspaceFolder}\\build\\windows-vs\\Debug\\Delta.exe",
-          "args": [],
-          "cwd": "${workspaceFolder}",
-          "environment": [
-            { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
-          ],
-          "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
-          "stopAtEntry": false,
-          "console": "integratedTerminal",
-          "preLaunchTask": "Prep + Build (MSVC Debug)"
-        },
-        {
-          "name": "Run (Windows x64, Release)",
-          "type": "cppvsdbg",
-          "request": "launch",
-          "program": "${workspaceFolder}\\build\\windows-vs\\Release\\Delta.exe",
-          "args": [],
-          "cwd": "${workspaceFolder}",
-          "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
-          "stopAtEntry": false,
-          "console": "integratedTerminal",
-          "preLaunchTask": "Prep + Build (MSVC Release)"
-        }
-      ]
+    {
+      "name": "Run (macOS, Debug)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/macos-debug/Delta",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "DELTA_ENABLE_VALIDATION": "1",
+        "FORCE_COLOR": "1",
+        "CLICOLOR": "1"
+      },
+      "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
+      "terminal": "integrated",
+      "preLaunchTask": "Prep + Build (Debug)"
+    },
+    {
+      "name": "Run (macOS, Release)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/macos-release/Delta",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "FORCE_COLOR": "1",
+        "CLICOLOR": "1"
+      },
+      "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
+      "terminal": "integrated",
+      "preLaunchTask": "Prep + Build (Release)"
+    },
+    {
+      "name": "Run (Windows x64, Debug)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\windows-vs\\Debug\\Delta.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "DELTA_ENABLE_VALIDATION": "1",
+        "FORCE_COLOR": "1",
+        "CLICOLOR": "1"
+      },
+      "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
+      "terminal": "integrated",
+      "preLaunchTask": "Prep + Build (MSVC Debug)"
+    },
+    {
+      "name": "Run (Windows x64, Release)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}\\build\\windows-vs\\Release\\Delta.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "FORCE_COLOR": "1",
+        "CLICOLOR": "1"
+      },
+      "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
+      "terminal": "integrated",
+      "preLaunchTask": "Prep + Build (MSVC Release)"
     }
+  ]
+}
