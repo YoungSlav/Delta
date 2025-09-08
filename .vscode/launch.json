@@ -10,8 +10,6 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "DELTA_ENABLE_VALIDATION": "1",
-        "FORCE_COLOR": "1",
-        "CLICOLOR": "1"
       },
       "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
       "terminal": "integrated",
@@ -25,8 +23,6 @@
       "args": [],
       "cwd": "${workspaceFolder}",
       "env": {
-        "FORCE_COLOR": "1",
-        "CLICOLOR": "1"
       },
       "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
       "terminal": "integrated",
@@ -41,8 +37,6 @@
       "cwd": "${workspaceFolder}",
       "env": {
         "DELTA_ENABLE_VALIDATION": "1",
-        "FORCE_COLOR": "1",
-        "CLICOLOR": "1"
       },
       "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
       "terminal": "integrated",
@@ -56,8 +50,6 @@
       "args": [],
       "cwd": "${workspaceFolder}",
       "env": {
-        "FORCE_COLOR": "1",
-        "CLICOLOR": "1"
       },
       "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
       "terminal": "integrated",

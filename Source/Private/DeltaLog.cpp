@@ -133,52 +133,18 @@ void DeltaLog::print(const char* const Message, ELog Type)
         break;
     }
 
-    // Decide whether to emit ANSI colors
-    auto shouldUseColor = []() -> bool
-    {
-        static int cached = -1;
-        if (cached != -1) return cached != 0;
-
-        const char* force = std::getenv("FORCE_COLOR");
-        if (force && force[0] != '\0' && !(force[0] == '0' && force[1] == '\0'))
-        {
-            cached = 1; // FORCE_COLOR set and not "0"
-            return true;
-        }
-
-        if ( !force )
-        {
-            const char* term = std::getenv("TERM");
-            if (!term || std::string(term) == "dumb")
-            {
-                cached = 0;
-                return false;
-            }
-        }
-
-        // Only enable if stdout is a TTY
-        cached = isatty(fileno(stdout)) ? 1 : 0;
-        return cached != 0;
-    }();
-
     // ANSI colors
     const char* color = "";
     switch (Type)
     {
-    case ELog::Success: color = shouldUseColor ? "\033[32m" : ""; break; // green
-    case ELog::Log:     color = shouldUseColor ? "\033[0m"  : ""; break; // reset
-    case ELog::Warning: color = shouldUseColor ? "\033[33m" : ""; break; // yellow
-    case ELog::Error:   color = shouldUseColor ? "\033[31m" : ""; break; // red
-    case ELog::Fatal:   color = shouldUseColor ? "\033[41;37m" : ""; break; // red background, white text
+    case ELog::Success: color = "\033[32m"; break; // green
+    case ELog::Log:     color = "\033[0m";  break; // reset
+    case ELog::Warning: color = "\033[33m"; break; // yellow
+    case ELog::Error:   color = "\033[31m"; break; // red
+    case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
     }
-    if (shouldUseColor)
-    {
-        std::cout << color << indent << Message << "\033[0m" << std::endl;
-    }
-    else
-    {
-        std::cout << indent << Message << std::endl;
-    }
+
+    std::cout << color << indent << Message << "\033[0m" << std::endl;
 
 	if (logFile.is_open())
 	{
