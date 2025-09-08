@@ -120,12 +120,10 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "powershell",
+        "command": "cmd",
         "args": [
-          "-NoProfile",
-          "-ExecutionPolicy","Bypass",
-          "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --preset windows-vs-debug"
+          "/c",
+          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --preset windows-vs-debug"
         ]
       }
     },
@@ -134,12 +132,10 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "powershell",
+        "command": "cmd",
         "args": [
-          "-NoProfile",
-          "-ExecutionPolicy","Bypass",
-          "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-debug"
+          "/c",
+          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-debug"
         ]
       }
     },
@@ -148,12 +144,10 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "powershell",
+        "command": "cmd",
         "args": [
-          "-NoProfile",
-          "-ExecutionPolicy","Bypass",
-          "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --preset windows-vs-release"
+          "/c",
+          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --preset windows-vs-release"
         ]
       }
     },
@@ -162,12 +156,10 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "powershell",
+        "command": "cmd",
         "args": [
-          "-NoProfile",
-          "-ExecutionPolicy","Bypass",
-          "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-release"
+          "/c",
+          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-release"
         ]
       }
     },
@@ -201,10 +193,10 @@
       "group": "build",
       "problemMatcher": [],
       "windows": {
-        "command": "powershell",
+        "command": "cmd",
         "args": [
-          "-NoProfile","-ExecutionPolicy","Bypass","-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-debug --target Clean"
+          "/c",
+          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-debug --target Clean"
         ]
       }
     },
@@ -214,10 +206,10 @@
       "group": "build",
       "problemMatcher": [],
       "windows": {
-        "command": "powershell",
+        "command": "cmd",
         "args": [
-          "-NoProfile","-ExecutionPolicy","Bypass","-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-release --target Clean"
+          "/c",
+          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-release --target Clean"
         ]
       }
     }
