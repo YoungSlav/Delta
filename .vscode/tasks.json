@@ -2,135 +2,224 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Deps: Build (Debug)",
+      "label": "Prep + Build (Debug)",
       "type": "shell",
-      "command": "make deps CONFIG=Debug",
+      "command": "true",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "CMake: Configure (macOS Debug)",
+        "CMake: Build (macOS Debug)"
+      ]
+    },
+    {
+      "label": "Prep + Build (Release)",
+      "type": "shell",
+      "command": "true",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "CMake: Configure (macOS Release)",
+        "CMake: Build (macOS Release)"
+      ]
+    },
+    {
+      "label": "Prep + Build (MSVC Debug)",
+      "type": "shell",
+      "command": "true",
+      "problemMatcher": [],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "CMake: Configure (Windows Debug)",
+        "CMake: Build (Windows Debug)"
+      ]
+    },
+    {
+      "label": "Prep + Build (MSVC Release)",
+      "type": "shell",
+      "command": "true",
+      "problemMatcher": [],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "CMake: Configure (Windows Release)",
+        "CMake: Build (Windows Release)"
+      ]
+    },
+    {
+      "label": "CMake: Configure (macOS Debug)",
+      "type": "shell",
       "group": "build",
       "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
       "osx": {
         "command": "/bin/zsh",
-        "args": ["-l", "-c", "make deps CONFIG=Debug"]
+        "args": ["-c", "cmake --preset macos-debug"]
       },
-      "windows": {
+      "linux": {
         "command": "bash",
-        "args": ["-lc", "scripts/build_deps.sh Debug"]
-      }
+        "args": ["-lc", "cmake --preset macos-debug"]
+      },
+      "command": "bash",
+      "args": ["-lc", "cmake --preset macos-debug"]
     },
     {
-      "label": "Deps: Build (Release)",
+      "label": "CMake: Build (macOS Debug)",
       "type": "shell",
-      "command": "make deps CONFIG=Release",
       "group": "build",
       "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
       "osx": {
         "command": "/bin/zsh",
-        "args": ["-l", "-c", "make deps CONFIG=Release"]
+        "args": ["-c", "cmake --build --preset macos-debug"]
       },
-      "windows": {
+      "linux": {
         "command": "bash",
-        "args": ["-lc", "scripts/build_deps.sh Release"]
-      }
+        "args": ["-lc", "cmake --build --preset macos-debug"]
+      },
+      "command": "bash",
+      "args": ["-lc", "cmake --build --preset macos-debug"]
     },
     {
-      "label": "Shaders: Compile",
+      "label": "CMake: Configure (macOS Release)",
       "type": "shell",
-      "command": "make shaders",
       "group": "build",
       "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
       "osx": {
         "command": "/bin/zsh",
-        "args": ["-l", "-c", "make shaders"]
+        "args": ["-c", "cmake --preset macos-release"]
       },
-      "windows": {
+      "linux": {
         "command": "bash",
-        "args": ["-lc", "scripts/compile_shaders.sh"]
-      }
+        "args": ["-lc", "cmake --preset macos-release"]
+      },
+      "command": "bash",
+      "args": ["-lc", "cmake --preset macos-release"]
     },
     {
-      "label": "Build (Debug)",
+      "label": "CMake: Build (macOS Release)",
       "type": "shell",
-      "command": "make debug",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": ["$gcc"],
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
       "osx": {
         "command": "/bin/zsh",
-        "args": ["-l", "-c", "make debug"]
+        "args": ["-c", "cmake --build --preset macos-release"]
       },
-      "windows": {
-        "command": "powershell",
-        "args": [
-          "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
-          "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-debug"
-        ]
-      }
-    },
-    {
-      "label": "Build (Release)",
-      "type": "shell",
-      "command": "make release",
-      "group": "build",
-      "problemMatcher": ["$gcc"],
-      "osx": {
-        "command": "/bin/zsh",
-        "args": ["-l", "-c", "make release"]
+      "linux": {
+        "command": "bash",
+        "args": ["-lc", "cmake --build --preset macos-release"]
       },
+      "command": "bash",
+      "args": ["-lc", "cmake --build --preset macos-release"]
+    },
+    {
+      "label": "CMake: Configure (Windows Debug)",
+      "type": "shell",
+      "problemMatcher": [],
       "windows": {
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-release"
+          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --preset windows-vs-debug"
         ]
       }
     },
     {
-      "label": "Build (MSVC Debug)",
+      "label": "CMake: Build (Windows Debug)",
       "type": "shell",
-      "command": "make msvc-debug",
-      "group": "build",
-      "problemMatcher": ["$msCompile"],
+      "problemMatcher": [],
       "windows": {
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-debug"
+          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-debug"
         ]
       }
     },
     {
-      "label": "Build (MSVC Release)",
+      "label": "CMake: Configure (Windows Release)",
       "type": "shell",
-      "command": "make msvc-release",
-      "group": "build",
-      "problemMatcher": ["$msCompile"],
+      "problemMatcher": [],
       "windows": {
         "command": "powershell",
         "args": [
           "-NoProfile",
-          "-ExecutionPolicy",
-          "Bypass",
+          "-ExecutionPolicy","Bypass",
           "-Command",
-          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; make msvc-release"
+          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --preset windows-vs-release"
         ]
       }
     },
     {
-      "label": "Clean (Current Config)",
+      "label": "CMake: Build (Windows Release)",
       "type": "shell",
-      "command": "make clean",
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy","Bypass",
+          "-Command",
+          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-release"
+        ]
+      }
+    },
+    
+    
+    {
+      "label": "CMake: Clean (macOS Debug)",
+      "type": "shell",
       "group": "build",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
+      "osx": { "command": "/bin/zsh", "args": ["-c", "cmake --build --preset macos-debug --target clean"] },
+      "linux": { "command": "bash", "args": ["-lc", "cmake --build --preset macos-debug --target clean"] },
+      "command": "bash",
+      "args": ["-lc", "cmake --build --preset macos-debug --target clean"]
+    },
+    {
+      "label": "CMake: Clean (macOS Release)",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
+      "osx": { "command": "/bin/zsh", "args": ["-c", "cmake --build --preset macos-release --target clean"] },
+      "linux": { "command": "bash", "args": ["-lc", "cmake --build --preset macos-release --target clean"] },
+      "command": "bash",
+      "args": ["-lc", "cmake --build --preset macos-release --target clean"]
+    },
+    {
+      "label": "CMake: Clean (Windows Debug)",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile","-ExecutionPolicy","Bypass","-Command",
+          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-debug --target Clean"
+        ]
+      }
+    },
+    {
+      "label": "CMake: Clean (Windows Release)",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": [],
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile","-ExecutionPolicy","Bypass","-Command",
+          "& \"${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64; cmake --build --preset windows-vs-release --target Clean"
+        ]
+      }
     }
   ]
 }

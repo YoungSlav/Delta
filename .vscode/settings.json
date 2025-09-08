@@ -2,17 +2,30 @@
   "files.exclude": {
     "**/Intermediate": true,
     "**/Intermediate/**": true,
-    "**/Build": false
+    "**/Build": true,
+    "**/Build/**": true,
+    "**/build": true,
+    "**/build/**": true
   },
   "search.exclude": {
     "**/Intermediate": true,
-    "**/Intermediate/**": true
+    "**/Intermediate/**": true,
+    "**/Build": true,
+    "**/Build/**": true,
+    "**/build": true,
+    "**/build/**": true
   },
   "files.watcherExclude": {
-    "**/Intermediate/**": true
+    "**/Intermediate/**": true,
+    "**/Build": true,
+    "**/Build/**": true,
+    "**/build": true,
+    "**/build/**": true
   },
   "cmake.useCMakePresets": "always",
-  "cmake.configureOnOpen": true,
-  "cmake.buildDirectory": "${workspaceFolder}/build",
-  "cmake.generator": "Ninja"
+  "cmake.configureOnOpen": false,
+  "files.associations": {
+    "vector": "cpp"
+  },
+  "dotnet.defaultSolution": "disable"
 }

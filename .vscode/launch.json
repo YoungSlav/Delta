@@ -1,86 +1,62 @@
-{
+  {
   "version": "0.2.0",
   "configurations": [
-    {
-      "name": "CMake: Debug (auto)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${command:cmake.launchTargetPath}",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "environment": [
-        { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
-      ],
-      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
-      "MIMode": "lldb",
-      "console": "integratedTerminal",
-      "windows": {
-        "type": "cppvsdbg",
-        "program": "${command:cmake.launchTargetPath}",
-        "cwd": "${workspaceFolder}",
-        "console": "integratedTerminal",
-        "environment": [
-          { "name": "DELTA_ENABLE_VALIDATION", "value": "1" },
-          { "name": "VK_LAYER_PATH", "value": "${env:VULKAN_SDK}\\Bin" }
-        ]
-      }
-    },
-    {
-      "name": "Run (macOS arm64, Debug)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/Build/arm64/Debug/Delta",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [
-        { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
-      ],
-      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
-      "MIMode": "lldb",
-      "externalConsole": false,
-      "preLaunchTask": "Build (Debug)"
-    },
-    {
-      "name": "Run (macOS arm64, Release)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/Build/arm64/Release/Delta",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}",
-      "environment": [],
-      "envFile": "${workspaceFolder}/.vscode/vulkan.env",
-      "MIMode": "lldb",
-      "externalConsole": false,
-      "preLaunchTask": "Build (Release)"
-    },
-    {
-      "name": "Run (Windows x64, Debug)",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\Build\\x64\\Debug\\Delta.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "environment": [
-        { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
-      ],
-      "envFile": "${workspaceFolder}\\.vscode\\vulkan.env",
-      "stopAtEntry": false,
-      "console": "integratedTerminal",
-      "preLaunchTask": "Build (MSVC Debug)"
-    },
-    {
-      "name": "Run (Windows x64, Release)",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}\\Build\\x64\\Release\\Delta.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "envFile": "${workspaceFolder}\\.vscode\\vulkan.env",
-      "stopAtEntry": false,
-      "console": "integratedTerminal",
-      "preLaunchTask": "Build (MSVC Release)"
+        {
+          "name": "Run (macOS, Debug)",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "${workspaceFolder}/build/macos-debug/Delta",
+          "args": [],
+          "stopAtEntry": false,
+          "cwd": "${workspaceFolder}",
+          "environment": [
+            { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+          ],
+          "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
+          "MIMode": "lldb",
+          "console": "integratedTerminal",
+          "preLaunchTask": "Prep + Build (Debug)"
+        },
+        {
+          "name": "Run (macOS, Release)",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "${workspaceFolder}/build/macos-release/Delta",
+          "args": [],
+          "stopAtEntry": false,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "envFile": "${workspaceFolder}/.vscode/vulkan.macos.env",
+          "MIMode": "lldb",
+          "console": "integratedTerminal",
+          "preLaunchTask": "Prep + Build (Release)"
+        },
+        {
+          "name": "Run (Windows x64, Debug)",
+          "type": "cppvsdbg",
+          "request": "launch",
+          "program": "${workspaceFolder}\\build\\windows-vs\\Debug\\Delta.exe",
+          "args": [],
+          "cwd": "${workspaceFolder}",
+          "environment": [
+            { "name": "DELTA_ENABLE_VALIDATION", "value": "1" }
+          ],
+          "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
+          "stopAtEntry": false,
+          "console": "integratedTerminal",
+          "preLaunchTask": "Prep + Build (MSVC Debug)"
+        },
+        {
+          "name": "Run (Windows x64, Release)",
+          "type": "cppvsdbg",
+          "request": "launch",
+          "program": "${workspaceFolder}\\build\\windows-vs\\Release\\Delta.exe",
+          "args": [],
+          "cwd": "${workspaceFolder}",
+          "envFile": "${workspaceFolder}\\.vscode\\vulkan.win.env",
+          "stopAtEntry": false,
+          "console": "integratedTerminal",
+          "preLaunchTask": "Prep + Build (MSVC Release)"
+        }
+      ]
     }
-  ]
-}
