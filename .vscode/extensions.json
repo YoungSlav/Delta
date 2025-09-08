@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "vadimcn.vscode-lldb",
-    "iliazeus.vscode-ansi"
+    "iliazeus.vscode-ansi",
+    "ms-vscode.cmake-tools"
   ]
 }

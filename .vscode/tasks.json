@@ -120,11 +120,8 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --preset windows-vs-debug"
-        ]
+        "command": "cmake",
+        "args": ["--preset", "windows-vs-debug"]
       }
     },
     {
@@ -132,11 +129,8 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-debug"
-        ]
+        "command": "cmake",
+        "args": ["--build", "--preset", "windows-vs-debug"]
       }
     },
     {
@@ -144,11 +138,8 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --preset windows-vs-release"
-        ]
+        "command": "cmake",
+        "args": ["--preset", "windows-vs-release"]
       }
     },
     {
@@ -156,11 +147,8 @@
       "type": "shell",
       "problemMatcher": [],
       "windows": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-release"
-        ]
+        "command": "cmake",
+        "args": ["--build", "--preset", "windows-vs-release"]
       }
     },
     
@@ -193,11 +181,8 @@
       "group": "build",
       "problemMatcher": [],
       "windows": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-debug --target Clean"
-        ]
+        "command": "cmake",
+        "args": ["--build", "--preset", "windows-vs-debug", "--target", "Clean"]
       }
     },
     {
@@ -206,11 +191,8 @@
       "group": "build",
       "problemMatcher": [],
       "windows": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\" -arch=x64 -host_arch=x64 && cmake --build --preset windows-vs-release --target Clean"
-        ]
+        "command": "cmake",
+        "args": ["--build", "--preset", "windows-vs-release", "--target", "Clean"]
       }
     }
   ]
