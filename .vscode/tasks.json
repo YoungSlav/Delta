@@ -4,7 +4,7 @@
     {
       "label": "Prep + Build (Debug)",
       "type": "shell",
-      "command": "true",
+      "command": "echo Ready",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
       "dependsOrder": "sequence",
@@ -16,7 +16,7 @@
     {
       "label": "Prep + Build (Release)",
       "type": "shell",
-      "command": "true",
+      "command": "echo Ready",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared", "showReuseMessage": false },
       "dependsOrder": "sequence",
@@ -28,7 +28,7 @@
     {
       "label": "Prep + Build (MSVC Debug)",
       "type": "shell",
-      "command": "true",
+      "command": "echo Ready",
       "problemMatcher": [],
       "dependsOrder": "sequence",
       "dependsOn": [
@@ -39,7 +39,7 @@
     {
       "label": "Prep + Build (MSVC Release)",
       "type": "shell",
-      "command": "true",
+      "command": "echo Ready",
       "problemMatcher": [],
       "dependsOrder": "sequence",
       "dependsOn": [
