@@ -33,6 +33,7 @@ protected:
 	void onInput_E(bool ButtonState, float DeltaTime);
 	void onInput_Q(bool ButtonState, float DeltaTime);
 	void onInput_ESCAPE(bool ButtonState, float DeltaTime);
+	void onInput_LEFTCTR(bool ButtonState, float DeltaTime);
 	void onInput_MOUSERIGHT(bool ButtonState, float DeltaTime);
 
 	void onMouseScroll(const glm::vec2& DeltaScroll, float DeltaTime);

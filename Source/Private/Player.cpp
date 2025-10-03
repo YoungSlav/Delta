@@ -54,6 +54,14 @@ bool Player::initialize_Internal()
 		}
 		{
 		KeySubscription subscription;
+		subscription.key = GLFW_KEY_LEFT_CONTROL;
+		subscription.subscribedType = EKeySubscriptionType::HOLD | EKeySubscriptionType::RELEASED;
+		subscription.callback.BindSP(Self<Player>(), &Player::onInput_LEFTCTR);
+		InputPtr->subscribeKey(subscription);
+		}
+		
+		{
+		KeySubscription subscription;
 		subscription.key = GLFW_MOUSE_BUTTON_RIGHT;
 		subscription.subscribedType = EKeySubscriptionType::HOLD | EKeySubscriptionType::RELEASED;
 		subscription.callback.BindSP(Self<Player>(), &Player::onInput_MOUSERIGHT);
@@ -120,6 +128,10 @@ void Player::adjustVelocity(const glm::vec3& DeltaVelocity)
 void Player::onInput_ESCAPE(bool ButtonState, float DeltaTime)
 {
 	engine->shutDown();
+}
+void Player::onInput_LEFTCTR(bool ButtonState, float DeltaTime)
+{
+	bMouseInput = ButtonState;
 }
 void Player::onInput_MOUSERIGHT(bool ButtonState, float DeltaTime)
 {

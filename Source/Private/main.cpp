@@ -25,7 +25,6 @@ int main()
 	
 		engine->initialize();
 
-
 		auto scene = engine->spawn<Delta::Scene>("TestScene");
 		engine->openScene(scene);
 
