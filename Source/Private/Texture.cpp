@@ -21,6 +21,8 @@ EAssetLoadingState Texture::load_Internal()
 	textureData.pixels = stbi_load(fullPath.c_str(), &textureData.width, &textureData.height, &textureData.channels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = textureData.width * textureData.height * 4;
 
+	mipLevels = static_cast<uint32>(std::floor(std::log2(std::max(textureData.width, textureData.height)))) + 1;
+
 	if (!textureData.pixels)
 	{
 		LOG(Error, "Failed to load texture '{}' with {}", getName(), stbi_failure_reason());
@@ -40,16 +42,16 @@ EAssetLoadingState Texture::load_Internal()
 
 	stbi_image_free(textureData.pixels);
 
-	engine->getVulkanCore()->createImage(textureData.width, textureData.height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+	engine->getVulkanCore()->createImage(textureData.width, textureData.height, mipLevels, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
-	engine->getVulkanCore()->transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	engine->getVulkanCore()->transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 	engine->getVulkanCore()->copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureData.width), static_cast<uint32_t>(textureData.height));
-	engine->getVulkanCore()->transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	engine->getVulkanCore()->generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, textureData.width, textureData.height, mipLevels);
 
 	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), stagingBuffer, nullptr);
     vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
 
-	textureImageView = engine->getVulkanCore()->createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	textureImageView = engine->getVulkanCore()->createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
 
 	createTextureSampler();
 	
@@ -78,7 +80,7 @@ void Texture::createTextureSampler()
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	samplerInfo.mipLodBias = 0.0f;
 	samplerInfo.minLod = 0.0f;
-	samplerInfo.maxLod = 0.0f;
+	samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
 
 	if (vkCreateSampler(engine->getVulkanCore()->getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS)
 	{

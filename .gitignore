@@ -66,5 +66,6 @@ ThirdParty/lib/
 *.exp
 *.ilk
 *.dSYM/
+*.DS_Store
 
 Resources/Shaders/

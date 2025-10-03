@@ -37,16 +37,9 @@ int main()
 
 		{
 			auto actor = scene->spawn<Delta::Actor>("Test Actor");
-			auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component", "primitives/plane.fbx", "Shaders/triangle", "textures/pedro.png");
-			meshComp->setScale(glm::vec3(5.0f, 5.0f, 5.0f));
-			meshComp->setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
-		}
-		{
-			auto actor = scene->spawn<Delta::Actor>("Test Actor2");
-			actor->setLocation(glm::vec3(-5.0f, 0.0f, 0.0f));
-			auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Test mesh component2", "primitives/plane.fbx", "Shaders/triangle", "textures/pedro.png");
-			meshComp->setScale(glm::vec3(5.0f, 5.0f, 5.0f));
-			meshComp->setRotation(glm::vec3(0.0f, 90.0f, 0.0f));
+			auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Viking house", "viking_house/viking_room.obj", "Shaders/triangle", "viking_house/viking_room.png");
+			meshComp->setScale(glm::vec3(10.0f));
+			meshComp->setRotation(glm::vec3(-90.0f, 0.0f, 0.0f));
 		}
 
 

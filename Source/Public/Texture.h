@@ -29,6 +29,7 @@ protected:
 private:
 	const std::string texturePath = "";
 
+	uint32 mipLevels = 1;
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
 	VkImageView textureImageView;
