@@ -4,31 +4,31 @@ namespace Delta
 {
 		
 // 8-bit unsigned integer
-typedef unsigned char 		uint8;
+typedef uint8_t 		uint8;
 	
 // 16-bit unsigned integer
-typedef unsigned short int	uint16;
+typedef uint16_t	uint16;
 	
 // 32-bit unsigned integer
-typedef unsigned int		uint32;
+typedef uint32_t		uint32;
 	
 // 64-bit unsigned integer
-typedef unsigned long long	uint64;
+typedef uint64_t	uint64;
 
 //~ Signed base types.
 	
 // 8-bit signed integer
-typedef	char			int8;
+typedef	int8_t			int8;
 	
 // 16-bit signed integer
-typedef short int	int16;
+typedef int16_t	int16;
 	
 // 32-bit signed integer
-typedef int	 		int32;
+typedef int32_t	 		int32;
 	
 // 64-bit signed integer
-typedef long long	int64;
+typedef int64_t	int64;
 
-typedef uint32 DeltaHandle;
+typedef uint32_t DeltaHandle;
 
 }
