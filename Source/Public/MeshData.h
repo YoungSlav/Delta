@@ -20,7 +20,7 @@ struct Vertex
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 		return bindingDescription;
-    }
+	}
 
 	static std::array<VkVertexInputAttributeDescription, 6> getAttributeDescriptions()
 	{

@@ -69,11 +69,11 @@ void DeltaLog::renameOldLogFile(const std::string& oldFilePath)
 
 	std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
 
-    std::tm localTime{};
+	std::tm localTime{};
 #if defined(_WIN32)
-    localtime_s(&localTime, &cftime);
+	localtime_s(&localTime, &cftime);
 #else
-    localtime_r(&cftime, &localTime);
+	localtime_r(&cftime, &localTime);
 #endif
 
 	char buffer[64];
@@ -96,55 +96,55 @@ void DeltaLog::print( const std::string& Message, ELog Type )
 
 void DeltaLog::print(const char* const Message, ELog Type)
 {
-    std::string indent(logIndent * indentSize, ' ');
+	std::string indent(logIndent * indentSize, ' ');
 
 	auto now = std::chrono::system_clock::now();
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);
 	auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 	// Convert to localtime
-    std::tm local_tm{};
+	std::tm local_tm{};
 #if defined(_WIN32)
-    localtime_s(&local_tm, &now_time_t);
+	localtime_s(&local_tm, &now_time_t);
 #else
-    localtime_r(&now_time_t, &local_tm);
+	localtime_r(&now_time_t, &local_tm);
 #endif
 
 	std::lock_guard<std::mutex> lock(logMutex);
 
-    char debugMessage[512];
-    const char* typeStr = nullptr;
+	char debugMessage[512];
+	const char* typeStr = nullptr;
 
-    switch (Type)
-    {
-    case ELog::Success:
-        typeStr = "Success";
-        break;
-    case ELog::Log:
-        typeStr = "Log";
-        break;
-    case ELog::Warning:
-        typeStr = "Warning";
-        break;
-    case ELog::Error:
-        typeStr = "Error";
-        break;
-    case ELog::Fatal:
-        typeStr = "Fatal";
-        break;
-    }
+	switch (Type)
+	{
+	case ELog::Success:
+		typeStr = "Success";
+		break;
+	case ELog::Log:
+		typeStr = "Log";
+		break;
+	case ELog::Warning:
+		typeStr = "Warning";
+		break;
+	case ELog::Error:
+		typeStr = "Error";
+		break;
+	case ELog::Fatal:
+		typeStr = "Fatal";
+		break;
+	}
 
-    // ANSI colors
-    const char* color = "";
-    switch (Type)
-    {
-    case ELog::Success: color = "\033[32m"; break; // green
-    case ELog::Log:     color = "\033[0m";  break; // reset
-    case ELog::Warning: color = "\033[33m"; break; // yellow
-    case ELog::Error:   color = "\033[31m"; break; // red
-    case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
-    }
+	// ANSI colors
+	const char* color = "";
+	switch (Type)
+	{
+	case ELog::Success: color = "\033[32m"; break; // green
+	case ELog::Log:     color = "\033[0m";  break; // reset
+	case ELog::Warning: color = "\033[33m"; break; // yellow
+	case ELog::Error:   color = "\033[31m"; break; // red
+	case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
+	}
 
-    std::cout << color << indent << Message << "\033[0m" << std::endl;
+	std::cout << color << indent << Message << "\033[0m" << std::endl;
 
 	if (logFile.is_open())
 	{

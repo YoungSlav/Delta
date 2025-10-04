@@ -144,15 +144,15 @@ void Engine::destroyObject(std::shared_ptr<Object> object)
 	});
 
 	for (auto it = handleToObject.begin(); it != handleToObject.end(); )
-    {
-        std::shared_ptr<Object>& weak = it->second;
-        if (sameObject(weak, object))
-        {
-            it = handleToObject.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+	{
+		std::shared_ptr<Object>& weak = it->second;
+		if (sameObject(weak, object))
+		{
+			it = handleToObject.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 }

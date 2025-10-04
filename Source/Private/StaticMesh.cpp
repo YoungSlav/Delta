@@ -37,8 +37,8 @@ EAssetLoadingState StaticMesh::load_Internal()
 void StaticMesh::getBuffers(VkBuffer& outVertexBuffer, VkBuffer& outIndexBuffer, uint32& outIndexCount) const
 {
 	outVertexBuffer = vertexBuffer;
-    outIndexBuffer = indexBuffer;
-    outIndexCount = static_cast<uint32>(data.indices.size());
+	outIndexBuffer = indexBuffer;
+	outIndexCount = static_cast<uint32>(data.indices.size());
 }
 
 void StaticMesh::createVertexBuffer()
@@ -59,7 +59,7 @@ void StaticMesh::createVertexBuffer()
 	engine->getVulkanCore()->copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
 	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
+	vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
 }
 
 void StaticMesh::createIndexBuffer()
@@ -81,7 +81,7 @@ void StaticMesh::createIndexBuffer()
 	engine->getVulkanCore()->copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
 	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
+	vkFreeMemory(engine->getVulkanCore()->getDevice(), stagingBufferMemory, nullptr);
 }
 
 void StaticMesh::cleanup_Internal()

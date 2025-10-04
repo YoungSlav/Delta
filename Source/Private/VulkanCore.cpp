@@ -12,10 +12,10 @@ extern "C" void* Delta_GetNSViewFromGLFW(GLFWwindow* window);
 // Minimal MVK macOS surface declarations to avoid header conflicts
 typedef VkFlags VkMacOSSurfaceCreateFlagsMVK;
 typedef struct VkMacOSSurfaceCreateInfoMVK {
-    VkStructureType                 sType;
-    const void*                     pNext;
-    VkMacOSSurfaceCreateFlagsMVK    flags;
-    const void*                     pView; // NSView*
+	VkStructureType                 sType;
+	const void*                     pNext;
+	VkMacOSSurfaceCreateFlagsMVK    flags;
+	const void*                     pView; // NSView*
 } VkMacOSSurfaceCreateInfoMVK;
 typedef VkResult (VKAPI_PTR *PFN_vkCreateMacOSSurfaceMVK)(VkInstance, const VkMacOSSurfaceCreateInfoMVK*, const VkAllocationCallbacks*, VkSurfaceKHR*);
 #endif
@@ -166,7 +166,7 @@ void VulkanCore::cleanupSwapChain()
 	vkDestroyImageView(device, depthImageView, nullptr);
 
 	vkDestroyImage(device, depthImage, nullptr);
-    vkFreeMemory(device, depthImageMemory, nullptr);
+	vkFreeMemory(device, depthImageMemory, nullptr);
 
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
@@ -191,9 +191,9 @@ void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32, uin
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-    vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
 
-    recordCommandBuffer(commandBuffers[currentFrame], imageIndex, recordFunction);
+	recordCommandBuffer(commandBuffers[currentFrame], imageIndex, recordFunction);
 	
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -330,7 +330,7 @@ void VulkanCore::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t te
 			barrier.subresourceRange.levelCount = 1;
 
 			int32_t mipWidth = texWidth;
-        	int32_t mipHeight = texHeight;
+			int32_t mipHeight = texHeight;
 
 			for (uint32_t i = 1; i < mipLevels; i++)
 			{
@@ -430,23 +430,23 @@ void VulkanCore::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMem
 void VulkanCore::singleTimeCommand(EQueueType queueType, const std::function<void(VkCommandBuffer)>& recordFunction)
 {
 	VkCommandPool commandPool = VK_NULL_HANDLE;
-    VkQueue queue = VK_NULL_HANDLE;
+	VkQueue queue = VK_NULL_HANDLE;
 	
 	switch (queueType)
-    {
+	{
 	case EQueueType::GRAPHICS:
-        commandPool = renderCommandPool;
-        queue = graphicsQueue;
-        break;
-    case EQueueType::TRANSFER:
-        commandPool = transferCommandPool;
-        queue = transferQueue;
-        break;
-    case EQueueType::COMPUTE:
+		commandPool = renderCommandPool;
+		queue = graphicsQueue;
+		break;
+	case EQueueType::TRANSFER:
+		commandPool = transferCommandPool;
+		queue = transferQueue;
+		break;
+	case EQueueType::COMPUTE:
 		LOG(Error, "Unsupported queue compute type in singleTimeCommand");
-        throw std::runtime_error("Unsupported queue type");
-        return;
-    }
+		throw std::runtime_error("Unsupported queue type");
+		return;
+	}
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -572,87 +572,87 @@ void VulkanCore::onDestroy()
 
 void VulkanCore::createInstance()
 {
-    LOG(Log, "Create vulkan instance");
-    // Log validation layers state and availability
-    LOG(Log, "Validation layers enabled: {}", enableValidationLayers ? "yes" : "no");
-    if (enableValidationLayers)
-    {
-        uint32_t layerCount = 0;
-        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-        std::vector<VkLayerProperties> availableLayers(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+	LOG(Log, "Create vulkan instance");
+	// Log validation layers state and availability
+	LOG(Log, "Validation layers enabled: {}", enableValidationLayers ? "yes" : "no");
+	if (enableValidationLayers)
+	{
+		uint32_t layerCount = 0;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		std::vector<VkLayerProperties> availableLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        LOG(Log, "Available instance layers ({}):", (uint32)availableLayers.size());
-        {
-            LOG_INDENT
-            for (const auto& lp : availableLayers)
-            {
-                LOG(Log, "{}", lp.layerName);
-            }
-        }
-        LOG(Log, "Requested layers ({}):", (uint32)validationLayers.size());
-        {
-            LOG_INDENT
-            for (auto* name : validationLayers)
-            {
-                LOG(Log, "{}", name);
-            }
-        }
+		LOG(Log, "Available instance layers ({}):", (uint32)availableLayers.size());
+		{
+			LOG_INDENT
+			for (const auto& lp : availableLayers)
+			{
+				LOG(Log, "{}", lp.layerName);
+			}
+		}
+		LOG(Log, "Requested layers ({}):", (uint32)validationLayers.size());
+		{
+			LOG_INDENT
+			for (auto* name : validationLayers)
+			{
+				LOG(Log, "{}", name);
+			}
+		}
 
-        if (!checkValidationLayerSupport())
-        {
-            LOG(Error, "Requested validation layers are not available");
-            throw std::runtime_error("validation layers requested, but not available!");
-        }
-    }
+		if (!checkValidationLayerSupport())
+		{
+			LOG(Error, "Requested validation layers are not available");
+			throw std::runtime_error("validation layers requested, but not available!");
+		}
+	}
 
-    VkApplicationInfo appInfo{};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Delta application";
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "Delta Engine";
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    // Request at least Vulkan 1.3 so core dynamic rendering and sync2 are available when supported
-    appInfo.apiVersion = VK_API_VERSION_1_3;
+	VkApplicationInfo appInfo{};
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pApplicationName = "Delta application";
+	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.pEngineName = "Delta Engine";
+	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+	// Request at least Vulkan 1.3 so core dynamic rendering and sync2 are available when supported
+	appInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
 #if defined(__APPLE__)
-    // Required by MoltenVK portability on macOS
-    #ifndef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
-    #define VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR 0x00000001
-    #endif
-    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+	// Required by MoltenVK portability on macOS
+	#ifndef VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+	#define VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR 0x00000001
+	#endif
+	createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
 
  
 
-    auto extensions = getRequiredExtensions();
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-    createInfo.ppEnabledExtensionNames = extensions.data();
-    // Log instance extensions we are enabling
-    LOG(Log, "Instance extensions ({}):", (uint32)extensions.size());
-    {
-        LOG_INDENT
-        for (auto* e : extensions)
-        {
-            LOG(Log, "{}", e);
-        }
-    }
+	auto extensions = getRequiredExtensions();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.ppEnabledExtensionNames = extensions.data();
+	// Log instance extensions we are enabling
+	LOG(Log, "Instance extensions ({}):", (uint32)extensions.size());
+	{
+		LOG_INDENT
+		for (auto* e : extensions)
+		{
+			LOG(Log, "{}", e);
+		}
+	}
 
  
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-    if (enableValidationLayers)
-    {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+	if (enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
 
-        populateDebugMessengerCreateInfo(debugCreateInfo);
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-    }
+		populateDebugMessengerCreateInfo(debugCreateInfo);
+		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+	}
 	else
 	{
 		createInfo.enabledLayerCount = 0;
@@ -660,11 +660,11 @@ void VulkanCore::createInstance()
 		createInfo.pNext = nullptr;
 	}
 
-    if (VkResult res = vkCreateInstance(&createInfo, nullptr, &instance); res != VK_SUCCESS)
-    {
-        LOG(Error, "vkCreateInstance failed with code {}", (int)res);
-        throw std::runtime_error("failed to create Instance!");
-    }
+	if (VkResult res = vkCreateInstance(&createInfo, nullptr, &instance); res != VK_SUCCESS)
+	{
+		LOG(Error, "vkCreateInstance failed with code {}", (int)res);
+		throw std::runtime_error("failed to create Instance!");
+	}
 }
 
 void VulkanCore::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
@@ -679,7 +679,7 @@ void VulkanCore::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInf
 
 void VulkanCore::setupDebugMessenger()
 {
-    if (!enableValidationLayers) return;
+	if (!enableValidationLayers) return;
 	LOG(Log, "Setup debug messenger");
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
@@ -693,11 +693,11 @@ void VulkanCore::setupDebugMessenger()
 
 void VulkanCore::createSurface()
 {
-    LOG(Log, "Create surface");
-    if (glfwCreateWindowSurface(instance, engine->getWindow()->getWindow(), nullptr, &surface) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create window Surface!");
-    }
+	LOG(Log, "Create surface");
+	if (glfwCreateWindowSurface(instance, engine->getWindow()->getWindow(), nullptr, &surface) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create window Surface!");
+	}
 }
 
 void VulkanCore::pickPhysicalDevice()
@@ -723,13 +723,13 @@ void VulkanCore::pickPhysicalDevice()
 		}
 	}
 
-    if (physicalDevice == VK_NULL_HANDLE)
-    {
-        LOG(Error, "No suitable physical device found");
-        throw std::runtime_error("failed to find a suitable GPU!");
-    }
+	if (physicalDevice == VK_NULL_HANDLE)
+	{
+		LOG(Error, "No suitable physical device found");
+		throw std::runtime_error("failed to find a suitable GPU!");
+	}
 
-    vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+	vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 }
 
 void VulkanCore::createLogicalDevice()
@@ -783,11 +783,11 @@ void VulkanCore::createLogicalDevice()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-    if (enableValidationLayers)
-    {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        createInfo.ppEnabledLayerNames = validationLayers.data();
-    }
+	if (enableValidationLayers)
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
 	else
 	{
 		createInfo.enabledLayerCount = 0;
@@ -1057,14 +1057,14 @@ void VulkanCore::createTransferCommandPool()
 	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
 
 	VkCommandPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
-    poolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+	poolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
 
-    if (vkCreateCommandPool(device, &poolInfo, nullptr, &transferCommandPool) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create transfer command pool!");
-    }
+	if (vkCreateCommandPool(device, &poolInfo, nullptr, &transferCommandPool) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create transfer command pool!");
+	}
 }
 
 void VulkanCore::createRenderCommandBuffer()
@@ -1088,8 +1088,8 @@ void VulkanCore::createSyncObjects()
 	LOG(Log, "Create sync objects");
 	size_t swapchainImageCount = swapChainImages.size();
 	imageAvailableSemaphores.resize(swapchainImageCount);
-    renderFinishedSemaphores.resize(swapchainImageCount);
-    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(swapchainImageCount);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo semaphoreInfo{};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -1208,7 +1208,7 @@ bool VulkanCore::isDeviceSuitable(VkPhysicalDevice Device)
 	}
 
 	VkPhysicalDeviceFeatures supportedFeatures;
-    vkGetPhysicalDeviceFeatures(Device, &supportedFeatures);
+	vkGetPhysicalDeviceFeatures(Device, &supportedFeatures);
 
 	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;;
 }
@@ -1287,18 +1287,18 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-    if (enableValidationLayers)
-    {
-        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
+	if (enableValidationLayers)
+	{
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	}
 
 #if defined(__APPLE__)
-    // Required by MoltenVK portability on macOS
-    extensions.push_back("VK_KHR_portability_enumeration");
+	// Required by MoltenVK portability on macOS
+	extensions.push_back("VK_KHR_portability_enumeration");
 #endif
-    
+	
 	return extensions;
 }
 
@@ -1409,7 +1409,7 @@ void VulkanCore::transitionImageLayoutCmd(
 
 VkFormat VulkanCore::getDepthFormatPublic()
 {
-    return findDepthFormat();
+	return findDepthFormat();
 }
 
 
@@ -1449,7 +1449,7 @@ void VulkanCore::cleanup()
 	vkDestroyImageView(device, depthImageView, nullptr);
 
 	vkDestroyImage(device, depthImage, nullptr);
-    vkFreeMemory(device, depthImageMemory, nullptr);
+	vkFreeMemory(device, depthImageMemory, nullptr);
 
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 	vkDestroyDevice(device, nullptr);

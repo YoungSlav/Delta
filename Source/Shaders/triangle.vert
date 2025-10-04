@@ -17,24 +17,24 @@ layout(location = 5) out vec4 outColor;
 
 layout(std140, set=0, binding=0) uniform CameraInfo
 {
-    mat4 view;
-    mat4 proj;
-    float fov;
-    float minDist;
-    float maxDist;
+	mat4 view;
+	mat4 proj;
+	float fov;
+	float minDist;
+	float maxDist;
 
 
-    float padding;
+	float padding;
 };
 
 layout(push_constant) uniform PushConstants
 {
-    mat4 model;
+	mat4 model;
 } pc;
 
 void main()
 {
-    outPosition = vec3(pc.model * vec4(inPosition, 1.0));
+	outPosition = vec3(pc.model * vec4(inPosition, 1.0));
 	outTexCoords = inTexCoords;
 
 	vec3 T = normalize(vec3(pc.model * vec4(inTangent, 0.0)));

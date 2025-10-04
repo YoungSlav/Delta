@@ -27,7 +27,7 @@ bool Window::initialize_Internal()
 
 	glfwFocusWindow(glfwWindow);
 
-    glfwSetFramebufferSizeCallback(glfwWindow, Window::windowSizeCallback);
+	glfwSetFramebufferSizeCallback(glfwWindow, Window::windowSizeCallback);
 
 	glfwSetMouseButtonCallback(glfwWindow, Window::windowMouseButtonCallback);
 	glfwSetCursorPosCallback(glfwWindow, Window::windowMousePositionCallback);

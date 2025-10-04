@@ -60,7 +60,7 @@ void Object::removeChildObject(std::shared_ptr<Object> obj)
 		if (auto shared = weakObj.lock())
 			return shared.get() == obj.get();
 		return false;
-    });
+	});
 	onChildObjectRemoved(obj);
 }
 

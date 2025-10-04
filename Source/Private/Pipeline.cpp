@@ -14,10 +14,10 @@ using namespace Delta;
 
 EAssetLoadingState Pipeline::load_Internal()
 {
-    createDescriptorSetLayout();
-    createDescriptorSets();
-    createGraphicsPipeline();
-    return EAssetLoadingState::LOADED;
+	createDescriptorSetLayout();
+	createDescriptorSets();
+	createGraphicsPipeline();
+	return EAssetLoadingState::LOADED;
 }
 
 void Pipeline::cleanup_Internal()
@@ -108,8 +108,8 @@ void Pipeline::createDescriptorSets()
 
 void Pipeline::createGraphicsPipeline()
 {
-    const std::string vertShaderFile = engine->getAssetManager()->findAsset(shaderName + ".vert.spv");
-    const std::string fragShaderFile = engine->getAssetManager()->findAsset(shaderName + ".frag.spv");
+	const std::string vertShaderFile = engine->getAssetManager()->findAsset(shaderName + ".vert.spv");
+	const std::string fragShaderFile = engine->getAssetManager()->findAsset(shaderName + ".frag.spv");
 
 	LOG(Log, "Creating pipeline for material '{}'", getName());
 	
@@ -149,55 +149,55 @@ void Pipeline::createGraphicsPipeline()
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-    VkPipelineViewportStateCreateInfo viewportState{};
-    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1;
-    viewportState.scissorCount = 1;
+	VkPipelineViewportStateCreateInfo viewportState{};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.scissorCount = 1;
 
-    VkPipelineRasterizationStateCreateInfo rasterizer{};
-    rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer.depthClampEnable = VK_FALSE;
-    rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = config.cullMode;
-    rasterizer.frontFace = config.frontFace;
-    rasterizer.depthBiasEnable = VK_FALSE;
+	VkPipelineRasterizationStateCreateInfo rasterizer{};
+	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizer.depthClampEnable = VK_FALSE;
+	rasterizer.rasterizerDiscardEnable = VK_FALSE;
+	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizer.lineWidth = 1.0f;
+	rasterizer.cullMode = config.cullMode;
+	rasterizer.frontFace = config.frontFace;
+	rasterizer.depthBiasEnable = VK_FALSE;
 
-    VkPipelineDepthStencilStateCreateInfo depthStencil{};
-    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = config.enableDepthTest ? VK_TRUE : VK_FALSE;
-    depthStencil.depthWriteEnable = config.enableDepthWrite ? VK_TRUE : VK_FALSE;
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.minDepthBounds = 0.0f; // Optional
-    depthStencil.maxDepthBounds = 1.0f; // Optional
+	VkPipelineDepthStencilStateCreateInfo depthStencil{};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = config.enableDepthTest ? VK_TRUE : VK_FALSE;
+	depthStencil.depthWriteEnable = config.enableDepthWrite ? VK_TRUE : VK_FALSE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil.depthBoundsTestEnable = VK_FALSE;
+	depthStencil.minDepthBounds = 0.0f; // Optional
+	depthStencil.maxDepthBounds = 1.0f; // Optional
 
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-    // One color blend attachment per color target
-    std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
-    uint32_t colorAttachmentCount = std::max<uint32_t>(1, (uint32_t)config.colorAttachmentFormats.size());
-    colorBlendAttachments.resize(colorAttachmentCount);
-    for (auto& a : colorBlendAttachments)
-    {
-        a.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        a.blendEnable = VK_FALSE;
-    }
+	// One color blend attachment per color target
+	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
+	uint32_t colorAttachmentCount = std::max<uint32_t>(1, (uint32_t)config.colorAttachmentFormats.size());
+	colorBlendAttachments.resize(colorAttachmentCount);
+	for (auto& a : colorBlendAttachments)
+	{
+		a.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		a.blendEnable = VK_FALSE;
+	}
 
-    VkPipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.logicOpEnable = VK_FALSE;
-    colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    colorBlending.attachmentCount = colorAttachmentCount;
-    colorBlending.pAttachments = colorBlendAttachments.data();
-    colorBlending.blendConstants[0] = 0.0f;
-    colorBlending.blendConstants[1] = 0.0f;
-    colorBlending.blendConstants[2] = 0.0f;
-    colorBlending.blendConstants[3] = 0.0f;
+	VkPipelineColorBlendStateCreateInfo colorBlending{};
+	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlending.logicOpEnable = VK_FALSE;
+	colorBlending.logicOp = VK_LOGIC_OP_COPY;
+	colorBlending.attachmentCount = colorAttachmentCount;
+	colorBlending.pAttachments = colorBlendAttachments.data();
+	colorBlending.blendConstants[0] = 0.0f;
+	colorBlending.blendConstants[1] = 0.0f;
+	colorBlending.blendConstants[2] = 0.0f;
+	colorBlending.blendConstants[3] = 0.0f;
 
 	std::vector<VkDynamicState> dynamicStates =
 	{
@@ -214,7 +214,7 @@ void Pipeline::createGraphicsPipeline()
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(glm::mat4);
 
-    std::array<VkDescriptorSetLayout, 2> setLayouts = { globalDescriptorSetLayout, materialDescriptorSetLayout };
+	std::array<VkDescriptorSetLayout, 2> setLayouts = { globalDescriptorSetLayout, materialDescriptorSetLayout };
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -228,46 +228,46 @@ void Pipeline::createGraphicsPipeline()
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
-    // Fill defaults if config was not set by caller
-    if (config.colorAttachmentFormats.empty())
-    {
-        config.colorAttachmentFormats.push_back(engine->getVulkanCore()->getSwapchainFormat());
-    }
-    if (!config.depthAttachmentFormat.has_value())
-    {
-        config.depthAttachmentFormat = engine->getVulkanCore()->getDepthFormatPublic();
-    }
+	// Fill defaults if config was not set by caller
+	if (config.colorAttachmentFormats.empty())
+	{
+		config.colorAttachmentFormats.push_back(engine->getVulkanCore()->getSwapchainFormat());
+	}
+	if (!config.depthAttachmentFormat.has_value())
+	{
+		config.depthAttachmentFormat = engine->getVulkanCore()->getDepthFormatPublic();
+	}
 
-    VkPipelineRenderingCreateInfo renderingInfo{};
-    renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-    renderingInfo.colorAttachmentCount = static_cast<uint32_t>(config.colorAttachmentFormats.size());
-    renderingInfo.pColorAttachmentFormats = config.colorAttachmentFormats.data();
-    renderingInfo.depthAttachmentFormat = config.depthAttachmentFormat.value_or(VK_FORMAT_UNDEFINED);
+	VkPipelineRenderingCreateInfo renderingInfo{};
+	renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(config.colorAttachmentFormats.size());
+	renderingInfo.pColorAttachmentFormats = config.colorAttachmentFormats.data();
+	renderingInfo.depthAttachmentFormat = config.depthAttachmentFormat.value_or(VK_FORMAT_UNDEFINED);
 
-    VkGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.pNext = &renderingInfo;
-    pipelineInfo.stageCount = 2;
-    pipelineInfo.pStages = shaderStages;
-    pipelineInfo.pVertexInputState = &vertexInputInfo;
-    // Topology from config
-    inputAssembly.topology = config.topology;
-    pipelineInfo.pInputAssemblyState = &inputAssembly;
-    pipelineInfo.pViewportState = &viewportState;
-    pipelineInfo.pRasterizationState = &rasterizer;
-    pipelineInfo.pDepthStencilState = &depthStencil;
-    pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = VK_NULL_HANDLE;
-    pipelineInfo.subpass = 0;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.pNext = &renderingInfo;
+	pipelineInfo.stageCount = 2;
+	pipelineInfo.pStages = shaderStages;
+	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	// Topology from config
+	inputAssembly.topology = config.topology;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pDepthStencilState = &depthStencil;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pColorBlendState = &colorBlending;
+	pipelineInfo.pDynamicState = &dynamicState;
+	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.renderPass = VK_NULL_HANDLE;
+	pipelineInfo.subpass = 0;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(engine->getVulkanCore()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
+	if (vkCreateGraphicsPipelines(engine->getVulkanCore()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
 
 	vkDestroyShaderModule(engine->getVulkanCore()->getDevice(), fragShaderModule, nullptr);
 	vkDestroyShaderModule(engine->getVulkanCore()->getDevice(), vertShaderModule, nullptr);
@@ -276,28 +276,28 @@ void Pipeline::createGraphicsPipeline()
 // Static helpers
 Pipeline::Config Pipeline::MakeForwardConfig(std::shared_ptr<VulkanCore> vk)
 {
-    Pipeline::Config cfg{};
-    cfg.colorAttachmentFormats = { vk->getSwapchainFormat() };
-    cfg.depthAttachmentFormat = vk->getDepthFormatPublic();
-    cfg.enableDepthTest = true;
-    cfg.enableDepthWrite = true;
-    cfg.cullMode = VK_CULL_MODE_BACK_BIT;
-    cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    return cfg;
+	Pipeline::Config cfg{};
+	cfg.colorAttachmentFormats = { vk->getSwapchainFormat() };
+	cfg.depthAttachmentFormat = vk->getDepthFormatPublic();
+	cfg.enableDepthTest = true;
+	cfg.enableDepthWrite = true;
+	cfg.cullMode = VK_CULL_MODE_BACK_BIT;
+	cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	return cfg;
 }
 
 Pipeline::Config Pipeline::MakeGeometryGBufferConfig(VkFormat albedoFormat, VkFormat normalFormat, std::optional<VkFormat> depthFormat)
 {
-    Pipeline::Config cfg{};
-    cfg.colorAttachmentFormats = { albedoFormat, normalFormat };
-    cfg.depthAttachmentFormat = depthFormat;
-    cfg.enableDepthTest = true;
-    cfg.enableDepthWrite = true;
-    cfg.cullMode = VK_CULL_MODE_BACK_BIT;
-    cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-    cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    return cfg;
+	Pipeline::Config cfg{};
+	cfg.colorAttachmentFormats = { albedoFormat, normalFormat };
+	cfg.depthAttachmentFormat = depthFormat;
+	cfg.enableDepthTest = true;
+	cfg.enableDepthWrite = true;
+	cfg.cullMode = VK_CULL_MODE_BACK_BIT;
+	cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	return cfg;
 }
 
 VkShaderModule Pipeline::createShaderModule(const std::vector<char>& code)

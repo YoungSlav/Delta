@@ -170,9 +170,9 @@ private:
 
 
 #ifdef NDEBUG
-    const bool enableValidationLayers = false;
+	const bool enableValidationLayers = false;
 #else
-    const bool enableValidationLayers = true;
+	const bool enableValidationLayers = true;
 #endif
 	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	// Default device extensions; on macOS MoltenVK also requires VK_KHR_portability_subset
@@ -219,9 +219,9 @@ private:
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkFence> inFlightFences;
-    int32 currentFrame = 0;
-    bool bFamebufferResized = false;
+	std::vector<VkFence> inFlightFences;
+	int32 currentFrame = 0;
+	bool bFamebufferResized = false;
 
 };
 

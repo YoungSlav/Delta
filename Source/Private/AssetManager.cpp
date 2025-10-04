@@ -41,14 +41,14 @@ std::string AssetManager::findAsset(const std::string& AssetName)
 
 std::string AssetManager::getRootFolder()
 {
-    namespace fs = std::filesystem;
-    // Use the current working directory as project root on all platforms
-    fs::path p = fs::current_path();
-    p += fs::path::preferred_separator;
-    return p.string();
+	namespace fs = std::filesystem;
+	// Use the current working directory as project root on all platforms
+	fs::path p = fs::current_path();
+	p += fs::path::preferred_separator;
+	return p.string();
 }
 std::string AssetManager::getExecutableName()
 {
-    // Fallback on non-Windows: use a stable project name
-    return std::string("Delta");
+	// Fallback on non-Windows: use a stable project name
+	return std::string("Delta");
 }
