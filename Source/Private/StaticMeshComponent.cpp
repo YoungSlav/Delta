@@ -10,14 +10,17 @@ using namespace Delta;
 
 bool StaticMeshComponent::initialize_Internal()
 {
-	if ( !ActorComponent::initialize_Internal() )
-		return false;
+    if ( !ActorComponent::initialize_Internal() )
+        return false;
 
-	mesh = engine->getAssetManager()->findOrLoad<StaticMesh>(meshAssetPath, meshAssetPath);
-	pipeline = engine->getAssetManager()->findOrLoad<Pipeline>(pipelineAssetPath, pipelineAssetPath);
-	material = spawn<Material>(texturePath + "_material", pipeline, texturePath);
+    mesh = engine->getAssetManager()->findOrLoad<StaticMesh>(meshAssetPath, meshAssetPath);
+    {
+        auto cfg = Pipeline::MakeForwardConfig(engine->getVulkanCore());
+        pipeline = engine->getAssetManager()->findOrLoad<Pipeline>(pipelineAssetPath, pipelineAssetPath, cfg);
+    }
+    material = spawn<Material>(texturePath + "_material", pipeline, texturePath);
 
-	return true;
+    return true;
 }
 
 void StaticMeshComponent::onDestroy()
@@ -25,4 +28,3 @@ void StaticMeshComponent::onDestroy()
 
 	ActorComponent::onDestroy();
 }
-
