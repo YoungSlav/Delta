@@ -51,10 +51,15 @@ public:
 
 	void drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction);
 
-	VkRenderPass getRenderPass() { return renderPass; }
-	VkDevice getDevice() { return device; }
-	VkPhysicalDeviceProperties  getPhysicalDeviceProperties() { return physicalDeviceProperties; }
-	VkDescriptorPool getDescriptorPool() { return descriptorPool; }
+	VkRenderPass getRenderPass() const { return renderPass; }
+	VkDevice getDevice() const { return device; }
+	VkExtent2D getSwapchainExtent() const { return swapChainExtent; }
+	VkFormat getSwapchainFormat() const { return swapChainImageFormat; }
+	VkImageView getSwapchainImageView(uint32 idx) const { return swapChainImageViews[idx]; }
+	uint32 getSwapchainImageCount() const { return static_cast<uint32>(swapChainImages.size()); }
+
+	VkPhysicalDeviceProperties  getPhysicalDeviceProperties() const { return physicalDeviceProperties; }
+	VkDescriptorPool getDescriptorPool() const { return descriptorPool; }
 
 	uint32 getMaxFramesInFlight() const { return MAX_FRAMES_IN_FLIGHT; }
 
@@ -124,7 +129,16 @@ private:
     const bool enableValidationLayers = true;
 #endif
 	const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-    const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	// Default device extensions; on macOS MoltenVK also requires VK_KHR_portability_subset
+	const std::vector<const char*> deviceExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		"VK_KHR_dynamic_rendering",
+		"VK_KHR_depth_stencil_resolve",
+		"VK_KHR_synchronization2"
+#if defined(__APPLE__)
+		, "VK_KHR_portability_subset"
+#endif
+	};
 
 
 	VkInstance instance;

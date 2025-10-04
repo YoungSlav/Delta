@@ -29,7 +29,7 @@ EAssetLoadingState Texture::load_Internal()
 		throw std::runtime_error("Failed to load texture!");
 	}
 
-	LOG(Log, "Loaded texture '{}', width: {}, height: {}, channels: {}", getName(), textureData.width, textureData.height, textureData.channels);
+	LOG(Log, "Loaded texture '{}', width: {}, height: {}, channels: {}, mip levels: {}", getName(), textureData.width, textureData.height, textureData.channels, mipLevels);
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;

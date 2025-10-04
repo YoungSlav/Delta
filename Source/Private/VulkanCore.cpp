@@ -640,13 +640,14 @@ void VulkanCore::createInstance()
         }
     }
 
-	VkApplicationInfo appInfo{};
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = "Delta application";
-	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.pEngineName = "Delta Engine";
-	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_0;
+    VkApplicationInfo appInfo{};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = "Delta application";
+    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.pEngineName = "Delta Engine";
+    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    // Request at least Vulkan 1.3 so core dynamic rendering and sync2 are available when supported
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -792,8 +793,21 @@ void VulkanCore::createLogicalDevice()
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+	VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
+	dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+	dynamicRenderingFeatures.dynamicRendering = VK_TRUE;
+	dynamicRenderingFeatures.pNext = nullptr;
+
+
+	VkPhysicalDeviceSynchronization2Features sync2{};
+	sync2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+	sync2.synchronization2 = VK_TRUE;
+	sync2.pNext = &dynamicRenderingFeatures;
+
+
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pNext = &sync2;
 
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -1318,8 +1332,10 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
     // Required by MoltenVK portability on macOS
     extensions.push_back("VK_KHR_portability_enumeration");
 #endif
+    // Required when enabling certain KHR device extensions (dynamic rendering, synchronization2) on older runtimes
+    extensions.push_back("VK_KHR_get_physical_device_properties2");
     
-	return extensions;
+    return extensions;
 }
 
 void VulkanCore::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
