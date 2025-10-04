@@ -173,7 +173,7 @@ void VulkanCore::cleanupSwapChain()
 
 
 
-void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction)
+void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32, uint32)>& recordFunction)
 {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
@@ -191,9 +191,9 @@ void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>&
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
-	
-	recordCommandBuffer(commandBuffers[currentFrame], imageIndex, recordFunction);
+    vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+
+    recordCommandBuffer(commandBuffers[currentFrame], imageIndex, recordFunction);
 	
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -243,7 +243,7 @@ void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>&
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 imageIndex, const std::function<void(VkCommandBuffer, uint32)>& recordFunction)
+void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 imageIndex, const std::function<void(VkCommandBuffer, uint32, uint32)>& recordFunction)
 {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -253,42 +253,8 @@ void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 image
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
-	VkRenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-	renderPassInfo.renderArea.offset =
-	{ 0, 0 };
-	renderPassInfo.renderArea.extent = swapChainExtent;
-
-	std::array<VkClearValue, 2> clearValues{};
-	clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-	clearValues[1].depthStencil = {1.0f, 0};
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-	renderPassInfo.pClearValues = clearValues.data();
-
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)swapChainExtent.width;
-		viewport.height = (float)swapChainExtent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = swapChainExtent;
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-
-
-		recordFunction(commandBuffer, currentFrame);
-
-
-	vkCmdEndRenderPass(commandBuffer);
+	// Record render commands via provided callback (dynamic rendering path)
+	recordFunction(commandBuffer, currentFrame, imageIndex);
 
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 	{
@@ -1332,10 +1298,8 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
     // Required by MoltenVK portability on macOS
     extensions.push_back("VK_KHR_portability_enumeration");
 #endif
-    // Required when enabling certain KHR device extensions (dynamic rendering, synchronization2) on older runtimes
-    extensions.push_back("VK_KHR_get_physical_device_properties2");
     
-    return extensions;
+	return extensions;
 }
 
 void VulkanCore::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
@@ -1398,6 +1362,54 @@ void VulkanCore::transitionImageLayout(VkImage image, VkFormat format, VkImageLa
 
 			vkCmdPipelineBarrier( commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier );
 		});
+}
+
+void VulkanCore::transitionImageLayoutCmd(
+	VkCommandBuffer cmd,
+	VkImage image,
+	VkFormat format,
+	VkImageLayout oldLayout,
+	VkImageLayout newLayout,
+	VkPipelineStageFlags srcStage,
+	VkPipelineStageFlags dstStage,
+	VkAccessFlags srcAccess,
+	VkAccessFlags dstAccess,
+	uint32_t mipLevels)
+{
+	VkImageMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = oldLayout;
+	barrier.newLayout = newLayout;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = image;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = mipLevels;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	if (format == VK_FORMAT_D32_SFLOAT || format == VK_FORMAT_D16_UNORM)
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	else if (format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT_S8_UINT)
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	else
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	barrier.srcAccessMask = srcAccess;
+	barrier.dstAccessMask = dstAccess;
+
+	vkCmdPipelineBarrier(
+		cmd,
+		srcStage,
+		dstStage,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier);
+}
+
+VkFormat VulkanCore::getDepthFormatPublic()
+{
+    return findDepthFormat();
 }
 
 

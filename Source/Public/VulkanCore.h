@@ -25,9 +25,9 @@ class VulkanCore final : public Object
 {
 	struct QueueFamilyIndices
 	{
-		std::optional<uint32_t> graphicsFamily;
-		std::optional<uint32_t> transferFamily;
-		std::optional<uint32_t> presentFamily;
+		std::optional<uint32> graphicsFamily;
+		std::optional<uint32> transferFamily;
+		std::optional<uint32> presentFamily;
 
 		bool isComplete()
 		{
@@ -47,9 +47,12 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	void singleTimeCommand(EQueueType queueType, const std::function<void(VkCommandBuffer)>& recordFunction);
+	void singleTimeCommand(
+		EQueueType queueType,
+		const std::function<void(VkCommandBuffer)>& recordFunction);
 
-	void drawFrame(const std::function<void(VkCommandBuffer, uint32_t)>& recordFunction);
+	// recordFunction(VkCommandBuffer cmd, uint32 currentFrame, uint32 imageIndex)
+	void drawFrame(const std::function<void(VkCommandBuffer, uint32, uint32)>& recordFunction);
 
 	VkRenderPass getRenderPass() const { return renderPass; }
 	VkDevice getDevice() const { return device; }
@@ -57,21 +60,61 @@ public:
 	VkFormat getSwapchainFormat() const { return swapChainImageFormat; }
 	VkImageView getSwapchainImageView(uint32 idx) const { return swapChainImageViews[idx]; }
 	uint32 getSwapchainImageCount() const { return static_cast<uint32>(swapChainImages.size()); }
+	VkImage getSwapchainImage(uint32 idx) const { return swapChainImages[idx]; }
+	VkImageView getDepthImageView() const { return depthImageView; }
+	VkImage getDepthImage() const { return depthImage; }
 
 	VkPhysicalDeviceProperties  getPhysicalDeviceProperties() const { return physicalDeviceProperties; }
 	VkDescriptorPool getDescriptorPool() const { return descriptorPool; }
 
 	uint32 getMaxFramesInFlight() const { return MAX_FRAMES_IN_FLIGHT; }
 
-	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void createBuffer(
+		VkDeviceSize size,
+		VkBufferUsageFlags usage,
+		VkMemoryPropertyFlags properties,
+		VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	
-	void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
-	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels=1);
+	void createImage(
+		uint32 width, uint32 height,
+		uint32 mipLevels, VkFormat format,
+		VkImageTiling tiling, VkImageUsageFlags usage,
+		VkMemoryPropertyFlags properties,
+		VkImage& image, VkDeviceMemory& imageMemory);
 
-	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels=1);
+	void generateMipmaps(
+		VkImage image, VkFormat imageFormat,
+		int32 texWidth, int32 texHeight,
+		uint32 mipLevels);
+
+	void copyBufferToImage(
+		VkBuffer buffer, VkImage image,
+		uint32 width, uint32 height);
+
+	VkImageView createImageView(
+		VkImage image,
+		VkFormat format,
+		VkImageAspectFlags aspectFlags,
+		uint32 mipLevels=1);
+
+	void transitionImageLayout(
+		VkImage image, VkFormat format,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		uint32 mipLevels = 1);
+
+	// Command-buffer variant for per-frame layout transitions (no submit/wait)
+	void transitionImageLayoutCmd(
+		VkCommandBuffer cmd,
+		VkImage image, VkFormat format,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
+		VkAccessFlags srcAccess, VkAccessFlags dstAccess,
+		uint32 mipLevels = 1);
+
+	// Expose depth format for dynamic rendering pipelines
+	VkFormat getDepthFormatPublic();
 
 protected:
 	bool initialize_Internal() override;
@@ -79,9 +122,12 @@ protected:
 
 private:
 
-	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	uint32 findMemoryType(uint32 typeFilter, VkMemoryPropertyFlags properties);
 
-	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 imageIndex, const std::function<void(VkCommandBuffer, uint32)>& recordFunction);
+	void recordCommandBuffer(
+		VkCommandBuffer commandBuffer,
+		uint32 imageIndex,
+		const std::function<void(VkCommandBuffer, uint32, uint32)>& recordFunction);
 
 	void createInstance();
 	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
