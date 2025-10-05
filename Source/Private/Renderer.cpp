@@ -70,17 +70,12 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 			std::vector<std::shared_ptr<StaticMeshComponent>> renderGeometry;
 			scene->getRenderGeometry(renderGeometry);
 
-			// Transition swapchain image to COLOR_ATTACHMENT_OPTIMAL
-			vk->transitionImageLayoutCmd(
+			vk->transitionImageLayout(
 				commandBuffer,
 				vk->getSwapchainImage(imageIndex),
 				vk->getSwapchainFormat(),
 				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				0,
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 			// Begin dynamic rendering (single color + depth)
 			VkRenderingAttachmentInfo colorAttachment{};
@@ -159,17 +154,12 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 
 			vkCmdEndRendering(commandBuffer);
 
-			// Transition swapchain image to PRESENT_SRC_KHR
-			vk->transitionImageLayoutCmd(
+			vk->transitionImageLayout(
 				commandBuffer,
 				vk->getSwapchainImage(imageIndex),
 				vk->getSwapchainFormat(),
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-				0);
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 		}
 	);

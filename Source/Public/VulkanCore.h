@@ -100,18 +100,14 @@ public:
 		uint32 mipLevels=1);
 
 	void transitionImageLayout(
-		VkImage image, VkFormat format,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		uint32 mipLevels = 1);
-
-	// Command-buffer variant for per-frame layout transitions (no submit/wait)
-	void transitionImageLayoutCmd(
 		VkCommandBuffer cmd,
-		VkImage image, VkFormat format,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		VkAccessFlags srcAccess, VkAccessFlags dstAccess,
-		uint32 mipLevels = 1);
+		VkImage image,
+		VkFormat format,
+		VkImageLayout oldLayout,
+		VkImageLayout newLayout,
+		uint32_t mipLevels = 1
+	);
+
 
 	// Expose depth format for dynamic rendering pipelines
 	VkFormat getDepthFormatPublic();

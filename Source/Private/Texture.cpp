@@ -44,7 +44,11 @@ EAssetLoadingState Texture::load_Internal()
 
 	engine->getVulkanCore()->createImage(textureData.width, textureData.height, mipLevels, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
-	engine->getVulkanCore()->transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+	engine->getVulkanCore()->singleTimeCommand(EQueueType::GRAPHICS,
+		[&](VkCommandBuffer cmd)
+		{
+			engine->getVulkanCore()->transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+		});
 	engine->getVulkanCore()->copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureData.width), static_cast<uint32_t>(textureData.height));
 	engine->getVulkanCore()->generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, textureData.width, textureData.height, mipLevels);
 
