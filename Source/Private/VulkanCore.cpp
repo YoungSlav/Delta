@@ -316,7 +316,7 @@ void VulkanCore::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t te
 		throw std::runtime_error("texture image format does not support linear blitting!");
 	}
 
-	singleTimeCommand(EQueueType::TRANSFER,
+	singleTimeCommand(EQueueType::GRAPHICS,
 		[&](VkCommandBuffer commandBuffer)
 		{
 			VkImageMemoryBarrier barrier{};
