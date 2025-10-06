@@ -49,7 +49,7 @@ EAssetLoadingState Texture::load_Internal()
 		{
 			engine->getVulkanCore()->transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
 		});
-	engine->getVulkanCore()->copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(textureData.width), static_cast<uint32_t>(textureData.height));
+	engine->getVulkanCore()->copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32>(textureData.width), static_cast<uint32>(textureData.height));
 	engine->getVulkanCore()->generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, textureData.width, textureData.height, mipLevels);
 
 	vkDestroyBuffer(engine->getVulkanCore()->getDevice(), stagingBuffer, nullptr);

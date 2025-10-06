@@ -56,7 +56,7 @@ void Input::setMouseEnabled(bool bNewMouseEnabled) const
 
 void Input::subscribeKey(const KeySubscription& NewSubscription)
 {
-	LOG(Log, "Input subscribe key {}", NewSubscription.key);
+	LOG(Log, "Input subscribe key {}", getKeyName(NewSubscription.key));
 	keysSubscribers.push_back(NewSubscription);
 }
 
@@ -78,7 +78,7 @@ void Input::unsubscribeAll(std::shared_ptr<Object> Owner)
 }
 void Input::unsubscribeKey(int32 Key, std::shared_ptr<Object> Owner)
 {
-	LOG(Log, "Input unsubscribe key {} for {}", Key, Owner->getName());
+	LOG(Log, "Input unsubscribe key {} for {}", getKeyName(Key), Owner->getName());
 
 	for (auto it = keysSubscribers.begin(); it != keysSubscribers.end();) 
 	{

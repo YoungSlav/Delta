@@ -116,8 +116,8 @@ void DeltaLog::print(const char* const Message, ELog Type)
 
 	switch (Type)
 	{
-	case ELog::Success:
-		typeStr = "Success";
+	case ELog::Verbose:
+		typeStr = "Verbose";
 		break;
 	case ELog::Log:
 		typeStr = "Log";
@@ -137,14 +137,15 @@ void DeltaLog::print(const char* const Message, ELog Type)
 	const char* color = "";
 	switch (Type)
 	{
-	case ELog::Success: color = "\033[32m"; break; // green
+	case ELog::Verbose: color = "\033[0m"; break; // green
 	case ELog::Log:     color = "\033[0m";  break; // reset
 	case ELog::Warning: color = "\033[33m"; break; // yellow
 	case ELog::Error:   color = "\033[31m"; break; // red
 	case ELog::Fatal:   color = "\033[41;37m"; break; // red background, white text
 	}
 
-	std::cout << color << indent << Message << "\033[0m" << std::endl;
+	if ( Type >= ELog::Warning )
+		std::cout << color << indent << Message << "\033[0m" << std::endl;
 
 	if (logFile.is_open())
 	{

@@ -22,7 +22,7 @@ EAssetLoadingState Pipeline::load_Internal()
 
 void Pipeline::cleanup_Internal()
 {
-	vkFreeDescriptorSets(engine->getVulkanCore()->getDevice(), engine->getVulkanCore()->getDescriptorPool(), static_cast<uint32_t>(globalDescriptorSets.size()), globalDescriptorSets.data());
+	vkFreeDescriptorSets(engine->getVulkanCore()->getDevice(), engine->getVulkanCore()->getDescriptorPool(), static_cast<uint32>(globalDescriptorSets.size()), globalDescriptorSets.data());
 	vkDestroyPipeline(engine->getVulkanCore()->getDevice(), pipeline, nullptr);
 	vkDestroyPipelineLayout(engine->getVulkanCore()->getDevice(), pipelineLayout, nullptr);
 	vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), globalDescriptorSetLayout, nullptr);
@@ -75,7 +75,7 @@ void Pipeline::createDescriptorSets()
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = engine->getVulkanCore()->getDescriptorPool();
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+	allocInfo.descriptorSetCount = static_cast<uint32>(MAX_FRAMES_IN_FLIGHT);
 	allocInfo.pSetLayouts = layouts.data();
 
 	globalDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
@@ -140,7 +140,7 @@ void Pipeline::createGraphicsPipeline()
 	auto attributeDescriptions = Vertex::getAttributeDescriptions();
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
 	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
@@ -180,7 +180,7 @@ void Pipeline::createGraphicsPipeline()
 
 	// One color blend attachment per color target
 	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
-	uint32_t colorAttachmentCount = std::max<uint32_t>(1, (uint32_t)config.colorAttachmentFormats.size());
+	uint32 colorAttachmentCount = std::max<uint32>(1, (uint32)config.colorAttachmentFormats.size());
 	colorBlendAttachments.resize(colorAttachmentCount);
 	for (auto& a : colorBlendAttachments)
 	{
@@ -206,7 +206,7 @@ void Pipeline::createGraphicsPipeline()
 	};
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+	dynamicState.dynamicStateCount = static_cast<uint32>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
 	VkPushConstantRange pushConstantRange{};
@@ -240,7 +240,7 @@ void Pipeline::createGraphicsPipeline()
 
 	VkPipelineRenderingCreateInfo renderingInfo{};
 	renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-	renderingInfo.colorAttachmentCount = static_cast<uint32_t>(config.colorAttachmentFormats.size());
+	renderingInfo.colorAttachmentCount = static_cast<uint32>(config.colorAttachmentFormats.size());
 	renderingInfo.pColorAttachmentFormats = config.colorAttachmentFormats.data();
 	renderingInfo.depthAttachmentFormat = config.depthAttachmentFormat.value_or(VK_FORMAT_UNDEFINED);
 
@@ -305,7 +305,7 @@ VkShaderModule Pipeline::createShaderModule(const std::vector<char>& code)
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = code.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+	createInfo.pCode = reinterpret_cast<const uint32*>(code.data());
 
 	VkShaderModule shaderModule;
 	if (vkCreateShaderModule(engine->getVulkanCore()->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)

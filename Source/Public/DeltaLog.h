@@ -16,11 +16,11 @@
 
 enum ELog
 {
-	Success,
-	Log,
-	Warning,
-	Error,
-	Fatal
+	Verbose = 0,
+	Log = 1,
+	Warning = 2,
+	Error = 3,
+	Fatal = 4
 };
 
 

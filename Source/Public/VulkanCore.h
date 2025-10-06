@@ -47,10 +47,6 @@ public:
 		Object(std::forward<Args>(args)...)
 	{}
 
-	void singleTimeCommand(
-		EQueueType queueType,
-		const std::function<void(VkCommandBuffer)>& recordFunction);
-
 	// recordFunction(VkCommandBuffer cmd, uint32 currentFrame, uint32 imageIndex)
 	void drawFrame(const std::function<void(VkCommandBuffer, uint32, uint32)>& recordFunction);
 
@@ -61,13 +57,21 @@ public:
 	VkImageView getSwapchainImageView(uint32 idx) const { return swapChainImageViews[idx]; }
 	uint32 getSwapchainImageCount() const { return static_cast<uint32>(swapChainImages.size()); }
 	VkImage getSwapchainImage(uint32 idx) const { return swapChainImages[idx]; }
-	VkImageView getDepthImageView() const { return depthImageView; }
-	VkImage getDepthImage() const { return depthImage; }
+
+
+	// Swapchain recreation notification for higher-level systems (e.g., Renderer)
+	typedef MulticastDelegate<> OnSwapchainRecreatedSignature;
+	OnSwapchainRecreatedSignature OnSwapchainRecreated;
+
 
 	VkPhysicalDeviceProperties  getPhysicalDeviceProperties() const { return physicalDeviceProperties; }
 	VkDescriptorPool getDescriptorPool() const { return descriptorPool; }
-
+	VkFormat getDepthFormatPublic();
 	uint32 getMaxFramesInFlight() const { return MAX_FRAMES_IN_FLIGHT; }
+
+	void singleTimeCommand(
+		EQueueType queueType,
+		const std::function<void(VkCommandBuffer)>& recordFunction);
 
 	void createBuffer(
 		VkDeviceSize size,
@@ -105,12 +109,8 @@ public:
 		VkFormat format,
 		VkImageLayout oldLayout,
 		VkImageLayout newLayout,
-		uint32_t mipLevels = 1
+		uint32 mipLevels = 1
 	);
-
-
-	// Expose depth format for dynamic rendering pipelines
-	VkFormat getDepthFormatPublic();
 
 protected:
 	bool initialize_Internal() override;
@@ -133,7 +133,6 @@ private:
 	void createLogicalDevice();
 	void createSwapChain();
 	void createImageViews();
-	void createDepthResources();
 	void createRenderPass();
 	void createFramebuffers();
 	void createDescriptorPool();
@@ -142,12 +141,13 @@ private:
 	void createRenderCommandBuffer();
 	void createSyncObjects();
 
+
+
 	void onWindowResize(const glm::ivec2& NewSize);
 	void recreateSwapChain();
 
 	VkFormat findDepthFormat();
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-	bool hasStencilComponent(VkFormat format);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -202,9 +202,7 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 
-	VkImage depthImage;
-	VkDeviceMemory depthImageMemory;
-	VkImageView depthImageView;
+
 
 	VkRenderPass renderPass;
 
@@ -212,12 +210,13 @@ private:
 	VkDescriptorPool descriptorPool;
 	VkCommandPool transferCommandPool;
 
-	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<VkCommandBuffer> renderCommandBuffers;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	int32 currentFrame = 0;
 	bool bFamebufferResized = false;
+
 
 };
 
