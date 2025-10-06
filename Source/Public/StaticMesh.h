@@ -5,7 +5,7 @@
 
 #include "MeshData.h"
 
-#include <assimp/scene.h>
+#include "assimp/scene.h"
 
 namespace Delta
 {

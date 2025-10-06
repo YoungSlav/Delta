@@ -23,6 +23,7 @@ static std::mutex logMutex;
 std::ofstream DeltaLog::logFile;
 std::string DeltaLog::logFileName;
 std::string DeltaLog::logFolder = "Logs";
+std::string DeltaLog::logExtension = ".log";
 int DeltaLog::logIndent = 0;
 
 void DeltaLog::increaseIndent()
@@ -42,11 +43,12 @@ void DeltaLog::init(const std::string& logFilename)
 	namespace fs = std::filesystem;
 
 	fs::create_directories(logFolder);
-	std::string fullLogPath = (fs::path(logFolder) / logFilename).string();
+	std::string fullLogPath = (fs::path(logFolder) / logFilename).string() + logExtension;
 
 	if (fs::exists(fullLogPath))
 	{
 		renameOldLogFile(fullLogPath);
+		deleteOldLogFiles();
 	}
 
 	// Open new log file
@@ -77,16 +79,59 @@ void DeltaLog::renameOldLogFile(const std::string& oldFilePath)
 #endif
 
 	char buffer[64];
-	std::strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M%S", &localTime);
+	std::strftime(buffer, sizeof(buffer), "%d%m%Y_%H%M%S", &localTime);
 
 	// Build new file name with timestamp inside the logFolder
 	fs::path oldPath(oldFilePath);
-	std::string newFileName = "log_" + std::string(buffer) + oldPath.extension().string();
+	std::string newFileName = logFileName + "_" + std::string(buffer) + logExtension;
 
 	fs::path newPath = fs::path(logFolder) / newFileName;
 
 	// Rename (move) old log file into folder with timestamped name
 	fs::rename(oldFilePath, newPath);
+}
+
+void DeltaLog::deleteOldLogFiles()
+{
+	namespace fs = std::filesystem;
+
+	std::vector<fs::directory_entry> rotated;
+
+	if (!fs::exists(logFolder) || !fs::is_directory(logFolder))
+		return;
+
+	// Determine extension from current log file name (e.g., .log)
+	fs::path ext = fs::path(logFileName).extension();
+
+	for (const auto& entry : fs::directory_iterator(logFolder))
+	{
+		if (!entry.is_regular_file()) continue;
+		const fs::path& p = entry.path();
+		if (p.extension() == logExtension)
+		{
+			rotated.push_back(entry);
+		}
+	}
+
+	if ((int)rotated.size() <= maxOldLogFilesCount)
+		return;
+
+	// Sort by last write time descending (newest first)
+	std::sort(rotated.begin(), rotated.end(), [](const fs::directory_entry& a, const fs::directory_entry& b)
+	{
+		std::error_code ea, eb;
+		auto ta = fs::last_write_time(a, ea);
+		auto tb = fs::last_write_time(b, eb);
+		if (ea || eb) return a.path().string() < b.path().string();
+		return ta > tb; // newest first
+	});
+
+	// Remove files beyond the keep count
+	for (size_t i = maxOldLogFilesCount; i < rotated.size(); ++i)
+	{
+		std::error_code ec;
+		fs::remove(rotated[i].path(), ec);
+	}
 }
 
 void DeltaLog::print( const std::string& Message, ELog Type )

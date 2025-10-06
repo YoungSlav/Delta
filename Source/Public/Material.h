@@ -16,13 +16,14 @@ class Material : public Object
 {
 public:
 	template <typename... Args>
-	Material(std::shared_ptr<class Pipeline> inPipeline, const std::string& inTexturePath, Args&&... args) :
+	Material(const std::string& inTexturePath, Args&&... args) :
 		Object(std::forward<Args>(args)...),
-		pipeline(inPipeline),
 		texturePath(inTexturePath)
 	{}
 
-	VkDescriptorSet getMaterialDescriptorSet() const { return materialDescriptorSet; }
+	// Expose texture resources; descriptor sets are created by Renderer
+	VkImageView getAlbedoImageView() const;
+	VkSampler getAlbedoSampler() const;
 
 protected:
 	virtual bool initialize_Internal() override;
@@ -30,12 +31,8 @@ protected:
 
 
 private:
-	const std::shared_ptr<class Pipeline> pipeline;
-
 	const std::string texturePath;
 	std::shared_ptr<class Texture> texture;
-
-	VkDescriptorSet materialDescriptorSet;
 };
 
 }

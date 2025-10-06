@@ -4,12 +4,19 @@ project(Delta LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Developer QoL: colored diagnostics in terminal
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-fcolor-diagnostics)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options(-fdiagnostics-color=always)
+endif()
+
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/Source)
 
 file(GLOB_RECURSE SRC_FILES
   ${SRC_DIR}/Private/*.cpp
 )
-
 add_executable(Delta ${SRC_FILES})
 
 target_include_directories(Delta PRIVATE
@@ -18,6 +25,7 @@ target_include_directories(Delta PRIVATE
   # Third-party headers (delegates/, stb/, etc.) now live directly under ThirdParty/
   ${CMAKE_SOURCE_DIR}/ThirdParty
   ${CMAKE_SOURCE_DIR}/ThirdParty/glm
+  ${CMAKE_SOURCE_DIR}/ThirdParty/assimp/include
 )
 
 # Vulkan

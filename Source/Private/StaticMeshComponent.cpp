@@ -5,6 +5,7 @@
 #include "StaticMesh.h"
 #include "Pipeline.h"
 #include "Material.h"
+#include "Renderer.h"
 
 using namespace Delta;
 
@@ -14,11 +15,8 @@ bool StaticMeshComponent::initialize_Internal()
 		return false;
 
 	mesh = engine->getAssetManager()->findOrLoad<StaticMesh>(meshAssetPath, meshAssetPath);
-	{
-		auto cfg = Pipeline::MakeForwardConfig(engine->getVulkanCore());
-		pipeline = engine->getAssetManager()->findOrLoad<Pipeline>(pipelineAssetPath, pipelineAssetPath, cfg);
-	}
-	material = spawn<Material>(texturePath + "_material", pipeline, texturePath);
+	// Pipeline is owned by Renderer; just create material data
+	material = spawn<Material>(texturePath + "_material", texturePath);
 
 	return true;
 }

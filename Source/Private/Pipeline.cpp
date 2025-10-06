@@ -14,46 +14,59 @@ using namespace Delta;
 
 EAssetLoadingState Pipeline::load_Internal()
 {
-	createDescriptorSetLayout();
-	createDescriptorSets();
-	createGraphicsPipeline();
-	return EAssetLoadingState::LOADED;
+    createDescriptorSetLayout();
+    // If external set layouts are provided, skip allocating internal global descriptor sets
+    if (config.setLayouts.empty())
+    {
+        createDescriptorSets();
+    }
+    createGraphicsPipeline();
+    return EAssetLoadingState::LOADED;
 }
 
 void Pipeline::cleanup_Internal()
 {
-	vkFreeDescriptorSets(engine->getVulkanCore()->getDevice(), engine->getVulkanCore()->getDescriptorPool(), static_cast<uint32>(globalDescriptorSets.size()), globalDescriptorSets.data());
+	if (!globalDescriptorSets.empty())
+	{
+		vkFreeDescriptorSets(engine->getVulkanCore()->getDevice(), engine->getVulkanCore()->getDescriptorPool(), static_cast<uint32>(globalDescriptorSets.size()), globalDescriptorSets.data());
+	}
 	vkDestroyPipeline(engine->getVulkanCore()->getDevice(), pipeline, nullptr);
 	vkDestroyPipelineLayout(engine->getVulkanCore()->getDevice(), pipelineLayout, nullptr);
-	vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), globalDescriptorSetLayout, nullptr);
+	if (globalDescriptorSetLayout)
+	{
+		vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), globalDescriptorSetLayout, nullptr);
+		globalDescriptorSetLayout = VK_NULL_HANDLE;
+	}
 	vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), materialDescriptorSetLayout, nullptr);
 }
 
 void Pipeline::createDescriptorSetLayout()
 {
-	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
+    // Create internal global UBO set layout only if external layouts are not provided
+    if (config.setLayouts.empty())
+    {
+        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.pImmutableSamplers = nullptr;
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboLayoutBinding;
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &uboLayoutBinding;
 
-		if ( vkCreateDescriptorSetLayout(engine->getVulkanCore()->getDevice(), &layoutInfo, nullptr, &globalDescriptorSetLayout) != VK_SUCCESS )
-		{
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
-	}
-	{
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 0;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        if ( vkCreateDescriptorSetLayout(engine->getVulkanCore()->getDevice(), &layoutInfo, nullptr, &globalDescriptorSetLayout) != VK_SUCCESS )
+        {
+            throw std::runtime_error("failed to create descriptor set layout!");
+        }
+    }
+    {
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+        samplerLayoutBinding.binding = 0;
+        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		samplerLayoutBinding.pImmutableSamplers = nullptr;
 		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -214,12 +227,32 @@ void Pipeline::createGraphicsPipeline()
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(glm::mat4);
 
-	std::array<VkDescriptorSetLayout, 2> setLayouts = { globalDescriptorSetLayout, materialDescriptorSetLayout };
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 2;
-	pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    // Use external set layouts when provided
+    std::array<VkDescriptorSetLayout, 2> setLayouts{};
+    if (!config.setLayouts.empty())
+    {
+        if (config.setLayouts.size() >= 2)
+        {
+            setLayouts[0] = config.setLayouts[0]; // global
+            setLayouts[1] = config.setLayouts[1]; // material
+        }
+        else
+        {
+            setLayouts[0] = config.setLayouts[0]; // global
+            setLayouts[1] = materialDescriptorSetLayout; // fallback to internal material layout
+        }
+        pipelineLayoutInfo.setLayoutCount = 2;
+        pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+    }
+    else
+    {
+        setLayouts[0] = globalDescriptorSetLayout;
+        setLayouts[1] = materialDescriptorSetLayout;
+        pipelineLayoutInfo.setLayoutCount = 2;
+        pipelineLayoutInfo.pSetLayouts = setLayouts.data();
+    }
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 

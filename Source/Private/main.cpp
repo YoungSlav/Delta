@@ -16,7 +16,7 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 
 int main()
 {
-	DeltaLog::init("DeltaApp.log");
+	DeltaLog::init("DeltaApp");
 	LOG(Log, "Starting Delta application");
 	
 	try
@@ -36,7 +36,7 @@ int main()
 
 		{
 			auto actor = scene->spawn<Delta::Actor>("Test Actor");
-			auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Viking house", "viking_house/viking_room.obj", "Shaders/triangle", "viking_house/viking_room.png");
+			auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Viking house", "viking_house/viking_room.obj", "viking_house/viking_room.png");
 			meshComp->setScale(glm::vec3(10.0f));
 			meshComp->setRotation(glm::vec3(-90.0f, 0.0f, 0.0f));
 		}

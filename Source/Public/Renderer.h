@@ -20,6 +20,7 @@ public:
 	void drawFrame(const std::shared_ptr<class Scene> scene);
 
 	const std::vector<VkBuffer>& getCameraUniformBuffers() const { return cameraUniformBuffers; }
+	VkDescriptorSetLayout getGlobalSetLayout() const { return globalSetLayout; }
 
 protected:
 	virtual bool initialize_Internal() override;
@@ -57,6 +58,18 @@ private:
 
 	GBufferRT depthRT[MAX_FRAMES_IN_FLIGHT]{};
 	VkFormat depthFormat = VK_FORMAT_D32_SFLOAT; // will be set from VulkanCore::getDepthFormatPublic()
+
+		// Descriptor layouts and per-frame global descriptor sets (camera UBO)
+	VkDescriptorSetLayout globalSetLayout = VK_NULL_HANDLE;
+	std::vector<VkDescriptorSet> globalSets;
+
+	// Geometry material descriptor layout and cached sets per material
+	VkDescriptorSetLayout geomMaterialSetLayout = VK_NULL_HANDLE;
+	std::unordered_map<const class Material*, VkDescriptorSet> materialSetCache;
+	VkDescriptorSet getOrCreateMaterialSet(const std::shared_ptr<class Material>& mat);
+
+	std::shared_ptr<class Pipeline> forwardPipelienTmp;
 };
 
 }
+

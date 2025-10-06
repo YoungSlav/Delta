@@ -12,16 +12,20 @@ namespace Delta
 class Pipeline : public Asset
 {
 public:
-	struct Config
-	{
-		std::vector<VkFormat> colorAttachmentFormats; // dynamic rendering color formats
-		bool enableDepthTest = true;
-		bool enableDepthWrite = true;
-		std::optional<VkFormat> depthAttachmentFormat; // std::nullopt for no depth
-		VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
-		VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	};
+    struct Config
+    {
+        std::vector<VkFormat> colorAttachmentFormats; // dynamic rendering color formats
+        bool enableDepthTest = true;
+        bool enableDepthWrite = true;
+        std::optional<VkFormat> depthAttachmentFormat; // std::nullopt for no depth
+        VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
+        VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        // Optional external descriptor set layouts for pipeline layout.
+        // If non-empty, the first layout is expected to be the global (camera) set layout.
+        // The material set layout is still created internally for now and appended automatically.
+        std::vector<VkDescriptorSetLayout> setLayouts;
+    };
 
 	template <typename... Args>
 	Pipeline(const std::string& inShaderName, const Config& inConfig, Args&&... args) :

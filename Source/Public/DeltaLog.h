@@ -139,10 +139,14 @@ private:
 	static std::ofstream logFile;
 	static std::string logFileName;
 	static std::string logFolder;
+	static std::string logExtension;
 	static int logIndent;
 	static constexpr int indentSize = 4;
 
+	static constexpr int maxOldLogFilesCount = 3;
+
 	static void renameOldLogFile(const std::string& oldFileName);
+	static void deleteOldLogFiles();
 };
 
 class DeltaLogIndentScope
