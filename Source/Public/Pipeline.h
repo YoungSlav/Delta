@@ -25,6 +25,8 @@ public:
         // If non-empty, the first layout is expected to be the global (camera) set layout.
         // The material set layout is still created internally for now and appended automatically.
         std::vector<VkDescriptorSetLayout> setLayouts;
+
+		bool noVertexInput = false;
     };
 
 	template <typename... Args>
@@ -42,6 +44,7 @@ public:
 	// Helpers to build common configurations
 	static Config MakeForwardConfig(std::shared_ptr<class VulkanCore> vk);
 	static Config MakeGeometryGBufferConfig(VkFormat albedoFormat, VkFormat normalFormat, std::optional<VkFormat> depthFormat);
+	static Config MakeLightningConfig(std::shared_ptr<class VulkanCore> vk);
 
 protected:
 

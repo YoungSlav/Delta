@@ -149,13 +149,24 @@ void Pipeline::createGraphicsPipeline()
 
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-	auto bindingDescription = Vertex::getBindingDescription();
-	auto attributeDescriptions = Vertex::getAttributeDescriptions();
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	if ( !config.noVertexInput )
+	{
+		auto bindingDescription = Vertex::getBindingDescription();
+		auto attributeDescriptions = Vertex::getAttributeDescriptions();
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+	}
+	else
+	{
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 0;
+		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputInfo.pVertexBindingDescriptions = nullptr;
+		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+	}
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -328,6 +339,20 @@ Pipeline::Config Pipeline::MakeGeometryGBufferConfig(VkFormat albedoFormat, VkFo
 	cfg.enableDepthTest = true;
 	cfg.enableDepthWrite = true;
 	cfg.cullMode = VK_CULL_MODE_BACK_BIT;
+	cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	return cfg;
+}
+
+Pipeline::Config Pipeline::MakeLightningConfig(std::shared_ptr<VulkanCore> vk)
+{
+	Pipeline::Config cfg{};
+	cfg.colorAttachmentFormats = { vk->getSwapchainFormat() };
+	cfg.depthAttachmentFormat = std::nullopt; // no depth
+	cfg.enableDepthTest = false;
+	cfg.enableDepthWrite = false;
+	cfg.noVertexInput = true;
+	cfg.cullMode = VK_CULL_MODE_NONE;
 	cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	return cfg;

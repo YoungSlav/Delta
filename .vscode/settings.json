@@ -89,7 +89,8 @@
     "unordered_map": "cpp",
     "unordered_set": "cpp",
     "variant": "cpp",
-    "algorithm": "cpp"
+    "algorithm": "cpp",
+    "__assertion_handler": "cpp"
   },
   "dotnet.defaultSolution": "disable"
 }

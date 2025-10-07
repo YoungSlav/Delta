@@ -17,8 +17,12 @@ using namespace Delta;
 
 bool Renderer::initialize_Internal()
 {
+
+	std::shared_ptr<VulkanCore> vk = engine->getVulkanCore();
+	VkDevice device = vk->getDevice();
+
 	createCameraUniformBuffer();
-	engine->getVulkanCore()->OnSwapchainRecreated.AddSP(Self<Renderer>(), &Renderer::onSwapchainRecreated);
+	vk->OnSwapchainRecreated.AddSP(Self<Renderer>(), &Renderer::onSwapchainRecreated);
 	createGBufferResources();
 	createDepthResources();
 
@@ -35,7 +39,7 @@ bool Renderer::initialize_Internal()
 		li.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		li.bindingCount = 1;
 		li.pBindings = &ubo;
-		if (vkCreateDescriptorSetLayout(engine->getVulkanCore()->getDevice(), &li, nullptr, &globalSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(device, &li, nullptr, &globalSetLayout) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create global descriptor set layout");
 		}
@@ -44,10 +48,10 @@ bool Renderer::initialize_Internal()
 		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, globalSetLayout);
 		VkDescriptorSetAllocateInfo ai{};
 		ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		ai.descriptorPool = engine->getVulkanCore()->getDescriptorPool();
+		ai.descriptorPool = vk->getDescriptorPool();
 		ai.descriptorSetCount = (uint32)layouts.size();
 		ai.pSetLayouts = layouts.data();
-		if (vkAllocateDescriptorSets(engine->getVulkanCore()->getDevice(), &ai, globalSets.data()) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(device, &ai, globalSets.data()) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate global descriptor sets");
 		}
@@ -67,7 +71,7 @@ bool Renderer::initialize_Internal()
 			write.descriptorCount = 1;
 			write.pBufferInfo = &bi;
 
-			vkUpdateDescriptorSets(engine->getVulkanCore()->getDevice(), 1, &write, 0, nullptr);
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 		}
 	}
 
@@ -84,15 +88,65 @@ bool Renderer::initialize_Internal()
 		li.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		li.bindingCount = 1;
 		li.pBindings = &samp;
-		if (vkCreateDescriptorSetLayout(engine->getVulkanCore()->getDevice(), &li, nullptr, &geomMaterialSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(device, &li, nullptr, &geomMaterialSetLayout) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create geometry material descriptor set layout");
 		}
 	}
 
-    Pipeline::Config cfg = Pipeline::MakeForwardConfig(engine->getVulkanCore());
-    cfg.setLayouts = { globalSetLayout, geomMaterialSetLayout };
-    forwardPipelienTmp = engine->getAssetManager()->findOrLoad<Pipeline>("forwardPipelienTmp", "Shaders/triangle", cfg);
+	// Create light pass descriptor set layout (set=2) and sampler
+	{
+		VkSamplerCreateInfo si{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+		si.magFilter = VK_FILTER_LINEAR; si.minFilter = VK_FILTER_LINEAR;
+		si.addressModeU = si.addressModeV = si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		vkCreateSampler(device, &si, nullptr, &gbufferSampler);
+
+		std::array<VkDescriptorSetLayoutBinding,2> lbs{};
+		for ( int32 i=0;i<2; ++i )
+		{
+			lbs[i].binding = i;
+			lbs[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			lbs[i].descriptorCount = 1;
+			lbs[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		}
+		VkDescriptorSetLayoutCreateInfo lci{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+		lci.bindingCount = (uint32)lbs.size(); lci.pBindings = lbs.data();
+		vkCreateDescriptorSetLayout(device, &lci, nullptr, &lightingSetLayout);
+
+		lightingSets.resize(MAX_FRAMES_IN_FLIGHT);
+		std::vector<VkDescriptorSetLayout> ls(MAX_FRAMES_IN_FLIGHT, lightingSetLayout);
+		VkDescriptorSetAllocateInfo ai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+		ai.descriptorPool = vk->getDescriptorPool();
+		ai.descriptorSetCount = (uint32)ls.size(); ai.pSetLayouts = ls.data();
+		vkAllocateDescriptorSets(device, &ai, lightingSets.data());
+
+		for (uint32 f=0; f<MAX_FRAMES_IN_FLIGHT; ++f)
+		{
+			VkDescriptorImageInfo g0{ gbufferSampler, gAlbedo[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			VkDescriptorImageInfo g1{ gbufferSampler, gNormal[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+			std::array<VkWriteDescriptorSet,2> ws{};
+			ws[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ws[0].dstSet = lightingSets[f]; ws[0].dstBinding = 0;
+			ws[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			ws[0].descriptorCount = 1; ws[0].pImageInfo = &g0;
+
+			ws[1] = ws[0]; ws[1].dstBinding = 1; ws[1].pImageInfo = &g1;
+
+			vkUpdateDescriptorSets(device, (uint32)ws.size(), ws.data(), 0, nullptr);
+		}
+	}
+	{
+		Pipeline::Config cfg = Pipeline::MakeGeometryGBufferConfig(gAlbedoFormat, gNormalFormat, depthFormat);
+		cfg.setLayouts = { globalSetLayout, geomMaterialSetLayout };
+		gbufferPipeline = engine->getAssetManager()->findOrLoad<Pipeline>("gbufferPipeline", "Shaders/deffered_gbuffer", cfg);
+	}
+	{
+		Pipeline::Config lcfg = Pipeline::MakeLightningConfig(vk);
+		lcfg.setLayouts = { globalSetLayout, lightingSetLayout };
+		lightingPipeline = engine->getAssetManager()->findOrLoad<Pipeline>("lightingPipeline", "Shaders/deffered_light", lcfg);
+	}
+
 	return Object::initialize_Internal();
 }
 
@@ -139,6 +193,16 @@ void Renderer::cleanup()
 		vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), geomMaterialSetLayout, nullptr);
 		geomMaterialSetLayout = VK_NULL_HANDLE;
 	}
+	if (lightingSetLayout)
+	{
+		vkDestroyDescriptorSetLayout(engine->getVulkanCore()->getDevice(), lightingSetLayout, nullptr);
+		lightingSetLayout = VK_NULL_HANDLE;
+	}
+	if (gbufferSampler)
+	{
+		vkDestroySampler(engine->getVulkanCore()->getDevice(), gbufferSampler, nullptr);
+		gbufferSampler = VK_NULL_HANDLE;
+	}
 }
 
 void Renderer::createGBufferResources()
@@ -159,6 +223,8 @@ void Renderer::createGBufferResources()
 			gAlbedo[i].image, gAlbedo[i].memory);
 		gAlbedo[i].view = vk->createImageView(gAlbedo[i].image, gAlbedoFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
+		
+
 		// Normal + Roughness
 		vk->createImage(
 			w, h, 1,
@@ -171,12 +237,12 @@ void Renderer::createGBufferResources()
 	}
 
 	// Initialize layouts
-	vk->singleTimeCommand(EQueueType::GRAPHICS, [&](VkCommandBuffer cb)
+	vk->singleTimeCommand(EQueueType::GRAPHICS, [&](VkCommandBuffer cmd)
 	{
 		for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 		{
-			vk->transitionImageLayout(cb, gAlbedo[i].image, gAlbedoFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-			vk->transitionImageLayout(cb, gNormal[i].image, gNormalFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gAlbedo[i].image, gAlbedoFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gNormal[i].image, gNormalFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 	});
 }
@@ -240,11 +306,36 @@ void Renderer::destroyDepthResources()
 
 void Renderer::onSwapchainRecreated()
 {
-	// Rebuild render targets to match new extent/format
-	destroyGBufferResources();
-	createGBufferResources();
-	destroyDepthResources();
-	createDepthResources();
+    // Rebuild render targets to match new extent/format
+    destroyGBufferResources();
+    createGBufferResources();
+    destroyDepthResources();
+    createDepthResources();
+
+	// After recreating GBuffer, update lighting descriptor sets with new image views
+	{
+		std::shared_ptr<VulkanCore> vk = engine->getVulkanCore();
+		VkDevice device = vk->getDevice();
+		for (uint32 f = 0; f < MAX_FRAMES_IN_FLIGHT; ++f)
+		{
+			VkDescriptorImageInfo g0{ gbufferSampler, gAlbedo[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			VkDescriptorImageInfo g1{ gbufferSampler, gNormal[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+			std::array<VkWriteDescriptorSet, 2> ws{};
+			ws[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ws[0].dstSet = lightingSets[f];
+			ws[0].dstBinding = 0;
+			ws[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			ws[0].descriptorCount = 1;
+			ws[0].pImageInfo = &g0;
+
+			ws[1] = ws[0];
+			ws[1].dstBinding = 1;
+			ws[1].pImageInfo = &g1;
+
+			vkUpdateDescriptorSets(device, (uint32)ws.size(), ws.data(), 0, nullptr);
+		}
+	}
 }
 
 VkDescriptorSet Renderer::getOrCreateMaterialSet(const std::shared_ptr<Material>& mat)
@@ -299,102 +390,131 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 
 			CameraInfo cameraInfo;
 			scene->getCameraInfo(cameraInfo, engine->getWindow()->getViewportSize());
-
 			updateCameraUniformBuffer(cameraInfo, currentFrame);
 
-			std::vector<std::shared_ptr<StaticMeshComponent>> renderGeometry;
-			scene->getRenderGeometry(renderGeometry);
 
-			vk->transitionImageLayout(
-				cmd,
-				vk->getSwapchainImage(imageIndex),
-				vk->getSwapchainFormat(),
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			// geometry
+			
 
-			// Begin dynamic rendering (single color + depth)
-			VkRenderingAttachmentInfo colorAttachment{};
-			colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-			colorAttachment.imageView = vk->getSwapchainImageView(imageIndex);
-			colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			colorAttachment.clearValue.color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+			VkRenderingAttachmentInfo colorInfos[2]{};
+			colorInfos[0].imageView = gAlbedo[currentFrame].view;
+			colorInfos[0].clearValue.color = {{0,0,0,1}};
+			colorInfos[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			colorInfos[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			colorInfos[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			colorInfos[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			
+			colorInfos[1].imageView = gNormal[currentFrame].view;
+			colorInfos[1].clearValue.color = {{0,0,0,0}};
+			colorInfos[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			colorInfos[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			colorInfos[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			colorInfos[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-            VkRenderingAttachmentInfo depthAttachment{};
-            depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-            depthAttachment.imageView = depthRT[currentFrame].view;
-            depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            depthAttachment.clearValue.depthStencil = {1.0f, 0};
+			VkRenderingAttachmentInfo depthInfo{};
+			depthInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			depthInfo.imageView = depthRT[currentFrame].view;
+			depthInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			depthInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depthInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			depthInfo.clearValue.depthStencil = {1.0f, 0};
 
-			VkRenderingInfo renderInfo{};
-			renderInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-			renderInfo.renderArea.offset = {0, 0};
-			renderInfo.renderArea.extent = vk->getSwapchainExtent();
-			renderInfo.layerCount = 1;
-			renderInfo.colorAttachmentCount = 1;
-			renderInfo.pColorAttachments = &colorAttachment;
-			renderInfo.pDepthAttachment = &depthAttachment;
+			VkRenderingInfo geomRI{};
+			geomRI.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+			geomRI.renderArea = {{0,0}, vk->getSwapchainExtent()};
+			geomRI.layerCount = 1;
+			geomRI.colorAttachmentCount = 2;
+			geomRI.pColorAttachments = colorInfos;
+			geomRI.pDepthAttachment = &depthInfo;
 
-			vkCmdBeginRendering(cmd, &renderInfo);
-
-			// Dynamic viewport/scissor
-			VkViewport viewport{};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.width = (float)vk->getSwapchainExtent().width;
-			viewport.height = (float)vk->getSwapchainExtent().height;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-			VkRect2D scissor{};
-			scissor.offset = {0, 0};
-			scissor.extent = vk->getSwapchainExtent();
-			vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, forwardPipelienTmp->getPipeline());
-            
-            VkDescriptorSet cameraDescriptorSet = globalSets[currentFrame];
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, forwardPipelienTmp->getPipelineLayout(), 0, 1, &cameraDescriptorSet, 0, nullptr);
-
-			for ( auto it : renderGeometry )
+			vkCmdBeginRendering(cmd, &geomRI);
 			{
-				std::shared_ptr<StaticMesh> staticMesh = it->getMesh();
-                std::shared_ptr<Material> material = it->getMaterial();
+				VkViewport vp{0,0, (float)vk->getSwapchainExtent().width, (float)vk->getSwapchainExtent().height, 0.0f, 1.0f};
+				vkCmdSetViewport(cmd, 0, 1, &vp);
 				
+				VkRect2D sc{{0,0}, vk->getSwapchainExtent()};
+				vkCmdSetScissor(cmd, 0, 1, &sc);
 
-				VkBuffer vertexBuffer;
-				VkBuffer indexBuffer;
-				uint32 indexCount;
-				staticMesh->getBuffers(vertexBuffer, indexBuffer, indexCount);
+				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gbufferPipeline->getPipeline());
 
-				VkBuffer vertexBuffers[] = {vertexBuffer};
-				VkDeviceSize offsets[] = {0};
-				vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-				vkCmdBindIndexBuffer(cmd, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-				
-				VkDescriptorSet materialDescriptorSet = getOrCreateMaterialSet(material);    
-                vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, forwardPipelienTmp->getPipelineLayout(), 1, 1, &materialDescriptorSet, 0, nullptr);
+				VkDescriptorSet cameraDescriptorSet = globalSets[currentFrame];
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gbufferPipeline->getPipelineLayout(), 0, 1, &cameraDescriptorSet, 0, nullptr);
 
-                Transform transform = it->getTransform_World();
-				glm::mat4 model = transform.getTransformMatrix();
-                vkCmdPushConstants(cmd, forwardPipelienTmp->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &model);
+				std::vector<std::shared_ptr<StaticMeshComponent>> renderGeometry;
+				scene->getRenderGeometry(renderGeometry);
+				for ( auto it : renderGeometry )
+				{
+					std::shared_ptr<StaticMesh> staticMesh = it->getMesh();
+                	std::shared_ptr<Material> material = it->getMaterial();
+					Transform transform = it->getTransform_World();
+					glm::mat4 model = transform.getTransformMatrix();
 
-				vkCmdDrawIndexed(cmd, indexCount, 1, 0, 0, 0);
+					VkBuffer vertexBuffer, indexBuffer; uint32 indexCount;
+					staticMesh->getBuffers(vertexBuffer, indexBuffer, indexCount);
+
+					VkBuffer vertexBuffers[] = {vertexBuffer};
+					VkDeviceSize offsets[] = {0};
+					vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+					vkCmdBindIndexBuffer(cmd, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+					VkDescriptorSet set0 = globalSets[currentFrame];
+					VkDescriptorSet set1 = getOrCreateMaterialSet(material);
+
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gbufferPipeline->getPipelineLayout(), 0, 1, &set0, 0, nullptr);
+					vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gbufferPipeline->getPipelineLayout(), 1, 1, &set1, 0, nullptr);
+					vkCmdPushConstants(cmd, gbufferPipeline->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &model);
+
+					vkCmdDrawIndexed(cmd, indexCount, 1, 0, 0, 0);
+				}
 			}
+			vkCmdEndRendering(cmd);
+			
+			
+			// light
+			vk->transitionImageLayout(cmd, gAlbedo[currentFrame].image, gAlbedoFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			vk->transitionImageLayout(cmd, gNormal[currentFrame].image, gNormalFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			vk->transitionImageLayout(cmd, vk->getSwapchainImage(imageIndex), vk->getSwapchainFormat(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+			VkRenderingAttachmentInfo outColor{};
+			outColor.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			outColor.imageView = vk->getSwapchainImageView(imageIndex);
+			outColor.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			outColor.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			outColor.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			outColor.clearValue.color = {{0,0,0,1}};
+
+			VkRenderingInfo lightRI{VK_STRUCTURE_TYPE_RENDERING_INFO};
+			lightRI.renderArea = {{0,0}, vk->getSwapchainExtent()};
+			lightRI.layerCount = 1;
+			lightRI.colorAttachmentCount = 1;
+			lightRI.pColorAttachments = &outColor;
+
+			vkCmdBeginRendering(cmd, &lightRI);
+			{
+				// viewport/scissor (reuse)
+				VkViewport vp{0,0,(float)vk->getSwapchainExtent().width,(float)vk->getSwapchainExtent().height,0.0f,1.0f};
+				vkCmdSetViewport(cmd, 0, 1, &vp);
+				VkRect2D sc{{0,0}, vk->getSwapchainExtent()};
+				vkCmdSetScissor(cmd, 0, 1, &sc);
+
+				// bind and draw
+				VkDescriptorSet set0 = globalSets[currentFrame];
+				VkDescriptorSet set1 = lightingSets[currentFrame];
+
+				vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline->getPipeline());
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline->getPipelineLayout(), 0, 1, &set0, 0, nullptr);
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, lightingPipeline->getPipelineLayout(), 1, 1, &set1, 0, nullptr);
+
+				vkCmdDraw(cmd, 3, 1, 0, 0);
+			}
 			vkCmdEndRendering(cmd);
 
-			vk->transitionImageLayout(
-				cmd,
-				vk->getSwapchainImage(imageIndex),
-				vk->getSwapchainFormat(),
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+			// revert gbuffer back to color attachment optimal
+			vk->transitionImageLayout(cmd, gAlbedo[currentFrame].image, gAlbedoFormat, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gNormal[currentFrame].image, gNormalFormat, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+			// make swap chain image ready to present
+			vk->transitionImageLayout( cmd, vk->getSwapchainImage(imageIndex), vk->getSwapchainFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		}
 	);
 }

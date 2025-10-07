@@ -53,13 +53,13 @@ private:
 
 	GBufferRT gAlbedo[MAX_FRAMES_IN_FLIGHT]{};
 	GBufferRT gNormal[MAX_FRAMES_IN_FLIGHT]{};
-	VkFormat gAlbedoFormat = VK_FORMAT_R8G8B8A8_UNORM;
-	VkFormat gNormalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+	VkFormat gAlbedoFormat = VK_FORMAT_R8G8B8A8_UNORM;		// Albedo + Metallic
+	VkFormat gNormalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;	// Normal + Roughness
 
 	GBufferRT depthRT[MAX_FRAMES_IN_FLIGHT]{};
-	VkFormat depthFormat = VK_FORMAT_D32_SFLOAT; // will be set from VulkanCore::getDepthFormatPublic()
+	VkFormat depthFormat = VK_FORMAT_D32_SFLOAT;
 
-		// Descriptor layouts and per-frame global descriptor sets (camera UBO)
+	// Descriptor layouts and per-frame global descriptor sets (camera UBO)
 	VkDescriptorSetLayout globalSetLayout = VK_NULL_HANDLE;
 	std::vector<VkDescriptorSet> globalSets;
 
@@ -68,7 +68,12 @@ private:
 	std::unordered_map<const class Material*, VkDescriptorSet> materialSetCache;
 	VkDescriptorSet getOrCreateMaterialSet(const std::shared_ptr<class Material>& mat);
 
-	std::shared_ptr<class Pipeline> forwardPipelienTmp;
+	VkSampler gbufferSampler = VK_NULL_HANDLE;
+	VkDescriptorSetLayout lightingSetLayout = VK_NULL_HANDLE;
+	std::vector<VkDescriptorSet> lightingSets; // size = MAX_FRAMES_IN_FLIGHT
+
+	std::shared_ptr<class Pipeline> gbufferPipeline;
+	std::shared_ptr<class Pipeline> lightingPipeline;
 };
 
 }

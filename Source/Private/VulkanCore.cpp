@@ -113,6 +113,7 @@ bool VulkanCore::initialize_Internal()
 	createRenderCommandPool();
 	createDescriptorPool();
 	createTransferCommandPool();
+
 	createSwapChain();
 	createImageViews();
     createRenderPass();
@@ -196,6 +197,8 @@ void VulkanCore::drawFrame(const std::function<void(VkCommandBuffer, uint32, uin
 
 	vkResetCommandBuffer(renderCommandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
 
+	
+
 	recordCommandBuffer(renderCommandBuffers[currentFrame], imageIndex, recordFunction);
 	
 	VkSubmitInfo submitInfo{};
@@ -254,6 +257,12 @@ void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 image
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to begin recording command buffer!");
+	}
+
+	if ( !swapChainImageLayoutCache[imageIndex] )
+	{
+		transitionImageLayout(renderCommandBuffers[currentFrame], getSwapchainImage(imageIndex), getSwapchainFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		swapChainImageLayoutCache[imageIndex] = true;
 	}
 
 	// Record render commands via provided callback (dynamic rendering path)
@@ -862,6 +871,9 @@ void VulkanCore::createSwapChain()
 	swapChainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
+	swapChainImageLayoutCache.clear();
+	swapChainImageLayoutCache.resize(swapChainImages.size(), false);
+
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
 }
@@ -1273,6 +1285,8 @@ void VulkanCore::transitionImageLayout(
 	uint32 mipLevels
 )
 {
+	if (oldLayout == newLayout) return;
+
 	auto aspectFor = [&](VkFormat f, VkImageLayout target) -> VkImageAspectFlags
 	{
 		if (target == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ||
@@ -1333,6 +1347,13 @@ void VulkanCore::transitionImageLayout(
 		dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+	{
+		srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = 0;
 	}
 	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{

@@ -21,10 +21,11 @@
 
 static std::mutex logMutex;
 std::ofstream DeltaLog::logFile;
-std::string DeltaLog::logFileName;
-std::string DeltaLog::logFolder = "Logs";
-std::string DeltaLog::logExtension = ".log";
 int DeltaLog::logIndent = 0;
+std::string DeltaLog::logFileName;
+
+const std::string DeltaLog::logFolder = "Logs";
+const std::string DeltaLog::logExtension = ".log";
 
 void DeltaLog::increaseIndent()
 {
@@ -182,7 +183,7 @@ void DeltaLog::print(const char* const Message, ELog Type)
 	const char* color = "";
 	switch (Type)
 	{
-	case ELog::Verbose: color = "\033[0m"; break; // green
+	case ELog::Verbose:
 	case ELog::Log:     color = "\033[0m";  break; // reset
 	case ELog::Warning: color = "\033[33m"; break; // yellow
 	case ELog::Error:   color = "\033[31m"; break; // red
