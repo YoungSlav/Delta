@@ -47,7 +47,7 @@ EAssetLoadingState Texture::load_Internal()
 	engine->getVulkanCore()->singleTimeCommand(EQueueType::GRAPHICS,
 		[&](VkCommandBuffer cmd)
 		{
-			engine->getVulkanCore()->transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+			engine->getVulkanCore()->transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		});
 	engine->getVulkanCore()->copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32>(textureData.width), static_cast<uint32>(textureData.height));
 	engine->getVulkanCore()->generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, textureData.width, textureData.height, mipLevels);
@@ -97,6 +97,5 @@ void Texture::cleanup_Internal()
 {
 	vkDestroySampler(engine->getVulkanCore()->getDevice(), textureSampler, nullptr);
 	vkDestroyImageView(engine->getVulkanCore()->getDevice(), textureImageView, nullptr);
-	vkDestroyImage(engine->getVulkanCore()->getDevice(), textureImage, nullptr);
-	vkFreeMemory(engine->getVulkanCore()->getDevice(), textureImageMemory, nullptr);
+	engine->getVulkanCore()->destroyImage(textureImage, textureImageMemory);
 }

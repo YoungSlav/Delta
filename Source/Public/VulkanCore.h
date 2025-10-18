@@ -10,7 +10,7 @@
 namespace Delta
 {
 
-#define MAX_FRAMES_IN_FLIGHT 2
+#define MAX_FRAMES_IN_FLIGHT 3
 #define MAX_MATERIAL_DESCRIPTOR_SETS 10
 
 
@@ -19,6 +19,17 @@ enum EQueueType
 	GRAPHICS,
 	TRANSFER,
 	COMPUTE
+};
+
+struct ImageMetadata
+{
+	VkFormat format;
+	VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+	VkExtent2D extent;
+	uint32 mipLevels;
+
+	struct HandleHash { size_t operator()(VkImage h) const { return std::hash<uint64>{}(uint64(h)); } };
 };
 
 class VulkanCore final : public Object
@@ -87,6 +98,8 @@ public:
 		VkImageTiling tiling, VkImageUsageFlags usage,
 		VkMemoryPropertyFlags properties,
 		VkImage& image, VkDeviceMemory& imageMemory);
+	
+	void destroyImage(VkImage image, VkDeviceMemory imageMemory);
 
 	void generateMipmaps(
 		VkImage image, VkFormat imageFormat,
@@ -106,15 +119,24 @@ public:
 	void transitionImageLayout(
 		VkCommandBuffer cmd,
 		VkImage image,
+		VkImageLayout newLayout
+	);
+
+protected:
+	bool initialize_Internal() override;
+	virtual void onDestroy() override;
+
+	ImageMetadata* tryGetImageMetadata(VkImage image);
+	
+	void transitionImageLayout(
+		VkCommandBuffer cmd,
+		VkImage image,
 		VkFormat format,
 		VkImageLayout oldLayout,
 		VkImageLayout newLayout,
 		uint32 mipLevels = 1
 	);
 
-protected:
-	bool initialize_Internal() override;
-	virtual void onDestroy() override;
 
 private:
 
@@ -197,7 +219,6 @@ private:
 
 	VkSwapchainKHR swapChain;
 	std::vector<VkImage> swapChainImages;
-	std::vector<bool> swapChainImageLayoutCache;
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
 	std::vector<VkImageView> swapChainImageViews;
@@ -217,6 +238,8 @@ private:
 	std::vector<VkFence> inFlightFences;
 	int32 currentFrame = 0;
 	bool bFamebufferResized = false;
+
+	std::unordered_map<VkImage, ImageMetadata, ImageMetadata::HandleHash> imagesMetadata;
 
 
 };

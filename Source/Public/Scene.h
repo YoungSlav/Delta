@@ -85,6 +85,8 @@ private:
 	// renderable stuff
 	std::list<std::weak_ptr<class StaticMeshComponent>> meshComponents;
 
+	std::list<std::weak_ptr<class DirectionalLight>> directionalLights;
+
 };
 
 }

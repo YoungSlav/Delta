@@ -25,6 +25,7 @@ bool Renderer::initialize_Internal()
 	vk->OnSwapchainRecreated.AddSP(Self<Renderer>(), &Renderer::onSwapchainRecreated);
 	createGBufferResources();
 	createDepthResources();
+	createShadowResources();
 
 	// Create global descriptor set layout (set=0) and per-frame descriptor sets for camera UBO
 	{
@@ -101,8 +102,8 @@ bool Renderer::initialize_Internal()
 		si.addressModeU = si.addressModeV = si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		vkCreateSampler(device, &si, nullptr, &gbufferSampler);
 
-		std::array<VkDescriptorSetLayoutBinding,2> lbs{};
-		for ( int32 i=0;i<2; ++i )
+		std::array<VkDescriptorSetLayoutBinding,4> lbs{};
+		for ( int32 i=0;i<4; ++i )
 		{
 			lbs[i].binding = i;
 			lbs[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -124,14 +125,23 @@ bool Renderer::initialize_Internal()
 		{
 			VkDescriptorImageInfo g0{ gbufferSampler, gAlbedo[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 			VkDescriptorImageInfo g1{ gbufferSampler, gNormal[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			VkDescriptorImageInfo gd{ depthSampler,   depthRT[f].view,  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			VkDescriptorImageInfo gs{ shadowSampler,  shadowMapRT[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 
-			std::array<VkWriteDescriptorSet,2> ws{};
-			ws[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			ws[0].dstSet = lightingSets[f]; ws[0].dstBinding = 0;
-			ws[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			ws[0].descriptorCount = 1; ws[0].pImageInfo = &g0;
+			std::array<VkWriteDescriptorSet,4> ws{};
+			for (int i = 0; i < 4; ++i)
+			{
+				ws[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				ws[i].dstSet = lightingSets[f];
+				ws[i].dstBinding = i;
+				ws[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				ws[i].descriptorCount = 1;
+			}
+			ws[0].pImageInfo = &g0;
+			ws[1].pImageInfo = &g1;
+			ws[2].pImageInfo = &gd;
+			ws[3].pImageInfo = &gs;
 
-			ws[1] = ws[0]; ws[1].dstBinding = 1; ws[1].pImageInfo = &g1;
 
 			vkUpdateDescriptorSets(device, (uint32)ws.size(), ws.data(), 0, nullptr);
 		}
@@ -145,6 +155,12 @@ bool Renderer::initialize_Internal()
 		Pipeline::Config lcfg = Pipeline::MakeLightningConfig(vk);
 		lcfg.setLayouts = { globalSetLayout, lightingSetLayout };
 		lightingPipeline = engine->getAssetManager()->findOrLoad<Pipeline>("lightingPipeline", "Shaders/deffered_light", lcfg);
+	}
+	{
+		Pipeline::Config scfg = Pipeline::MakeShadowConfig(vk);
+		// Reuse global set 0; material layout can still be present but unused
+		scfg.setLayouts = { globalSetLayout, geomMaterialSetLayout };
+		shadowPipeline = engine->getAssetManager()->findOrLoad<Pipeline>("shadowPipeline", "Shaders/shadow", scfg);
 	}
 
 	return Object::initialize_Internal();
@@ -177,6 +193,7 @@ void Renderer::cleanup()
 	engine->getVulkanCore()->OnSwapchainRecreated.RemoveObject(this);
 	destroyGBufferResources();
 	destroyDepthResources();
+	destroyShadowResources();
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -223,8 +240,6 @@ void Renderer::createGBufferResources()
 			gAlbedo[i].image, gAlbedo[i].memory);
 		gAlbedo[i].view = vk->createImageView(gAlbedo[i].image, gAlbedoFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 
-		
-
 		// Normal + Roughness
 		vk->createImage(
 			w, h, 1,
@@ -241,8 +256,8 @@ void Renderer::createGBufferResources()
 	{
 		for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 		{
-			vk->transitionImageLayout(cmd, gAlbedo[i].image, gAlbedoFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-			vk->transitionImageLayout(cmd, gNormal[i].image, gNormalFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gAlbedo[i].image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gNormal[i].image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 	});
 }
@@ -253,13 +268,11 @@ void Renderer::destroyGBufferResources()
 	for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
 		if (gAlbedo[i].view) vkDestroyImageView(vk->getDevice(), gAlbedo[i].view, nullptr);
-		if (gAlbedo[i].image) vkDestroyImage(vk->getDevice(), gAlbedo[i].image, nullptr);
-		if (gAlbedo[i].memory) vkFreeMemory(vk->getDevice(), gAlbedo[i].memory, nullptr);
+		vk->destroyImage(gAlbedo[i].image, gAlbedo[i].memory);
 		gAlbedo[i] = {};
 
 		if (gNormal[i].view) vkDestroyImageView(vk->getDevice(), gNormal[i].view, nullptr);
-		if (gNormal[i].image) vkDestroyImage(vk->getDevice(), gNormal[i].image, nullptr);
-		if (gNormal[i].memory) vkFreeMemory(vk->getDevice(), gNormal[i].memory, nullptr);
+		vk->destroyImage(gNormal[i].image, gNormal[i].memory);
 		gNormal[i] = {};
 	}
 }
@@ -287,9 +300,28 @@ void Renderer::createDepthResources()
 	{
 		for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 		{
-			vk->transitionImageLayout(cb, depthRT[i].image, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cb, depthRT[i].image, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		}
 	});
+
+	VkSamplerCreateInfo si{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+	si.magFilter = VK_FILTER_NEAREST;
+	si.minFilter = VK_FILTER_NEAREST;
+	si.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	si.mipLodBias = 0.0f;
+	si.anisotropyEnable = VK_FALSE;
+	si.compareEnable = VK_FALSE;
+	si.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	si.minLod = 0.0f;
+	si.maxLod = 0.0f;
+	si.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	si.unnormalizedCoordinates = VK_FALSE;
+
+	if (vkCreateSampler(vk->getDevice(), &si, nullptr, &depthSampler) != VK_SUCCESS)
+		throw std::runtime_error("failed to create depth sampler");
 }
 
 void Renderer::destroyDepthResources()
@@ -298,10 +330,73 @@ void Renderer::destroyDepthResources()
 	for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
 	{
 		if (depthRT[i].view) vkDestroyImageView(vk->getDevice(), depthRT[i].view, nullptr);
-		if (depthRT[i].image) vkDestroyImage(vk->getDevice(), depthRT[i].image, nullptr);
-		if (depthRT[i].memory) vkFreeMemory(vk->getDevice(), depthRT[i].memory, nullptr);
+		vk->destroyImage(depthRT[i].image, depthRT[i].memory);
 		depthRT[i] = {};
 	}
+
+	if (shadowSampler) { vkDestroySampler(vk->getDevice(), shadowSampler, nullptr); shadowSampler = VK_NULL_HANDLE; }
+
+}
+
+void Renderer::createShadowResources()
+{
+	std::shared_ptr<VulkanCore> vk = engine->getVulkanCore();
+	depthFormat = vk->getDepthFormatPublic();
+	const uint32 w = vk->getSwapchainExtent().width;
+	const uint32 h = vk->getSwapchainExtent().height;
+
+	for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+	{
+		vk->createImage(
+			w, h, 1,
+			depthFormat,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			shadowMapRT[i].image, shadowMapRT[i].memory);
+		shadowMapRT[i].view = vk->createImageView(shadowMapRT[i].image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	}
+
+	vk->singleTimeCommand(EQueueType::GRAPHICS, [&](VkCommandBuffer cb)
+	{
+		for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+		{
+			vk->transitionImageLayout(cb, shadowMapRT[i].image, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+		}
+	});
+
+	VkSamplerCreateInfo si{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
+	si.magFilter = VK_FILTER_LINEAR;
+	si.minFilter = VK_FILTER_LINEAR;
+	si.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	si.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	si.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	si.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	si.mipLodBias = 0.0f;
+	si.anisotropyEnable = VK_FALSE;
+	si.compareEnable = VK_FALSE;
+	si.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	si.minLod = 0.0f;
+	si.maxLod = 0.0f;
+	si.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+	si.unnormalizedCoordinates = VK_FALSE;
+
+	if (vkCreateSampler(vk->getDevice(), &si, nullptr, &shadowSampler) != VK_SUCCESS)
+		throw std::runtime_error("failed to create shadow sampler");
+}
+
+void Renderer::destroyShadowResources()
+{
+	std::shared_ptr<VulkanCore> vk = engine->getVulkanCore();
+	for (uint32 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+	{
+		if (shadowMapRT[i].view) vkDestroyImageView(vk->getDevice(), shadowMapRT[i].view, nullptr);
+		vk->destroyImage(shadowMapRT[i].image, shadowMapRT[i].memory);
+		shadowMapRT[i] = {};
+	}
+
+    if (depthSampler)  { vkDestroySampler(vk->getDevice(), depthSampler,  nullptr); depthSampler  = VK_NULL_HANDLE; }
+
 }
 
 void Renderer::onSwapchainRecreated()
@@ -320,18 +415,22 @@ void Renderer::onSwapchainRecreated()
 		{
 			VkDescriptorImageInfo g0{ gbufferSampler, gAlbedo[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 			VkDescriptorImageInfo g1{ gbufferSampler, gNormal[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			VkDescriptorImageInfo gd{ depthSampler,   depthRT[f].view,  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+			VkDescriptorImageInfo gs{ shadowSampler,  shadowMapRT[f].view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 
-			std::array<VkWriteDescriptorSet, 2> ws{};
-			ws[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			ws[0].dstSet = lightingSets[f];
-			ws[0].dstBinding = 0;
-			ws[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			ws[0].descriptorCount = 1;
+			std::array<VkWriteDescriptorSet,4> ws{};
+			for (int i = 0; i < 4; ++i)
+			{
+				ws[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				ws[i].dstSet = lightingSets[f];
+				ws[i].dstBinding = i;
+				ws[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				ws[i].descriptorCount = 1;
+			}
 			ws[0].pImageInfo = &g0;
-
-			ws[1] = ws[0];
-			ws[1].dstBinding = 1;
 			ws[1].pImageInfo = &g1;
+			ws[2].pImageInfo = &gd;
+			ws[3].pImageInfo = &gs;
 
 			vkUpdateDescriptorSets(device, (uint32)ws.size(), ws.data(), 0, nullptr);
 		}
@@ -394,8 +493,6 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 
 
 			// geometry
-			
-
 			VkRenderingAttachmentInfo colorInfos[2]{};
 			colorInfos[0].imageView = gAlbedo[currentFrame].view;
 			colorInfos[0].clearValue.color = {{0,0,0,1}};
@@ -468,12 +565,13 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 				}
 			}
 			vkCmdEndRendering(cmd);
+		
 			
 			
 			// light
-			vk->transitionImageLayout(cmd, gAlbedo[currentFrame].image, gAlbedoFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			vk->transitionImageLayout(cmd, gNormal[currentFrame].image, gNormalFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			vk->transitionImageLayout(cmd, vk->getSwapchainImage(imageIndex), vk->getSwapchainFormat(), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gAlbedo[currentFrame].image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			vk->transitionImageLayout(cmd, gNormal[currentFrame].image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			vk->transitionImageLayout(cmd, vk->getSwapchainImage(imageIndex), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 			VkRenderingAttachmentInfo outColor{};
 			outColor.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -510,11 +608,11 @@ void Renderer::drawFrame(const std::shared_ptr<class Scene> scene)
 			vkCmdEndRendering(cmd);
 
 			// revert gbuffer back to color attachment optimal
-			vk->transitionImageLayout(cmd, gAlbedo[currentFrame].image, gAlbedoFormat, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-			vk->transitionImageLayout(cmd, gNormal[currentFrame].image, gNormalFormat, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gAlbedo[currentFrame].image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			vk->transitionImageLayout(cmd, gNormal[currentFrame].image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 			// make swap chain image ready to present
-			vk->transitionImageLayout( cmd, vk->getSwapchainImage(imageIndex), vk->getSwapchainFormat(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+			vk->transitionImageLayout( cmd, vk->getSwapchainImage(imageIndex), VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		}
 	);
 }

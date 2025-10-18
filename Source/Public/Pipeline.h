@@ -45,6 +45,8 @@ public:
 	static Config MakeForwardConfig(std::shared_ptr<class VulkanCore> vk);
 	static Config MakeGeometryGBufferConfig(VkFormat albedoFormat, VkFormat normalFormat, std::optional<VkFormat> depthFormat);
 	static Config MakeLightningConfig(std::shared_ptr<class VulkanCore> vk);
+	static Config MakeShadowConfig(std::shared_ptr<class VulkanCore> vk);
+
 
 protected:
 

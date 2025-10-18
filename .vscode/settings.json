@@ -90,7 +90,9 @@
     "unordered_set": "cpp",
     "variant": "cpp",
     "algorithm": "cpp",
-    "__assertion_handler": "cpp"
+    "__assertion_handler": "cpp",
+    "directionallight": "cpp",
+    "directionallightcomponent": "cpp"
   },
   "dotnet.defaultSolution": "disable"
 }

@@ -161,6 +161,11 @@ void VulkanCore::recreateSwapChain()
 
 void VulkanCore::cleanupSwapChain()
 {
+	for (auto img : swapChainImages)
+	{
+		imagesMetadata.erase(img);
+	}
+
 	for (auto framebuffer : swapChainFramebuffers)
 	{
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -259,12 +264,6 @@ void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 image
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
-	if ( !swapChainImageLayoutCache[imageIndex] )
-	{
-		transitionImageLayout(renderCommandBuffers[currentFrame], getSwapchainImage(imageIndex), getSwapchainFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-		swapChainImageLayoutCache[imageIndex] = true;
-	}
-
 	// Record render commands via provided callback (dynamic rendering path)
 	recordFunction(commandBuffer, currentFrame, imageIndex);
 
@@ -276,9 +275,6 @@ void VulkanCore::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32 image
 
 void VulkanCore::createImage(uint32 width, uint32 height, uint32 mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 {
-	LOG(Log, "Creating GPU image");
-	LOG_INDENT
-
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -299,6 +295,7 @@ void VulkanCore::createImage(uint32 width, uint32 height, uint32 mipLevels, VkFo
 		throw std::runtime_error("failed to create image!");
 	}
 
+
 	VkMemoryRequirements memRequirements;
 	vkGetImageMemoryRequirements(device, image, &memRequirements);
 
@@ -313,12 +310,26 @@ void VulkanCore::createImage(uint32 width, uint32 height, uint32 mipLevels, VkFo
 	}
 
 	vkBindImageMemory(device, image, imageMemory, 0);
+
+	ImageMetadata metadata;
+	metadata.format = format;
+	metadata.layout = imageInfo.initialLayout;
+	metadata.samples = imageInfo.samples;
+	metadata.extent = {width, height};
+	metadata.mipLevels = imageInfo.mipLevels;
+	imagesMetadata.emplace(image, metadata);
+
 }
+
+void VulkanCore::destroyImage(VkImage image, VkDeviceMemory imageMemory)
+{
+	imagesMetadata.erase(image);
+	if (image) vkDestroyImage(device, image, nullptr);
+	if (imageMemory) vkFreeMemory(device, imageMemory, nullptr);
+}
+
 void VulkanCore::generateMipmaps(VkImage image, VkFormat imageFormat, int32 texWidth, int32 texHeight, uint32 mipLevels)
 {
-	LOG(Log, "Generating mipmaps");
-	LOG_INDENT
-
 	// Check if image format supports linear blitting
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
@@ -404,14 +415,15 @@ void VulkanCore::generateMipmaps(VkImage image, VkFormat imageFormat, int32 texW
 				0, nullptr,
 				0, nullptr,
 				1, &barrier);
+
+			if (auto* md = tryGetImageMetadata(image))
+				md->layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		});
 }
 
 
 void VulkanCore::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
-	LOG(Log, "Creating GPU buffer, size: {}", static_cast<uint64>(size));
-
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferInfo.size = size;
@@ -501,8 +513,6 @@ void VulkanCore::singleTimeCommand(EQueueType queueType, const std::function<voi
 
 void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
-	LOG(Log, "Coping GPU buffer, size {}", static_cast<uint64>(size));
-
 	singleTimeCommand(EQueueType::TRANSFER,
 		[&](VkCommandBuffer commandBuffer)
 		{
@@ -516,9 +526,6 @@ void VulkanCore::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize
 
 void VulkanCore::copyBufferToImage(VkBuffer buffer, VkImage image, uint32 width, uint32 height)
 {
-	LOG(Log, "Coping GPU buffer to image!");
-	LOG_INDENT
-
 	singleTimeCommand(EQueueType::TRANSFER,
 		[&](VkCommandBuffer commandBuffer)
 		{
@@ -871,11 +878,21 @@ void VulkanCore::createSwapChain()
 	swapChainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
-	swapChainImageLayoutCache.clear();
-	swapChainImageLayoutCache.resize(swapChainImages.size(), false);
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
+
+
+	for (auto img : swapChainImages)
+	{
+		ImageMetadata md;
+		md.format = swapChainImageFormat;
+		md.mipLevels = 1;
+		md.extent = swapChainExtent;
+		md.layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		md.samples = VK_SAMPLE_COUNT_1_BIT;
+		imagesMetadata.emplace(img, md);
+	}
 }
 
 void VulkanCore::createImageViews()
@@ -995,13 +1012,13 @@ void VulkanCore::createDescriptorPool()
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[0].descriptorCount = static_cast<uint32>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32>(MAX_MATERIAL_DESCRIPTOR_SETS);
+	poolSizes[1].descriptorCount = MAX_MATERIAL_DESCRIPTOR_SETS + MAX_FRAMES_IN_FLIGHT * 4;
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	poolInfo.poolSizeCount = static_cast<uint32>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32>(MAX_FRAMES_IN_FLIGHT) + MAX_MATERIAL_DESCRIPTOR_SETS;
+	poolInfo.maxSets = MAX_MATERIAL_DESCRIPTOR_SETS + (2 * MAX_FRAMES_IN_FLIGHT);
 
 	if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 	{
@@ -1276,6 +1293,27 @@ std::vector<const char*> VulkanCore::getRequiredExtensions()
 	return extensions;
 }
 
+ImageMetadata* VulkanCore::tryGetImageMetadata(VkImage image)
+{
+	auto it = imagesMetadata.find(image);
+	return it == imagesMetadata.end() ? nullptr : &it->second;
+}
+void VulkanCore::transitionImageLayout(
+		VkCommandBuffer cmd,
+		VkImage image,
+		VkImageLayout newLayout
+	)
+{
+	auto it = imagesMetadata.find(image);
+	if (it == imagesMetadata.end())
+	{
+		throw std::runtime_error("transitionImageLayout: image not registered");
+	}
+	auto& md = it->second;
+	transitionImageLayout(cmd, image, md.format, md.layout, newLayout, md.mipLevels);
+	md.layout = newLayout;
+}
+
 void VulkanCore::transitionImageLayout(
 	VkCommandBuffer cmd,
 	VkImage image,
@@ -1411,6 +1449,9 @@ void VulkanCore::transitionImageLayout(
 		0, nullptr,
 		1, &barrier
 	);
+
+	if (auto* md = tryGetImageMetadata(image))
+		md->layout = newLayout;
 }
 
 VkFormat VulkanCore::getDepthFormatPublic()

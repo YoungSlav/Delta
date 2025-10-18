@@ -39,6 +39,9 @@ protected:
 	void createDepthResources();
 	void destroyDepthResources();
 
+	void createShadowResources();
+	void destroyShadowResources();
+
 private:
 	std::vector<VkBuffer> cameraUniformBuffers;
 	std::vector<VkDeviceMemory> cameraUniformBuffersMemory;
@@ -55,10 +58,17 @@ private:
 	GBufferRT gNormal[MAX_FRAMES_IN_FLIGHT]{};
 	VkFormat gAlbedoFormat = VK_FORMAT_R8G8B8A8_UNORM;		// Albedo + Metallic
 	VkFormat gNormalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;	// Normal + Roughness
+	VkSampler gbufferSampler = VK_NULL_HANDLE;
 
-	GBufferRT depthRT[MAX_FRAMES_IN_FLIGHT]{};
 	VkFormat depthFormat = VK_FORMAT_D32_SFLOAT;
-
+	
+	GBufferRT depthRT[MAX_FRAMES_IN_FLIGHT]{};
+	VkSampler depthSampler;
+	
+	GBufferRT shadowMapRT[MAX_FRAMES_IN_FLIGHT]{};
+	VkSampler shadowSampler;
+	VkExtent2D shadowExtent = {2048,2048};
+	
 	// Descriptor layouts and per-frame global descriptor sets (camera UBO)
 	VkDescriptorSetLayout globalSetLayout = VK_NULL_HANDLE;
 	std::vector<VkDescriptorSet> globalSets;
@@ -68,12 +78,13 @@ private:
 	std::unordered_map<const class Material*, VkDescriptorSet> materialSetCache;
 	VkDescriptorSet getOrCreateMaterialSet(const std::shared_ptr<class Material>& mat);
 
-	VkSampler gbufferSampler = VK_NULL_HANDLE;
 	VkDescriptorSetLayout lightingSetLayout = VK_NULL_HANDLE;
 	std::vector<VkDescriptorSet> lightingSets; // size = MAX_FRAMES_IN_FLIGHT
 
 	std::shared_ptr<class Pipeline> gbufferPipeline;
 	std::shared_ptr<class Pipeline> lightingPipeline;
+	std::shared_ptr<class Pipeline> shadowPipeline;
+
 };
 
 }

@@ -67,7 +67,12 @@ endif()
 # Shader compilation (glslc)
 set(SHADER_SRC_DIR ${SRC_DIR}/Shaders)
 set(SHADER_OUT_DIR ${CMAKE_SOURCE_DIR}/Resources/Shaders)
-file(GLOB SHADERS ${SHADER_SRC_DIR}/*)
+# Only pick real shader files, ignore metadata like .DS_Store
+file(GLOB SHADERS CONFIGURE_DEPENDS
+  ${SHADER_SRC_DIR}/*.vert
+  ${SHADER_SRC_DIR}/*.frag
+  ${SHADER_SRC_DIR}/*.comp
+)
 
 # Locate glslc reliably (PATH + SDK hints)
 if(WIN32)

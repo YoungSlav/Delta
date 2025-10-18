@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "StaticMeshComponent.h"
 #include "Camera.h"
+#include "DirectionalLight.h"
 
 using namespace Delta;
 
@@ -32,6 +33,10 @@ void Scene::registerObject(std::shared_ptr<Object> newObject)
 	{
 		actors.push_back(asActor);
 	}
+	if ( std::shared_ptr<DirectionalLight> asDirLight = std::dynamic_pointer_cast<DirectionalLight>(newObject) )
+	{
+		directionalLights.push_back(asDirLight);
+	}
 }
 void Scene::removeObject(std::shared_ptr<Object> object)
 {
@@ -39,28 +44,45 @@ void Scene::removeObject(std::shared_ptr<Object> object)
 		return !ptr.owner_before(other) && !other.owner_before(ptr);
 	};
 
-	objects.remove_if([&](const std::weak_ptr<Object>& weak) {
-		return sameObject(weak, object);
-	});
+	objects.remove_if(
+		[&](const std::weak_ptr<Object>& weak)
+		{
+			return sameObject(weak, object);
+		});
 
 	if (std::shared_ptr<ITickable> asTickable = std::dynamic_pointer_cast<ITickable>(object))
 	{
-		tickableObjects.remove_if([&](const std::weak_ptr<ITickable>& weak) {
-			return sameObject(weak, asTickable);
-		});
+		tickableObjects.remove_if(
+			[&](const std::weak_ptr<ITickable>& weak)
+			{
+				return sameObject(weak, asTickable);
+			});
 	}
 	if (std::shared_ptr<Actor> asActor = std::dynamic_pointer_cast<Actor>(object))
 	{
-		actors.remove_if([&](const std::weak_ptr<Actor>& weak) {
-			return sameObject(weak, asActor);
-		});
+		actors.remove_if(
+			[&](const std::weak_ptr<Actor>& weak)
+			{
+				return sameObject(weak, asActor);
+			});
 	}
 
 	if (std::shared_ptr<StaticMeshComponent> asMesh = std::dynamic_pointer_cast<StaticMeshComponent>(object))
 	{
-		meshComponents.remove_if([&](const std::weak_ptr<StaticMeshComponent>& weak) {
-			return sameObject(weak, asMesh);
-		});
+		meshComponents.remove_if(
+			[&](const std::weak_ptr<StaticMeshComponent>& weak)
+			{
+				return sameObject(weak, asMesh);
+			});
+	}
+
+	if ( std::shared_ptr<DirectionalLight> asDirLight = std::dynamic_pointer_cast<DirectionalLight>(object) )
+	{
+		directionalLights.remove_if(
+			[&](const std::weak_ptr<DirectionalLight>& weak)
+			{
+				return sameObject(weak, asDirLight);
+			});
 	}
 }
 

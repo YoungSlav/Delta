@@ -273,10 +273,11 @@ void Pipeline::createGraphicsPipeline()
 	}
 
 	// Fill defaults if config was not set by caller
-	if (config.colorAttachmentFormats.empty())
+	if (config.colorAttachmentFormats.empty() && !config.depthAttachmentFormat.has_value())
 	{
 		config.colorAttachmentFormats.push_back(engine->getVulkanCore()->getSwapchainFormat());
 	}
+
 	if (!config.depthAttachmentFormat.has_value())
 	{
 		config.depthAttachmentFormat = engine->getVulkanCore()->getDepthFormatPublic();
@@ -357,6 +358,20 @@ Pipeline::Config Pipeline::MakeLightningConfig(std::shared_ptr<VulkanCore> vk)
 	cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	return cfg;
 }
+
+Pipeline::Config Pipeline::MakeShadowConfig(std::shared_ptr<VulkanCore> vk)
+{
+	Pipeline::Config cfg{};
+	cfg.colorAttachmentFormats = {};                 // depth-only
+	cfg.depthAttachmentFormat = vk->getDepthFormatPublic();
+	cfg.enableDepthTest = true;
+	cfg.enableDepthWrite = true;
+	cfg.cullMode = VK_CULL_MODE_BACK_BIT;
+	cfg.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	cfg.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	return cfg;
+}
+
 
 VkShaderModule Pipeline::createShaderModule(const std::vector<char>& code)
 {

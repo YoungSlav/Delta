@@ -13,6 +13,7 @@ unsigned int DelegateHandle::CURRENT_ID = 0;
 #include "Scene.h"
 #include "StaticMeshComponent.h"
 #include "Actor.h"
+#include "DirectionalLight.h"
 
 int main()
 {
@@ -39,6 +40,13 @@ int main()
 			auto meshComp = actor->spawn<Delta::StaticMeshComponent>("Viking house", "viking_house/viking_room.obj", "viking_house/viking_room.png");
 			meshComp->setScale(glm::vec3(10.0f));
 			meshComp->setRotation(glm::vec3(-90.0f, 0.0f, 0.0f));
+		}
+
+		{
+			auto dirLightActor = scene->spawn<Delta::Actor>("Dir ligth actor");
+			
+			auto lightComp = dirLightActor->spawn<Delta::DirectionalLight>("Directional light");
+			lightComp->setLocation(glm::vec3(10.0f, 10.0f, 0.0f));
 		}
 
 
